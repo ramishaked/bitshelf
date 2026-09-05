@@ -1,6 +1,6 @@
 # BitShelf: אפיון אפליקציה לניהול אוסף מחשבי רטרו וקונסולות
 
-גרסה: 0.6, 05.09.2026
+גרסה: 0.7, 05.09.2026
 מחבר: רמי שקד, בסיוע Claude
 
 ---
@@ -158,6 +158,32 @@ id, item_id, seller_id, group_ids[], asking_price, currency, status (active / re
 
 id, item_id (או manufacturer+model אם לא קשור לפריט), source (ebay_sold / ebay_active / facebook_group / manual / ai_estimate), price, currency, observed_at, url, condition_hint, notes. זה הבסיס לחישוב שווי (סעיף 9).
 
+### 4.6.1 ModelReference (מידע היסטורי ומפרט)
+
+רשומה אחת לכל דגם, משותפת לכל המשתמשים, נפרדת מהפריט. Item מצביע עליה דרך `model_reference_id` (nullable).
+
+| שדה | סוג | הערות |
+|---|---|---|
+| id | uuid | |
+| collection_type_id | uuid | |
+| manufacturer / model / variant | text | מפתח ייחודי, variant יכול להיות ריק |
+| release_year / discontinued_year | int | |
+| summary_he / summary_en | text | 3 עד 5 משפטים: מה זה, למה זה חשוב, מה מיוחד בגרסה |
+| specs | jsonb | CPU, מהירות, RAM, גרפיקה, קול, מדיה, יציאות, מחיר השקה. מפתחות לפי ה-CollectionType |
+| links | jsonb | רשימה של {label, url}: Wikipedia (he/en), Old-Computers.com, Apple2History, AtariAge, Wikipedia של המשחק |
+| source | enum | ai_generated / user_edited / curated |
+| generated_at / updated_at | timestamp | |
+
+**יצירה:** אחרי שמירת פריט, אם אין ModelReference לאותו manufacturer+model+variant, job ברקע (AiJob) מייצר אותה: Claude עם web search, פלט JSON קבוע, שפה עברית ואנגלית. הקטלוג עצמו לא מחכה. במסך הפריט מופיע "מידע על הדגם" עם skeleton עד שהרשומה מוכנה (בדרך כלל תוך דקה).
+
+**עריכה:** כל משתמש יכול להציע תיקון; בשלב 1 (רק אתה) עריכה ישירה. בשלב 2 הצעות עוברות דרך Admin. כל עריכה משנה את source ל-user_edited.
+
+**אימות:** ה-AI מחויב לצרף URL לכל קישור ולא להמציא. הלקוח בודק שכל URL מחזיר 200 לפני שמירה; קישור שבור נזרק. מספרים במפרט ללא מקור מסומנים "לא מאומת".
+
+**עלות:** קריאה אחת עם web search לכל דגם חדש, סדר גודל של שקל. אוסף של 200 פריטים הוא בערך 80 דגמים שונים, כלומר חד-פעמי וזניח.
+
+זו גם התשתית של קטלוג-האב משלב 3: כשמשתמש מאשר זיהוי, ה-ModelReference כבר קיימת, ומהשלב הזה ואילך הזיהוי מתחיל ממנה.
+
 ### 4.7.1 WishlistItem
 
 id, owner_id, collection_id, manufacturer, model, variant, notes, target_price, currency, priority (1..3), status (searching / found / purchased / cancelled), created_at, updated_at. שדות הזיהוי שייכים ל-attributes של הסוג, כמו ב-Item. כשהסטטוס הופך ל-purchased, המערכת מציעה ליצור Item מהרשומה.
@@ -190,6 +216,7 @@ id, collection_type_id, name, type (facebook_group / ebay / other), url, platfor
 - סריקת מדף (סעיף 6.3), מסומנת Experimental.
 - דשבורד האוסף (סעיף 7.1א).
 - Wishlist (סעיף 7.9).
+- מידע על הדגם: ModelReference (סעיף 4.6.1) וכרטיס במסך הפריט.
 - Collection Intelligence מבוסס חוקים (סעיף 10א). ללא AI בשלב זה.
 - מסך אוסף: גלריה ויזואלית, חיפוש טקסט, סינון וקיבוץ.
 - מסך פריט: תמונות, שדות, סט (ילדים), יומן תיקונים, שווי.
@@ -238,7 +265,7 @@ id, collection_type_id, name, type (facebook_group / ebay / other), url, platfor
 ### 6.2 מה ה-AI כן ולא עושה
 
 כן: זיהוי דגם, גרסה, שנה משוערת, קטגוריה, אזור (לפי מדבקות ותקעים), הערות על מצב גלוי (הצהבה, חלקים חסרים).
-לא: חיפוש web, קריאת מספר סידורי מהתמונה (OCR נפרד, שלב 2), הערכת שווי.
+לא: חיפוש web בזמן הזיהוי (החיפוש קורה אחר כך, ברקע, ליצירת ModelReference), קריאת מספר סידורי מהתמונה (OCR נפרד, שלב 2), הערכת שווי.
 
 ### 6.3 סריקת מדף (Experimental)
 
@@ -291,6 +318,7 @@ Tab bar עם ארבעה לשוניות בשלב 1 (חמישית, "שוק", בש�
 - כותרת: Manufacturer Model (Variant), שנה.
 - שורת מצב מיד מתחת לכותרת: שני תגים נפרדים, "חיצוני 4/5" ו"עובד" (או "לא נבדק" באפור). זה הדבר הראשון שרואים אחרי התמונה.
 - כרטיסי מידע (מקופלים כברירת מחדל, נפתחים ב-tap): אחסון, רכישה, פרטים טכניים.
+- כרטיס "על הדגם" (מ-ModelReference): תקציר של 3 עד 5 משפטים בשפת הממשק, שורת מפרט (CPU, RAM, שנה, מחיר השקה) בפונט מונו, וקישורים כ-chips: ויקיפדיה, ועוד 2 עד 3 מקורות. tap על קישור פותח בדפדפן בתוך האפליקציה. כפתור "תקן" קטן לעריכה. הכרטיס משותף לכל העותקים של אותו דגם.
 - כרטיס שווי: low / fair / high, confidence, תאריך, "מבוסס על N מחירים מבוקשים ו-M מכירות", ודריסה ידנית.
 - "סט": ילדים כשורה של thumbnails + "הוסף לסט". אם הפריט הוא ילד, קישור לאב.
 - יומן תיקונים.
@@ -466,7 +494,7 @@ Payments: RevenueCat (שלב 3)
 3. זיהוי AI לפריט בודד + מסך אישור + כפילויות. שבוע.
 4. גלריות, סינון, מועדפים, קישור ציבורי. שבוע.
 5. סריקת מדף. שבוע, בעיקר כיוונון prompt.
-6. שווי (eBay Browse, שלוש נקודות, config של מקדמים) + פוסטים + ייצוא. שבוע.
+6. שווי (eBay Browse, שלוש נקודות, config של מקדמים) + ModelReference ברקע + פוסטים + ייצוא. שבוע.
 7. דשבורד, Wishlist, Collection Intelligence. שבוע.
 8. שיפור ביצועים, offline, RTL polish, TestFlight לעצמך. שבוע.
 
