@@ -196,6 +196,7 @@ export default function ItemScreen() {
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [serialShown, setSerialShown] = useState(false);
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
+  const [valueBusy, setValueBusy] = useState(false);
   const [repairText, setRepairText] = useState("");
   // clerkEnabled is constant for the app's lifetime, the hook order is stable
   const { getToken } = clerkEnabled
@@ -292,7 +293,6 @@ export default function ItemScreen() {
 
   // "update value" (spec 9): eBay asking prices, computed on the server.
   // 503 means the eBay keys are not configured yet.
-  const [valueBusy, setValueBusy] = useState(false);
   const refreshValue = async () => {
     if (valueBusy) return;
     setValueBusy(true);
