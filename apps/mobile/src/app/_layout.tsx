@@ -29,7 +29,10 @@ export default function RootLayout() {
           name="item/new"
           options={{ presentation: "modal", headerShown: true }}
         />
-        <Stack.Screen name="item/[id]" options={{ headerShown: true }} />
+        <Stack.Screen
+          name="item/[id]"
+          options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }}
+        />
       </Stack>
     </GuestProvider>
   );

@@ -442,6 +442,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: spacing.xs + 2,
     marginTop: spacing.md,
+    // explicit start alignment: unset text falls to the physical left in RTL
+    textAlign: "left",
   },
   photosRow: {
     flexDirection: "row",
@@ -498,6 +500,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md - 2,
     fontSize: typography.sizes.body,
+    textAlign: "right",
   },
   ltr: {
     writingDirection: "ltr",

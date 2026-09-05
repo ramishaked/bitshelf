@@ -240,7 +240,14 @@ export default function ItemScreen() {
 
           {item.notes ? (
             <Card label={t("item.notes")} colors={colors}>
-              <Text style={{ color: colors.textPrimary, fontSize: 15, lineHeight: 21 }}>
+              <Text
+                style={{
+                  color: colors.textPrimary,
+                  fontSize: 15,
+                  lineHeight: 21,
+                  textAlign: "left",
+                }}
+              >
                 {item.notes}
               </Text>
             </Card>
@@ -316,10 +323,12 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.title,
     fontWeight: "700",
     writingDirection: "ltr",
-    textAlign: "right",
+    // logical start: physical right in RTL, like the design
+    textAlign: "left",
   },
   subtitle: {
     fontSize: typography.sizes.secondary,
+    textAlign: "left",
   },
   tagsRow: {
     flexDirection: "row",
@@ -349,6 +358,7 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     fontSize: 13,
+    textAlign: "left",
   },
   detailRow: {
     flexDirection: "row",
