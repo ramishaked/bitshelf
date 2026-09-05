@@ -89,6 +89,9 @@ db.execSync(`
   CREATE TABLE IF NOT EXISTS deleted_items (
     id TEXT PRIMARY KEY
   );
+  CREATE TABLE IF NOT EXISTS deleted_galleries (
+    id TEXT PRIMARY KEY
+  );
   CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -408,9 +411,39 @@ export function getGallery(id: string): LocalGallery | null {
   return row ? parseGalleryRow(row) : null;
 }
 
+// tombstoned like items, so the server row dies and pulls do not revive it
 export function deleteGallery(id: string): void {
   db.runSync("DELETE FROM gallery_items WHERE gallery_id = ?", [id]);
   db.runSync("DELETE FROM galleries WHERE id = ?", [id]);
+  db.runSync("INSERT OR IGNORE INTO deleted_galleries (id) VALUES (?)", [id]);
+}
+
+export function listDeletedGalleryIds(): string[] {
+  const rows = db.getAllSync<{ id: string }>("SELECT id FROM deleted_galleries");
+  return rows.map((r) => r.id);
+}
+
+export function clearDeletedGalleryIds(ids: string[]): void {
+  for (const id of ids) {
+    db.runSync("DELETE FROM deleted_galleries WHERE id = ?", [id]);
+  }
+}
+
+// pull merge for galleries: only rows this device has never seen
+export function mergeServerGalleries(
+  serverGalleries: (LocalGallery & { itemIds: string[] })[],
+): number {
+  const tombstones = new Set(listDeletedGalleryIds());
+  let added = 0;
+  for (const gallery of serverGalleries) {
+    if (tombstones.has(gallery.id)) continue;
+    if (getGallery(gallery.id)) continue;
+    const { itemIds, ...row } = gallery;
+    saveGallery({ ...row, synced: true });
+    setGalleryItems(gallery.id, itemIds);
+    added += 1;
+  }
+  return added;
 }
 
 // replaces the member list, keeping the given order (spec 7.3: manual sort)

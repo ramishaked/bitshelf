@@ -112,11 +112,15 @@ export async function POST(request: Request) {
     galleries?: unknown[];
     photos?: unknown[];
     deletedIds?: unknown[];
+    deletedGalleryIds?: unknown[];
   } | null;
   const clientItems = (body?.items ?? []).filter(isValidItem).slice(0, 200);
   const deletedIds = ((body?.deletedIds ?? []) as unknown[])
     .filter((v): v is string => typeof v === "string" && UUID_RE.test(v))
     .slice(0, 200);
+  const deletedGalleryIds = ((body?.deletedGalleryIds ?? []) as unknown[])
+    .filter((v): v is string => typeof v === "string" && UUID_RE.test(v))
+    .slice(0, 50);
   const clientGalleries = (body?.galleries ?? []).filter(isValidGallery).slice(0, 50);
   const clientPhotos = (body?.photos ?? []).filter(isValidPhoto).slice(0, 200);
 
@@ -284,6 +288,11 @@ export async function POST(request: Request) {
       .delete(items)
       .where(and(eq(items.ownerId, user.id), inArray(items.id, deletedIds)));
   }
+  if (deletedGalleryIds.length > 0) {
+    await db
+      .delete(galleries)
+      .where(and(eq(galleries.ownerId, user.id), inArray(galleries.id, deletedGalleryIds)));
+  }
 
   // pull: the user's full catalog, photos attached, local-first shape
   const itemRows = await db
@@ -338,6 +347,40 @@ export async function POST(request: Request) {
       })),
   }));
 
+  // gallery pull: the user's galleries with their ordered member lists
+  const galleryRows = await db
+    .select()
+    .from(galleries)
+    .where(eq(galleries.ownerId, user.id))
+    .limit(100);
+  const memberRows =
+    galleryRows.length > 0
+      ? await db
+          .select()
+          .from(galleryItems)
+          .where(inArray(galleryItems.galleryId, galleryRows.map((g) => g.id)))
+      : [];
+  const membersByGallery = new Map<string, { itemId: string; sortOrder: number }[]>();
+  for (const m of memberRows) {
+    const list = membersByGallery.get(m.galleryId) ?? [];
+    list.push({ itemId: m.itemId, sortOrder: m.sortOrder });
+    membersByGallery.set(m.galleryId, list);
+  }
+  const serverGalleries = galleryRows.map((g) => ({
+    id: g.id,
+    nameHe: g.name.he ?? g.name.en ?? "",
+    nameEn: g.name.en ?? null,
+    descriptionHe: g.description?.he ?? null,
+    visibility: g.visibility === "public_link" ? "public_link" : "private",
+    publicSlug: g.publicSlug,
+    showValue: g.showValue,
+    createdAt: g.createdAt.toISOString(),
+    updatedAt: g.updatedAt.toISOString(),
+    itemIds: (membersByGallery.get(g.id) ?? [])
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((m) => m.itemId),
+  }));
+
   return NextResponse.json({
     userId: user.id,
     collectionId: collection.id,
@@ -345,6 +388,8 @@ export async function POST(request: Request) {
     syncedGalleryIds,
     syncedPhotoIds,
     deletedIds,
+    deletedGalleryIds,
     serverItems,
+    serverGalleries,
   });
 }

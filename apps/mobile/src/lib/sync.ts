@@ -1,6 +1,8 @@
 import { File } from "expo-file-system";
 import {
+  clearDeletedGalleryIds,
   clearDeletedIds,
+  listDeletedGalleryIds,
   listDeletedIds,
   listGalleryItemIds,
   listItems,
@@ -8,6 +10,7 @@ import {
   listUnsyncedGalleries,
   markGalleriesSynced,
   markSynced,
+  mergeServerGalleries,
   mergeServerItems,
   updateItemPhotos,
   type LocalGallery,
@@ -165,6 +168,7 @@ export async function syncNow(getToken: GetToken): Promise<number> {
     const unsynced = listUnsynced();
     const unsyncedGalleries = listUnsyncedGalleries();
     const deletedIds = listDeletedIds();
+    const deletedGalleryIds = listDeletedGalleryIds();
     const token = await getToken();
     if (!token) return 0;
 
@@ -179,7 +183,8 @@ export async function syncNow(getToken: GetToken): Promise<number> {
       unsynced.length === 0 &&
       unsyncedGalleries.length === 0 &&
       photoRows.length === 0 &&
-      deletedIds.length === 0
+      deletedIds.length === 0 &&
+      deletedGalleryIds.length === 0
     ) {
       return 0;
     }
@@ -196,6 +201,7 @@ export async function syncNow(getToken: GetToken): Promise<number> {
         galleries: unsyncedGalleries.map(galleryPayload),
         photos: photoRows,
         deletedIds,
+        deletedGalleryIds,
       }),
     });
     if (!response.ok) {
@@ -206,6 +212,8 @@ export async function syncNow(getToken: GetToken): Promise<number> {
       syncedIds?: string[];
       syncedGalleryIds?: string[];
       deletedIds?: string[];
+      deletedGalleryIds?: string[];
+      serverGalleries?: (LocalGallery & { itemIds: string[] })[];
       serverItems?: (Omit<LocalItem, "photos" | "synced"> & {
         photos: {
           id: string;
@@ -227,6 +235,8 @@ export async function syncNow(getToken: GetToken): Promise<number> {
         .map((g) => ({ id: g.id, updatedAt: g.updatedAt })),
     );
     clearDeletedIds(result.deletedIds ?? []);
+    clearDeletedGalleryIds(result.deletedGalleryIds ?? []);
+    mergeServerGalleries(result.serverGalleries ?? []);
 
     // pull: adopt server items this device has never seen. Remote URLs go
     // straight into the photo slots, expo-image caches them on disk.
