@@ -226,6 +226,26 @@ const DEMO_PHOTOS: Record<string, string> = {
   "Atari 2600 (Heavy Sixer)": "Atari-2600-Wood-4Sw-Set.png",
   "Nintendo Entertainment System": "NES-Console-Set.png",
   "VisiCalc (Apple II)": "Visicalc.png",
+  "Apple IIc Plus": "Apple_IIc_Plus_(front).jpg",
+  "Macintosh Plus": "Macintosh_Plus_cropped.jpg",
+  "Macintosh SE/30": "Apple_Macintosh_SE-30_computer_(1989)_clear_background.png",
+  "PowerBook 100": "Powerbook_100_pose.jpg",
+  "Disk II Drive": "Apple_IIe_+_Disk_II_drives_+_Apple_Monitor_II.JPG",
+  "Commodore 1541": "Commodore_1541_white.jpg",
+  "Apple Monitor II": "Apple_Monitor_II.jpg",
+  "ImageWriter II": "Apple_ImageWriter_II.jpg",
+  "Apple Joystick IIe": "Standard_J-665_Joystick.jpg",
+  "Apple Super Serial Card": "Super-serial-03.jpg",
+  // no free photo of the 80 column card, a generic Apple II card stands in
+  "Apple 80 Column Card": "Super-serial-03.jpg",
+  // software box art is copyrighted, generic media photos stand in
+  "AppleWorks (Apple II)": "5.25-inch_floppy_disk.jpg",
+  "The Oregon Trail (Apple II)": "5.25-inch_floppy_disk.jpg",
+  "Karateka (Apple II)": "5.25-inch_floppy_disk.jpg",
+  "Lode Runner (Apple II)": "5.25-inch_floppy_disk.jpg",
+  "Ultima IV (Apple II)": "5.25-inch_floppy_disk.jpg",
+  "Choplifter (Apple II)": "5.25-inch_floppy_disk.jpg",
+  "Prince of Persia (Apple II)": "Floppy_disk_90mm.JPG",
 };
 
 async function main() {
