@@ -502,8 +502,10 @@ const styles = StyleSheet.create({
   ltr: {
     writingDirection: "ltr",
   },
+  // latin content keeps LTR character order but hugs the right edge,
+  // like any RTL iOS form
   ltrInput: {
-    textAlign: "left",
+    textAlign: "right",
     writingDirection: "ltr",
   },
   starsRow: {

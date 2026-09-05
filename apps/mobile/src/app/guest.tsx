@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     fontSize: 16,
-    // gallery slugs are latin, keep the field LTR
-    textAlign: "left",
+    // gallery slugs are latin: LTR character order, right-aligned like the form
+    textAlign: "right",
     writingDirection: "ltr",
   },
   button: {
