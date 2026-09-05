@@ -85,9 +85,55 @@
     "cib": "CIB",
     "sealed": "חתום"
   },
+  "filters": {
+    "searchPlaceholder": "חיפוש באוסף",
+    "favorites": "מועדפים",
+    "noResults": "לא נמצאו פריטים"
+  },
+  "actions": {
+    "favorite": "הוספה למועדפים",
+    "unfavorite": "הסרה מהמועדפים",
+    "makePrivate": "סמן כפרטי",
+    "makeVisible": "סמן כגלוי",
+    "addToGallery": "הוספה לגלריה"
+  },
   "galleries": {
     "emptyTitle": "אין גלריות עדיין",
-    "emptyHint": "אחרי שיהיו פריטים באוסף, יוצרים כאן גלריות ומשתפים בקישור"
+    "emptyHint": "אחרי שיהיו פריטים באוסף, יוצרים כאן גלריות ומשתפים בקישור",
+    "mySection": "הגלריות שלי",
+    "smartSection": "גלריות חכמות",
+    "recentlyAdded": "נוספו לאחרונה",
+    "create": "גלריה חדשה"
+  },
+  "gallery": {
+    "newTitle": "גלריה חדשה",
+    "editTitle": "עריכת גלריה",
+    "nameHe": "שם בעברית",
+    "nameEn": "שם באנגלית",
+    "description": "תיאור",
+    "pickItems": "בחירת פריטים",
+    "selectedCount": "{{count}} נבחרו",
+    "save": "שמירה",
+    "delete": "מחיקת גלריה",
+    "deleteConfirmTitle": "למחוק את הגלריה?",
+    "deleteConfirmBody": "הפריטים עצמם נשארים באוסף.",
+    "empty": "אין פריטים בגלריה עדיין",
+    "addItems": "הוספת פריטים",
+    "edit": "עריכה",
+    "share": "שיתוף בקישור",
+    "copyLink": "העתקת קישור",
+    "revokeLink": "ביטול הקישור",
+    "revokeConfirmTitle": "לבטל את הקישור?",
+    "revokeConfirmBody": "הקישור יפסיק לעבוד מיד.",
+    "revoke": "ביטול קישור",
+    "linkCopied": "הקישור הועתק",
+    "itemCount": "{{count}} פריטים",
+    "pickTitle": "לאיזו גלריה?",
+    "pickEmpty": "אין עדיין גלריות. יוצרים אחת בטאב הגלריות.",
+    "remove": "הסרה מהגלריה",
+    "visibilityPrivate": "פרטית",
+    "visibilityPublic": "ציבורית",
+    "notSynced": "טרם סונכרן לשרת, הקישור יעבוד אחרי סנכרון"
   },
   "favorites": {
     "emptyTitle": "אין מועדפים עדיין",
@@ -123,6 +169,9 @@
   },
   "publicGallery": {
     "title": "גלריה ציבורית",
-    "placeholder": "תוכן הגלריה יוצג כאן כשיהיו גלריות משותפות"
+    "loading": "טוען גלריה...",
+    "notFound": "הגלריה לא נמצאה, או שהקישור בוטל",
+    "loadError": "הטעינה נכשלה. בדקו חיבור ונסו שוב.",
+    "itemCount": "{{count}} פריטים"
   }
 }

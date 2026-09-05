@@ -85,9 +85,55 @@
     "cib": "CIB",
     "sealed": "Sealed"
   },
+  "filters": {
+    "searchPlaceholder": "Search the collection",
+    "favorites": "Favorites",
+    "noResults": "No items found"
+  },
+  "actions": {
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites",
+    "makePrivate": "Mark as private",
+    "makeVisible": "Mark as visible",
+    "addToGallery": "Add to gallery"
+  },
   "galleries": {
     "emptyTitle": "No galleries yet",
-    "emptyHint": "Once your collection has items, create galleries here and share them with a link"
+    "emptyHint": "Once your collection has items, create galleries here and share them with a link",
+    "mySection": "My galleries",
+    "smartSection": "Smart galleries",
+    "recentlyAdded": "Recently added",
+    "create": "New gallery"
+  },
+  "gallery": {
+    "newTitle": "New gallery",
+    "editTitle": "Edit gallery",
+    "nameHe": "Name in Hebrew",
+    "nameEn": "Name in English",
+    "description": "Description",
+    "pickItems": "Pick items",
+    "selectedCount": "{{count}} selected",
+    "save": "Save",
+    "delete": "Delete gallery",
+    "deleteConfirmTitle": "Delete this gallery?",
+    "deleteConfirmBody": "The items themselves stay in the collection.",
+    "empty": "No items in this gallery yet",
+    "addItems": "Add items",
+    "edit": "Edit",
+    "share": "Share with a link",
+    "copyLink": "Copy link",
+    "revokeLink": "Revoke link",
+    "revokeConfirmTitle": "Revoke the link?",
+    "revokeConfirmBody": "The link will stop working immediately.",
+    "revoke": "Revoke",
+    "linkCopied": "Link copied",
+    "itemCount": "{{count}} items",
+    "pickTitle": "Which gallery?",
+    "pickEmpty": "No galleries yet. Create one in the Galleries tab.",
+    "remove": "Remove from gallery",
+    "visibilityPrivate": "Private",
+    "visibilityPublic": "Public",
+    "notSynced": "Not synced yet, the link will work after sync"
   },
   "favorites": {
     "emptyTitle": "No favorites yet",
@@ -123,6 +169,9 @@
   },
   "publicGallery": {
     "title": "Public gallery",
-    "placeholder": "Gallery content will show here once shared galleries exist"
+    "loading": "Loading gallery...",
+    "notFound": "Gallery not found, or the link was revoked",
+    "loadError": "Loading failed. Check your connection and try again.",
+    "itemCount": "{{count}} items"
   }
 }

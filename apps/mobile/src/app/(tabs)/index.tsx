@@ -1,85 +1,62 @@
-import { useCallback, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import { FlashList } from "@shopify/flash-list";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
+import { useCallback, useMemo, useState } from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import {
-  EmptyState,
-  grid,
-  photoOverlay,
-  radius,
-  typography,
-  type ThemeColors,
-} from "@bitshelf/ui";
+import { EmptyState, radius, spacing, typography } from "@bitshelf/ui";
+import { FilterBar } from "../../components/filter-bar";
+import { ItemGrid } from "../../components/item-grid";
 import { ScreenHeader } from "../../components/screen-header";
 import { clerkEnabled } from "../../lib/auth";
-import { statusColor } from "../../lib/retro";
-import { listItems, type LocalItem } from "../../lib/store";
+import { applyFilters, emptyFilters, hasActiveFilters } from "../../lib/filters";
+import {
+  listItems,
+  setItemPrivate,
+  toggleFavorite,
+  type LocalItem,
+} from "../../lib/store";
+import { requestSync } from "../../lib/sync";
 import { useThemeColors } from "../../lib/theme";
-
-// Photo tiles per the approved design: square, status dot top-right, lock
-// glyph when private, item name in monospace over a bottom gradient.
-function ItemTile({
-  item,
-  colors,
-  size,
-}: {
-  item: LocalItem;
-  colors: ThemeColors;
-  size: number;
-}) {
-  const router = useRouter();
-  const primary =
-    item.photos.find((p) => p.isPrimary) ?? item.photos[0] ?? null;
-  const workingStatus = item.attributes.working_status as string | undefined;
-
-  return (
-    <Pressable
-      onPress={() => router.push(`/item/${item.id}`)}
-      style={[styles.tile, { backgroundColor: colors.surface, width: size, height: size }]}
-    >
-      {primary ? (
-        <Image
-          source={{ uri: primary.thumbUri }}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-        />
-      ) : null}
-      <View style={[styles.dot, { backgroundColor: statusColor(workingStatus, colors) }]} />
-      <LinearGradient
-        colors={[photoOverlay.gradientStart, photoOverlay.gradientEnd]}
-        style={styles.nameBar}
-      >
-        <Text numberOfLines={1} style={styles.name}>
-          {item.title}
-        </Text>
-      </LinearGradient>
-    </Pressable>
-  );
-}
 
 export default function CollectionScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const tileSize = Math.floor((width - grid.gap * (grid.columns + 1)) / grid.columns);
   const [items, setItems] = useState<LocalItem[]>([]);
+  const [filters, setFilters] = useState(emptyFilters);
 
-  useFocusEffect(
-    useCallback(() => {
-      setItems(listItems());
-    }, []),
-  );
+  const reload = useCallback(() => setItems(listItems()), []);
+  useFocusEffect(reload);
+
+  const visible = useMemo(() => applyFilters(items, filters), [items, filters]);
+
+  // long press menu (spec 7.1): favorite, private/visible, add to gallery
+  const openItemActions = (item: LocalItem) => {
+    Alert.alert(item.title, "", [
+      {
+        text: item.isFavorite
+          ? t("actions.unfavorite")
+          : t("actions.favorite"),
+        onPress: () => {
+          toggleFavorite(item.id);
+          reload();
+          requestSync();
+        },
+      },
+      {
+        text: item.isPrivate ? t("actions.makeVisible") : t("actions.makePrivate"),
+        onPress: () => {
+          setItemPrivate(item.id, !item.isPrivate);
+          reload();
+          requestSync();
+        },
+      },
+      {
+        text: t("actions.addToGallery"),
+        onPress: () => router.push(`/gallery/pick?itemId=${item.id}`),
+      },
+      { text: t("item.cancel"), style: "cancel" },
+    ]);
+  };
 
   return (
     <View style={styles.screen}>
@@ -87,20 +64,19 @@ export default function CollectionScreen() {
       {items.length === 0 ? (
         <EmptyState title={t("collection.emptyTitle")} colors={colors} showLogo />
       ) : (
-        // the photo wall flows RTL (Rami, 05.09.2026). FlashList cannot lay
-        // out columns in an RTL container, so the list is laid out LTR and
-        // mirrored, and every tile is mirrored back.
-        <View style={styles.gridWrap}>
-          <FlashList
-            data={items}
-            numColumns={grid.columns}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <ItemTile item={item} colors={colors} size={tileSize} />
-            )}
-            contentContainerStyle={styles.grid}
-          />
-        </View>
+        <>
+          <FilterBar items={items} filters={filters} onChange={setFilters} />
+          {hasActiveFilters(filters) ? (
+            <Text style={[styles.count, { color: colors.textSecondary }]}>
+              {t("collection.itemCount", { count: visible.length })}
+            </Text>
+          ) : null}
+          {visible.length === 0 ? (
+            <EmptyState title={t("filters.noResults")} colors={colors} />
+          ) : (
+            <ItemGrid items={visible} onLongPressItem={openItemActions} />
+          )}
+        </>
       )}
       <Pressable
         onPress={() => {
@@ -134,43 +110,11 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  gridWrap: {
-    flex: 1,
-    direction: "ltr",
-    transform: [{ scaleX: -1 }],
-  },
-  grid: {
-    padding: grid.gap,
-  },
-  tile: {
-    margin: grid.gap / 2,
-    overflow: "hidden",
-    transform: [{ scaleX: -1 }],
-  },
-  dot: {
-    position: "absolute",
-    top: 6,
-    right: 6,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    zIndex: 1,
-  },
-  nameBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingTop: 22,
-    paddingHorizontal: 6,
-    paddingBottom: 5,
-  },
-  name: {
-    fontFamily: typography.mono,
-    fontSize: 10,
-    color: photoOverlay.text,
+  count: {
+    fontSize: typography.sizes.caption,
     textAlign: "left",
-    writingDirection: "ltr",
+    paddingHorizontal: spacing.lg + spacing.xs,
+    paddingBottom: spacing.xs,
   },
   fab: {
     position: "absolute",

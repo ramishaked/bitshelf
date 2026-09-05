@@ -35,6 +35,22 @@ export default function RootLayout() {
           name="item/[id]"
           options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }}
         />
+        <Stack.Screen
+          name="gallery/new"
+          options={{ presentation: "modal", headerShown: true }}
+        />
+        <Stack.Screen
+          name="gallery/pick"
+          options={{ presentation: "modal", headerShown: true }}
+        />
+        <Stack.Screen
+          name="gallery/[id]"
+          options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }}
+        />
+        <Stack.Screen
+          name="gallery/smart"
+          options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }}
+        />
       </Stack>
     </GuestProvider>
   );
