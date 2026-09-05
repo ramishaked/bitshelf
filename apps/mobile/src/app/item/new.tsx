@@ -31,6 +31,7 @@ import {
   type AttributeField,
 } from "../../lib/retro";
 import { addPhotos, deletePhotoFiles } from "../../lib/photos";
+import { requestSync } from "../../lib/sync";
 import {
   getItem,
   newItemId,
@@ -168,6 +169,7 @@ export default function ItemFormScreen() {
     };
     saveItem(item);
     deletePhotoFiles(removedPhotos.current);
+    requestSync();
     router.back();
   };
 

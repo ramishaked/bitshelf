@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { StyleSheet, type ColorValue } from "react-native";
 import { Redirect, Tabs } from "expo-router";
 import { SymbolView, type SFSymbol } from "expo-symbols";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
 import { clerkEnabled, useGuest } from "../../lib/auth";
+import { setSyncTrigger, syncNow } from "../../lib/sync";
 import { useThemeColors } from "../../lib/theme";
 
 // The collection tab is the initial route. Without this, RTL mirroring makes
@@ -26,6 +28,8 @@ function TabsNav() {
     <Tabs
       initialRouteName="index"
       screenOptions={{
+        // screens render their own large right-aligned titles (design 01)
+        headerShown: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
@@ -33,9 +37,6 @@ function TabsNav() {
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: colors.line,
         },
-        headerStyle: { backgroundColor: colors.background },
-        headerTintColor: colors.textPrimary,
-        headerShadowVisible: false,
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
@@ -59,6 +60,23 @@ function TabsNav() {
   );
 }
 
+// pushes unsynced items to the server: on entry, every half minute, and
+// whenever the item form asks after a save
+function BackgroundSync() {
+  const { getToken } = useAuth();
+  useEffect(() => {
+    const run = () => void syncNow(getToken);
+    setSyncTrigger(run);
+    run();
+    const interval = setInterval(run, 30_000);
+    return () => {
+      clearInterval(interval);
+      setSyncTrigger(null);
+    };
+  }, [getToken]);
+  return null;
+}
+
 // Separate component so useAuth is only called when ClerkProvider exists
 function SignedInGate() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -68,7 +86,12 @@ function SignedInGate() {
   if (!isSignedIn) {
     return <Redirect href="/sign-in" />;
   }
-  return <TabsNav />;
+  return (
+    <>
+      <BackgroundSync />
+      <TabsNav />
+    </>
+  );
 }
 
 export default function TabsLayout() {

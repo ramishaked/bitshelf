@@ -107,3 +107,20 @@ export function getItem(id: string): LocalItem | null {
 export function deleteItem(id: string): void {
   db.runSync("DELETE FROM items WHERE id = ?", [id]);
 }
+
+export function listUnsynced(): LocalItem[] {
+  const rows = db.getAllSync<{ json: string }>(
+    "SELECT json FROM items WHERE synced = 0 ORDER BY created_at",
+  );
+  return rows.map(parseRow);
+}
+
+// only marks rows that were not edited again while the upload was in flight
+export function markSynced(sent: { id: string; updatedAt: string }[]): void {
+  for (const { id, updatedAt } of sent) {
+    db.runSync(
+      "UPDATE items SET synced = 1, json = json_set(json, '$.synced', json('true')) WHERE id = ? AND updated_at = ?",
+      [id, updatedAt],
+    );
+  }
+}
