@@ -3,6 +3,7 @@ import Constants from "expo-constants";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
 import { radius, spacing, type ThemeColors } from "@bitshelf/ui";
+import { ScreenHeader } from "../../components/screen-header";
 import { clerkEnabled } from "../../lib/auth";
 import { useThemeColors } from "../../lib/theme";
 
@@ -43,7 +44,9 @@ export default function ProfileScreen() {
   const version = Constants.expoConfig?.version ?? "0.1.0";
 
   return (
-    <View style={styles.screen}>
+    <View style={{ flex: 1 }}>
+      <ScreenHeader title={t("tabs.profile")} />
+      <View style={styles.screen}>
       <Row
         label={t("profile.language")}
         value={i18n.language === "he" ? "עברית" : "English"}
@@ -57,6 +60,7 @@ export default function ProfileScreen() {
           {t("profile.devNote")}
         </Text>
       )}
+      </View>
     </View>
   );
 }
@@ -64,7 +68,8 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
     gap: spacing.sm,
   },
   row: {

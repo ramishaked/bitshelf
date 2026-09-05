@@ -6,6 +6,7 @@
     "profile": "פרופיל"
   },
   "collection": {
+    "title": "האוסף",
     "emptyTitle": "המדף ריק, צלם פריט ראשון",
     "itemCount": "{{count}} פריטים"
   },

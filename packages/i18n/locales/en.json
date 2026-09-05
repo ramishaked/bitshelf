@@ -6,6 +6,7 @@
     "profile": "Profile"
   },
   "collection": {
+    "title": "Collection",
     "emptyTitle": "The shelf is empty. Photograph your first item.",
     "itemCount": "{{count}} items"
   },

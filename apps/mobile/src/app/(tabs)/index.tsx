@@ -13,6 +13,7 @@ import {
   typography,
   type ThemeColors,
 } from "@bitshelf/ui";
+import { ScreenHeader } from "../../components/screen-header";
 import { statusColor } from "../../lib/retro";
 import { listItems, type LocalItem } from "../../lib/store";
 import { useThemeColors } from "../../lib/theme";
@@ -74,6 +75,7 @@ export default function CollectionScreen() {
 
   return (
     <View style={styles.screen}>
+      <ScreenHeader title={t("collection.title")} />
       {items.length === 0 ? (
         <EmptyState title={t("collection.emptyTitle")} colors={colors} showLogo />
       ) : (
