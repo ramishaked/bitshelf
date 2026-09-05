@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import {
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,7 @@ import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-rou
 import { useTranslation } from "react-i18next";
 import {
   controls,
+  photoOverlay,
   radius,
   spacing,
   typography,
@@ -50,6 +52,67 @@ function Tag({
   );
 }
 
+function PhotoViewer({
+  photos,
+  initialIndex,
+  width,
+  onClose,
+}: {
+  photos: LocalItem["photos"];
+  initialIndex: number;
+  width: number;
+  onClose: () => void;
+}) {
+  const [current, setCurrent] = useState(initialIndex);
+  return (
+    <Modal visible animationType="fade" onRequestClose={onClose}>
+      <View style={[styles.viewer, { backgroundColor: photoOverlay.viewerBackground }]}>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentOffset={{ x: initialIndex * width, y: 0 }}
+          onMomentumScrollEnd={(e) =>
+            setCurrent(Math.round(e.nativeEvent.contentOffset.x / width))
+          }
+        >
+          {photos.map((photo) => (
+            <ScrollView
+              key={photo.id}
+              maximumZoomScale={4}
+              minimumZoomScale={1}
+              centerContent
+              contentContainerStyle={styles.viewerPage}
+              style={{ width }}
+            >
+              <Image
+                source={{ uri: photo.uri }}
+                style={{ width, height: "100%" }}
+                contentFit="contain"
+              />
+            </ScrollView>
+          ))}
+        </ScrollView>
+        <Pressable
+          onPress={onClose}
+          style={[styles.viewerClose, { backgroundColor: photoOverlay.viewerControl }]}
+        >
+          <Text style={{ color: photoOverlay.text, fontSize: 17, fontWeight: "600" }}>
+            {"×"}
+          </Text>
+        </Pressable>
+        {photos.length > 1 ? (
+          <View style={[styles.viewerCounter, { backgroundColor: photoOverlay.viewerControl }]}>
+            <Text style={styles.viewerCounterText}>
+              {`${current + 1}/${photos.length}`}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    </Modal>
+  );
+}
+
 function Card({
   label,
   colors,
@@ -76,6 +139,8 @@ export default function ItemScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [item, setItem] = useState<LocalItem | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
+  // full-screen photo viewer (spec 7.2: swipe, pinch to zoom)
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -136,13 +201,14 @@ export default function ItemScreen() {
                 setPhotoIndex(Math.round(e.nativeEvent.contentOffset.x / width))
               }
             >
-              {item.photos.map((photo) => (
-                <Image
-                  key={photo.id}
-                  source={{ uri: photo.uri }}
-                  style={{ width, height: 260 }}
-                  contentFit="cover"
-                />
+              {item.photos.map((photo, index) => (
+                <Pressable key={photo.id} onPress={() => setViewerIndex(index)}>
+                  <Image
+                    source={{ uri: photo.uri }}
+                    style={{ width, height: 260 }}
+                    contentFit="cover"
+                  />
+                </Pressable>
               ))}
             </ScrollView>
             {item.photos.length > 1 ? (
@@ -274,6 +340,15 @@ export default function ItemScreen() {
             </Text>
           ) : null}
 
+          {viewerIndex != null ? (
+            <PhotoViewer
+              photos={item.photos}
+              initialIndex={viewerIndex}
+              width={width}
+              onClose={() => setViewerIndex(null)}
+            />
+          ) : null}
+
           <View style={styles.actions}>
             <Pressable
               onPress={() => router.push(`/item/new?id=${item.id}`)}
@@ -393,6 +468,38 @@ const styles = StyleSheet.create({
   syncNote: {
     fontSize: typography.sizes.caption,
     textAlign: "center",
+  },
+  viewer: {
+    flex: 1,
+  },
+  viewerPage: {
+    flexGrow: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  viewerClose: {
+    position: "absolute",
+    top: 58,
+    end: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  viewerCounter: {
+    position: "absolute",
+    bottom: 44,
+    alignSelf: "center",
+    borderRadius: radius.chip,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 1,
+  },
+  viewerCounterText: {
+    color: photoOverlay.text,
+    fontFamily: typography.mono,
+    fontSize: 13,
+    writingDirection: "ltr",
   },
   actions: {
     flexDirection: "row",

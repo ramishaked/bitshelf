@@ -87,7 +87,9 @@ export default function CollectionScreen() {
       {items.length === 0 ? (
         <EmptyState title={t("collection.emptyTitle")} colors={colors} showLogo />
       ) : (
-        // the photo wall flows LTR like the design, latin names read naturally
+        // the photo wall flows RTL (Rami, 05.09.2026). FlashList cannot lay
+        // out columns in an RTL container, so the list is laid out LTR and
+        // mirrored, and every tile is mirrored back.
         <View style={styles.gridWrap}>
           <FlashList
             data={items}
@@ -135,6 +137,7 @@ const styles = StyleSheet.create({
   gridWrap: {
     flex: 1,
     direction: "ltr",
+    transform: [{ scaleX: -1 }],
   },
   grid: {
     padding: grid.gap,
@@ -142,6 +145,7 @@ const styles = StyleSheet.create({
   tile: {
     margin: grid.gap / 2,
     overflow: "hidden",
+    transform: [{ scaleX: -1 }],
   },
   dot: {
     position: "absolute",
