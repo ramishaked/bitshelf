@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import { radius, spacing, type ThemeColors } from "@bitshelf/ui";
 import { ScreenHeader } from "../../components/screen-header";
 import { clerkEnabled } from "../../lib/auth";
+import { exportCsv } from "../../lib/export";
 import {
   setThemeMode,
   useThemeColors,
@@ -71,6 +72,15 @@ export default function ProfileScreen() {
           value={t(`profile.appearance_${mode}`)}
           colors={colors}
         />
+      </Pressable>
+      <Pressable
+        onPress={() =>
+          void exportCsv().catch(() => {
+            // share sheet dismissed or write failed, nothing to do
+          })
+        }
+      >
+        <Row label={t("profile.exportCsv")} value="CSV" colors={colors} />
       </Pressable>
       <Row label={t("profile.version")} value={version} colors={colors} />
       {clerkEnabled ? (

@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { EmptyState, radius, spacing, typography } from "@bitshelf/ui";
+import { Dashboard } from "../../components/dashboard";
 import { FilterBar } from "../../components/filter-bar";
 import { ItemGrid } from "../../components/item-grid";
 import { ScreenHeader } from "../../components/screen-header";
@@ -24,6 +25,12 @@ export default function CollectionScreen() {
   const router = useRouter();
   const [items, setItems] = useState<LocalItem[]>([]);
   const [filters, setFilters] = useState(emptyFilters);
+  // sub tab inside the collection (spec 7.1a): gallery stays the default,
+  // ?view=dashboard deep links straight to the dashboard
+  const { view: viewParam } = useLocalSearchParams<{ view?: string }>();
+  const [view, setView] = useState<"gallery" | "dashboard">(
+    viewParam === "dashboard" ? "dashboard" : "gallery",
+  );
 
   const reload = useCallback(() => setItems(listItems()), []);
   useFocusEffect(reload);
@@ -66,16 +73,51 @@ export default function CollectionScreen() {
         <EmptyState title={t("collection.emptyTitle")} colors={colors} showLogo />
       ) : (
         <>
-          <FilterBar items={items} filters={filters} onChange={setFilters} />
-          {hasActiveFilters(filters) ? (
-            <Text style={[styles.count, { color: colors.textSecondary }]}>
-              {t("collection.itemCount", { count: visible.length })}
-            </Text>
-          ) : null}
-          {visible.length === 0 ? (
-            <EmptyState title={t("filters.noResults")} colors={colors} />
+          <View style={[styles.segmented, { backgroundColor: colors.surface }]}>
+            {(["gallery", "dashboard"] as const).map((key) => (
+              <Pressable
+                key={key}
+                onPress={() => setView(key)}
+                style={[
+                  styles.segment,
+                  view === key && { backgroundColor: colors.surface2 },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.segmentLabel,
+                    {
+                      color: view === key ? colors.textPrimary : colors.textSecondary,
+                    },
+                  ]}
+                >
+                  {t(`dashboard.${key}`)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          {view === "dashboard" ? (
+            <Dashboard
+              items={items}
+              onFilter={(partial) => {
+                setFilters({ ...emptyFilters, ...partial });
+                setView("gallery");
+              }}
+            />
           ) : (
-            <ItemGrid items={visible} onLongPressItem={openItemActions} />
+            <>
+              <FilterBar items={items} filters={filters} onChange={setFilters} />
+              {hasActiveFilters(filters) ? (
+                <Text style={[styles.count, { color: colors.textSecondary }]}>
+                  {t("collection.itemCount", { count: visible.length })}
+                </Text>
+              ) : null}
+              {visible.length === 0 ? (
+                <EmptyState title={t("filters.noResults")} colors={colors} />
+              ) : (
+                <ItemGrid items={visible} onLongPressItem={openItemActions} />
+              )}
+            </>
           )}
         </>
       )}
@@ -125,6 +167,23 @@ const styles = StyleSheet.create({
     textAlign: "left",
     paddingHorizontal: spacing.lg + spacing.xs,
     paddingBottom: spacing.xs,
+  },
+  segmented: {
+    flexDirection: "row",
+    marginHorizontal: spacing.lg + spacing.xs,
+    marginBottom: spacing.sm,
+    borderRadius: radius.tag + 2,
+    padding: 2,
+  },
+  segment: {
+    flex: 1,
+    borderRadius: radius.tag,
+    paddingVertical: spacing.xs + 2,
+    alignItems: "center",
+  },
+  segmentLabel: {
+    fontSize: typography.sizes.secondary,
+    fontWeight: "600",
   },
   fab: {
     position: "absolute",

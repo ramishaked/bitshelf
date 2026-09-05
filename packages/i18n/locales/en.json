@@ -149,6 +149,21 @@
     "cib": "CIB",
     "sealed": "Sealed"
   },
+  "dashboard": {
+    "gallery": "Gallery",
+    "dashboard": "Dashboard",
+    "items": "items",
+    "addedThisMonth_one": "1 added this month",
+    "addedThisMonth_other": "{{count}} added this month",
+    "estimate": "Estimate",
+    "to": "to",
+    "byManufacturer": "By manufacturer",
+    "byCategory": "By category",
+    "needsAttention": "Needs attention",
+    "noLocation": "without a location",
+    "duplicates": "duplicates",
+    "fromScan": "from scan only"
+  },
   "filters": {
     "searchPlaceholder": "Search the collection",
     "favorites": "Favorites",
@@ -211,6 +226,7 @@
     "appearance_system": "Automatic",
     "appearance_dark": "Dark",
     "appearance_light": "Light",
+    "exportCsv": "Export collection",
     "defaultCurrency": "Default currency",
     "signOut": "Sign out",
     "devNote": "Clerk is not configured. Development mode, no sign-in.",

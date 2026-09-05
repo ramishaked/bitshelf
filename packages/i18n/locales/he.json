@@ -149,6 +149,21 @@
     "cib": "CIB",
     "sealed": "חתום"
   },
+  "dashboard": {
+    "gallery": "גלריה",
+    "dashboard": "דשבורד",
+    "items": "פריטים",
+    "addedThisMonth_one": "אחד נוסף החודש",
+    "addedThisMonth_other": "{{count}} נוספו החודש",
+    "estimate": "הערכה",
+    "to": "עד",
+    "byManufacturer": "לפי יצרן",
+    "byCategory": "לפי קטגוריה",
+    "needsAttention": "דורש טיפול",
+    "noLocation": "ללא מיקום",
+    "duplicates": "כפילויות",
+    "fromScan": "מסריקה בלבד"
+  },
   "filters": {
     "searchPlaceholder": "חיפוש באוסף",
     "favorites": "מועדפים",
@@ -211,6 +226,7 @@
     "appearance_system": "אוטומטי",
     "appearance_dark": "כהה",
     "appearance_light": "בהיר",
+    "exportCsv": "ייצוא האוסף",
     "defaultCurrency": "מטבע ברירת מחדל",
     "signOut": "התנתקות",
     "devNote": "Clerk לא מוגדר. מצב פיתוח, ללא התחברות.",
