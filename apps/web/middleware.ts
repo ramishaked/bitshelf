@@ -6,6 +6,8 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/g(.*)",
   "/api/g(.*)",
+  // reads shared, non-sensitive reference data; POST checks auth itself
+  "/api/model-info(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
 ]);
