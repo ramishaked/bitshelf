@@ -30,6 +30,10 @@ export default function RootLayout() {
           options={{ presentation: "modal", headerShown: true }}
         />
         <Stack.Screen name="capture" options={{ presentation: "fullScreenModal" }} />
+        <Stack.Screen
+          name="shelf-scan"
+          options={{ presentation: "modal", headerShown: true, gestureEnabled: false }}
+        />
         <Stack.Screen name="item/confirm" options={{ gestureEnabled: false }} />
         <Stack.Screen
           name="item/[id]"

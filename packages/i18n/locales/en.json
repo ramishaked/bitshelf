@@ -63,7 +63,27 @@
   },
   "fab": {
     "capture": "Photograph item",
+    "shelfScan": "Shelf scan",
     "manual": "Add manually"
+  },
+  "shelfScan": {
+    "title": "Shelf scan",
+    "explain": "Photograph a whole shelf, the AI detects the items, you check what to keep. A quick first-pass cataloging tool, not a replacement for single item capture.",
+    "limits": "Detection is good for machines and consoles, fair for software boxes seen from the side, weak for loose floppies. Scanned items carry a \"from scan\" tag until photographed up close.",
+    "scanning": "Scanning the shelf. This takes up to half a minute.",
+    "found_one": "1 item detected",
+    "found_other": "{{count}} items detected",
+    "nothingFound": "No items detected in the photo",
+    "failed": "The scan failed. You can try again.",
+    "closeUp": "Shoot close-up",
+    "closeUpTaken": "Close-up taken",
+    "sharedLocation": "Shared storage location (shelf, cabinet)",
+    "saveAll_one": "Save 1 item",
+    "saveAll_other": "Save {{count}} items",
+    "savedTitle_one": "1 item saved to the collection",
+    "savedTitle_other": "{{count}} items saved to the collection",
+    "done": "Done",
+    "fromScanTag": "From scan"
   },
   "status": {
     "working": "Working",

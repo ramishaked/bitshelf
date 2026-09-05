@@ -266,6 +266,11 @@ export default function ItemScreen() {
                 {t("item.toComplete")}
               </Tag>
             ) : null}
+            {item.tags?.includes("from_scan") ? (
+              <Tag colors={colors} textColor={colors.textSecondary}>
+                {t("shelfScan.fromScanTag")}
+              </Tag>
+            ) : null}
           </View>
 
           {detailFields.length > 0 ? (

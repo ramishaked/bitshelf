@@ -28,6 +28,8 @@ export interface LocalItem {
   purchaseSource: string | null;
   isPrivate: boolean;
   isFavorite: boolean;
+  // "from_scan" marks shelf scan items until they get a close-up (spec 6.3)
+  tags?: string[];
   photos: LocalPhoto[];
   createdAt: string;
   updatedAt: string;

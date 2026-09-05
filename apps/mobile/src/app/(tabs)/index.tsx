@@ -7,6 +7,7 @@ import { FilterBar } from "../../components/filter-bar";
 import { ItemGrid } from "../../components/item-grid";
 import { ScreenHeader } from "../../components/screen-header";
 import { clerkEnabled } from "../../lib/auth";
+import { shelfScanEnabled } from "../../lib/flags";
 import { applyFilters, emptyFilters, hasActiveFilters } from "../../lib/filters";
 import {
   listItems,
@@ -88,6 +89,15 @@ export default function CollectionScreen() {
           }
           Alert.alert(t("item.newTitle"), "", [
             { text: t("fab.capture"), onPress: () => router.push("/capture") },
+            // spec 6.3: experimental, Beta label, behind a feature flag
+            ...(shelfScanEnabled
+              ? [
+                  {
+                    text: `${t("fab.shelfScan")} (Beta)`,
+                    onPress: () => router.push("/shelf-scan"),
+                  },
+                ]
+              : []),
             { text: t("fab.manual"), onPress: () => router.push("/item/new") },
             { text: t("item.cancel"), style: "cancel" },
           ]);

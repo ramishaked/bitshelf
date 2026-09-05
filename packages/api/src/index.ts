@@ -11,3 +11,10 @@ export {
   type IdentifyOutcome,
   type IdentifyResult,
 } from "./identify";
+export {
+  scanShelf,
+  SHELF_SCAN_MODEL,
+  type ShelfScanBox,
+  type ShelfScanItem,
+  type ShelfScanOutcome,
+} from "./shelf-scan";

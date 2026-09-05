@@ -19,6 +19,7 @@ interface ClientItem {
   purchaseSource: string | null;
   isPrivate: boolean;
   isFavorite: boolean;
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -128,6 +129,9 @@ export async function POST(request: Request) {
       purchaseSource: ci.purchaseSource ?? null,
       isPrivate: ci.isPrivate ?? true,
       isFavorite: ci.isFavorite ?? false,
+      tags: Array.isArray(ci.tags)
+        ? ci.tags.filter((v): v is string => typeof v === "string").slice(0, 20)
+        : [],
       createdAt: new Date(ci.createdAt),
       updatedAt: new Date(ci.updatedAt),
     };
