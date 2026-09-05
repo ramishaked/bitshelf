@@ -14,6 +14,13 @@ export interface LocalPhoto {
   remoteThumbUrl?: string;
 }
 
+export interface LocalRepair {
+  id: string;
+  date: string;
+  description: string;
+  cost: string | null;
+}
+
 export interface LocalItem {
   id: string;
   category: string;
@@ -30,6 +37,17 @@ export interface LocalItem {
   isFavorite: boolean;
   // "from_scan" marks shelf scan items until they get a close-up (spec 6.3)
   tags?: string[];
+  // sets (spec 4.3): depth 1 only, a child cannot have children
+  parentItemId?: string | null;
+  // filled by the value engine on the server (week 6), read-only on device
+  valueLow?: string | null;
+  valueFair?: string | null;
+  valueHigh?: string | null;
+  valueCurrency?: "ILS" | "USD" | null;
+  valueConfidence?: string | null;
+  valueUpdatedAt?: string | null;
+  // repair log (spec 7.2), local only for now
+  repairs?: LocalRepair[];
   photos: LocalPhoto[];
   createdAt: string;
   updatedAt: string;
@@ -92,6 +110,13 @@ export function setSetting(key: string, value: string): void {
   ]);
 }
 
+// lightweight migration: older installs lack the parent column
+try {
+  db.execSync("ALTER TABLE items ADD COLUMN parent_item_id TEXT");
+} catch {
+  // column already exists
+}
+
 export function newItemId(): string {
   return randomUUID();
 }
@@ -105,8 +130,9 @@ export function saveItem(item: LocalItem): void {
   db.runSync(
     `INSERT OR REPLACE INTO items
       (id, title, category, manufacturer, model, year, working_status,
-       condition_grade, is_private, is_favorite, created_at, updated_at, synced, json)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       condition_grade, is_private, is_favorite, parent_item_id,
+       created_at, updated_at, synced, json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       item.id,
       item.title,
@@ -118,12 +144,58 @@ export function saveItem(item: LocalItem): void {
       item.conditionGrade,
       item.isPrivate ? 1 : 0,
       item.isFavorite ? 1 : 0,
+      item.parentItemId ?? null,
       item.createdAt,
       item.updatedAt,
       item.synced ? 1 : 0,
       JSON.stringify(item),
     ],
   );
+}
+
+// --- sets (spec 4.3): depth 1, parent shows children as a row ---
+
+export function listChildren(parentId: string): LocalItem[] {
+  const rows = db.getAllSync<{ json: string }>(
+    "SELECT json FROM items WHERE parent_item_id = ? ORDER BY created_at",
+    [parentId],
+  );
+  return rows.map(parseRow);
+}
+
+export function setItemParent(childId: string, parentId: string | null): void {
+  const child = getItem(childId);
+  if (!child) return;
+  saveItem({
+    ...child,
+    parentItemId: parentId,
+    updatedAt: new Date().toISOString(),
+    synced: false,
+  });
+}
+
+// candidates for "add to set": parentless, childless, not the parent itself
+export function listSetCandidates(parentId: string): LocalItem[] {
+  const rows = db.getAllSync<{ json: string }>(
+    `SELECT json FROM items
+     WHERE id != ? AND parent_item_id IS NULL
+       AND id NOT IN (SELECT DISTINCT parent_item_id FROM items WHERE parent_item_id IS NOT NULL)
+     ORDER BY created_at DESC`,
+    [parentId],
+  );
+  return rows.map(parseRow);
+}
+
+export function addRepair(itemId: string, repair: LocalRepair): void {
+  const item = getItem(itemId);
+  if (!item) return;
+  saveItem({
+    ...item,
+    repairs: [...(item.repairs ?? []), repair],
+    updatedAt: new Date().toISOString(),
+    // repairs are local only for now, the row itself still resyncs harmlessly
+    synced: false,
+  });
 }
 
 function parseRow(row: { json: string }): LocalItem {
@@ -164,9 +236,9 @@ export function clearDeletedIds(ids: string[]): void {
 }
 
 // pull merge (spec 10: the server is the backup): inserts server items this
-// device has never seen. Local rows always win, tombstoned ids stay dead.
-// One exception: a synced local item with no photos adopts server photos,
-// so photos attached elsewhere reach this device.
+// device has never seen. Local rows always win for user-edited fields,
+// tombstoned ids stay dead. Synced local rows still adopt server-owned
+// data: photos when the device has none, value fields, and set links.
 export function mergeServerItems(serverItems: LocalItem[]): number {
   const tombstones = new Set(listDeletedIds());
   let added = 0;
@@ -174,8 +246,23 @@ export function mergeServerItems(serverItems: LocalItem[]): number {
     if (tombstones.has(item.id)) continue;
     const existing = getItem(item.id);
     if (existing) {
-      if (existing.synced && existing.photos.length === 0 && item.photos.length > 0) {
-        updateItemPhotos(item.id, item.photos);
+      if (!existing.synced) continue;
+      const updated: LocalItem = {
+        ...existing,
+        photos:
+          existing.photos.length === 0 && item.photos.length > 0
+            ? item.photos
+            : existing.photos,
+        parentItemId: item.parentItemId ?? null,
+        valueLow: item.valueLow ?? null,
+        valueFair: item.valueFair ?? null,
+        valueHigh: item.valueHigh ?? null,
+        valueCurrency: item.valueCurrency ?? null,
+        valueConfidence: item.valueConfidence ?? null,
+        valueUpdatedAt: item.valueUpdatedAt ?? null,
+      };
+      if (JSON.stringify(updated) !== JSON.stringify(existing)) {
+        saveItem(updated);
       }
       continue;
     }

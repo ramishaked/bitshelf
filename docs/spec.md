@@ -171,6 +171,8 @@ id, item_id (או manufacturer+model אם לא קשור לפריט), source (eba
 | summary_he / summary_en | text | 3 עד 5 משפטים: מה זה, למה זה חשוב, מה מיוחד בגרסה |
 | specs | jsonb | CPU, מהירות, RAM, גרפיקה, קול, מדיה, יציאות, מחיר השקה. מפתחות לפי ה-CollectionType |
 | links | jsonb | רשימה של {label, url}: Wikipedia (he/en), Old-Computers.com, Apple2History, AtariAge, Wikipedia של המשחק |
+| tips | jsonb | "שווה לדעת": 1 עד 3 נקודות לאספן לכל שפה, {he: [], en: []}. נוסף לפי ארטבורד 05 בעיצוב המאושר |
+| known_versions | text | רשימת גרסאות מוכרות, למשל "ROM 255, 0, 3, 4X". נוסף לפי ארטבורד 05 |
 | source | enum | ai_generated / user_edited / curated |
 | generated_at / updated_at | timestamp | |
 

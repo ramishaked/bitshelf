@@ -36,8 +36,49 @@
     "untitled": "פריט ללא שם",
     "toComplete": "להשלים",
     "details": "פרטים טכניים",
+    "detailsSummary": "מספר סידורי, הערות",
+    "cosmeticShort": "חיצוני",
     "noPhoto": "אין תמונה",
-    "notSynced": "טרם סונכרן לשרת"
+    "notSynced": "טרם סונכרן לשרת",
+    "share": "שתף",
+    "tapToReveal": "הקשה להצגה",
+    "valueSection": "שווי משוער",
+    "valueUpdated": "עודכן",
+    "valueEstimate": "הערכה",
+    "confidence_low": "ביטחון נמוך",
+    "confidence_medium": "ביטחון בינוני",
+    "confidence_high": "ביטחון גבוה"
+  },
+  "modelInfo": {
+    "card": "על הדגם",
+    "title": "מידע על הדגם",
+    "loading": "אוסף מידע על הדגם, זה לוקח דקה או שתיים",
+    "unavailable": "אין עדיין מידע על הדגם הזה",
+    "specs": "מפרט טכני",
+    "history": "רקע היסטורי",
+    "tips": "שווה לדעת",
+    "versions": "גרסאות ידועות",
+    "more": "למידע המלא",
+    "disclaimer": "המידע נוצר על ידי AI לפי הדגם שזוהה. ייתכנו אי דיוקים."
+  },
+  "set": {
+    "title": "סט",
+    "itemCount_one": "פריט אחד",
+    "itemCount_other": "{{count}} פריטים",
+    "add": "הוסף לסט",
+    "partOf": "חלק מסט",
+    "remove": "הסרה מהסט",
+    "pickTitle": "הוספה לסט",
+    "pickEmpty": "אין פריטים פנויים להוספה"
+  },
+  "repairs": {
+    "title": "יומן תיקונים",
+    "count_one": "רשומה אחת",
+    "count_other": "{{count}} רשומות",
+    "empty": "אין תיקונים עדיין",
+    "descPlaceholder": "מה תוקן",
+    "costPlaceholder": "עלות בשקלים (לא חובה)",
+    "add": "הוספה"
   },
   "capture": {
     "guide": "מקם את הפריט במסגרת",

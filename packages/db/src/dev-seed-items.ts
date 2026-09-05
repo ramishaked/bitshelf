@@ -248,11 +248,32 @@ const DEMO_PHOTOS: Record<string, string> = {
   "Prince of Persia (Apple II)": "Floppy_disk_90mm.JPG",
 };
 
+// fictional demo values (ILS): [low, fair, high]. Real values arrive with
+// the eBay engine in week 6, these exist so the value card renders.
+const DEMO_VALUES: Record<string, [number, number, number]> = {
+  "Apple II Plus": [1800, 2600, 3800],
+  "Apple IIe": [700, 1100, 1600],
+  "Apple IIGS (Woz Edition)": [1500, 2400, 3600],
+  "Macintosh 128K": [2500, 4000, 6500],
+  "Macintosh SE/30": [1200, 2000, 3200],
+  "Commodore 64 (Breadbin)": [350, 550, 850],
+  "Amiga 500": [600, 900, 1400],
+  "Atari 2600 (Heavy Sixer)": [500, 800, 1300],
+  "VisiCalc (Apple II)": [900, 1500, 2400],
+};
+
+// one demo set: peripherals attached to the Apple IIe (spec 4.3, depth 1)
+const DEMO_SET: { parent: string; children: string[] } = {
+  parent: "Apple IIe",
+  children: ["Disk II Drive", "Apple Monitor II", "Apple Joystick IIe"],
+};
+
 async function main() {
   const action = process.argv[2];
   const email = process.argv[3];
-  if ((action !== "create" && action !== "remove" && action !== "photos") || !email) {
-    console.log("usage: tsx src/dev-seed-items.ts create|photos|remove <email>");
+  const actions = ["create", "remove", "photos", "extras"];
+  if (!actions.includes(action ?? "") || !email) {
+    console.log("usage: tsx src/dev-seed-items.ts create|photos|extras|remove <email>");
     process.exit(1);
   }
   const db = createDb(process.env.DATABASE_URL ?? "");
@@ -286,6 +307,45 @@ async function main() {
       })),
     );
     console.log(`attached photos to ${withPhoto.length} demo items`);
+    return;
+  }
+
+  if (action === "extras") {
+    const demoRows = await db
+      .select({ id: items.id, title: items.title })
+      .from(items)
+      .where(and(eq(items.ownerId, user.id), arrayContains(items.tags, ["demo"])));
+    const byTitle = new Map(demoRows.map((r) => [r.title, r.id]));
+
+    let valued = 0;
+    for (const [title, [low, fair, high]] of Object.entries(DEMO_VALUES)) {
+      const itemId = byTitle.get(title);
+      if (!itemId) continue;
+      await db
+        .update(items)
+        .set({
+          valueLow: String(low),
+          valueFair: String(fair),
+          valueHigh: String(high),
+          valueCurrency: "ILS",
+          valueConfidence: "medium",
+          valueUpdatedAt: new Date(),
+        })
+        .where(eq(items.id, itemId));
+      valued += 1;
+    }
+
+    const parentId = byTitle.get(DEMO_SET.parent);
+    let attached = 0;
+    if (parentId) {
+      for (const childTitle of DEMO_SET.children) {
+        const childId = byTitle.get(childTitle);
+        if (!childId) continue;
+        await db.update(items).set({ parentItemId: parentId }).where(eq(items.id, childId));
+        attached += 1;
+      }
+    }
+    console.log(`set values on ${valued} items, attached ${attached} children to ${DEMO_SET.parent}`);
     return;
   }
 

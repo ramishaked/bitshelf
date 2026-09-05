@@ -12,6 +12,12 @@ export {
   type IdentifyResult,
 } from "./identify";
 export {
+  generateModelReference,
+  MODEL_REFERENCE_MODEL,
+  type ModelReferenceData,
+  type ModelReferenceOutcome,
+} from "./model-reference";
+export {
   scanShelf,
   SHELF_SCAN_MODEL,
   type ShelfScanBox,

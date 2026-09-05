@@ -20,6 +20,7 @@ interface ClientItem {
   isPrivate: boolean;
   isFavorite: boolean;
   tags?: string[];
+  parentItemId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -119,6 +120,36 @@ export async function POST(request: Request) {
   const clientGalleries = (body?.galleries ?? []).filter(isValidGallery).slice(0, 50);
   const clientPhotos = (body?.photos ?? []).filter(isValidPhoto).slice(0, 200);
 
+  // depth 1 (spec 4.3): a parent must be an owned item that is itself
+  // parentless; anything else is stored without a parent
+  const parentIds = [
+    ...new Set(
+      clientItems
+        .map((ci) => ci.parentItemId)
+        .filter((v): v is string => typeof v === "string" && UUID_RE.test(v)),
+    ),
+  ];
+  const validParents =
+    parentIds.length > 0
+      ? await db
+          .select({ id: items.id })
+          .from(items)
+          .where(
+            and(
+              eq(items.ownerId, user.id),
+              inArray(items.id, parentIds),
+              sql`${items.parentItemId} IS NULL`,
+            ),
+          )
+      : [];
+  const validParentIds = new Set(validParents.map((r) => r.id));
+  // a parent pushed in the same batch counts too, when it arrives parentless
+  for (const ci of clientItems) {
+    if (ci.parentItemId == null && parentIds.includes(ci.id)) {
+      validParentIds.add(ci.id);
+    }
+  }
+
   const syncedIds: string[] = [];
   for (const ci of clientItems) {
     const values = {
@@ -140,6 +171,10 @@ export async function POST(request: Request) {
       tags: Array.isArray(ci.tags)
         ? ci.tags.filter((v): v is string => typeof v === "string").slice(0, 20)
         : [],
+      parentItemId:
+        typeof ci.parentItemId === "string" && validParentIds.has(ci.parentItemId)
+          ? ci.parentItemId
+          : null,
       createdAt: new Date(ci.createdAt),
       updatedAt: new Date(ci.updatedAt),
     };
@@ -284,6 +319,13 @@ export async function POST(request: Request) {
     isPrivate: row.isPrivate,
     isFavorite: row.isFavorite,
     tags: row.tags,
+    parentItemId: row.parentItemId,
+    valueLow: row.valueLow,
+    valueFair: row.valueFair,
+    valueHigh: row.valueHigh,
+    valueCurrency: row.valueCurrency,
+    valueConfidence: row.valueConfidence,
+    valueUpdatedAt: row.valueUpdatedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     photos: (photosByItem.get(row.id) ?? [])

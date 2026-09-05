@@ -1,17 +1,21 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Modal,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
+  TextInput,
   View,
   useWindowDimensions,
 } from "react-native";
 import { Image } from "expo-image";
+import { randomUUID } from "expo-crypto";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@clerk/clerk-expo";
 import {
   controls,
   photoOverlay,
@@ -20,6 +24,7 @@ import {
   typography,
   type ThemeColors,
 } from "@bitshelf/ui";
+import { clerkEnabled } from "../../lib/auth";
 import {
   conditionLabels,
   fieldsForCategory,
@@ -27,8 +32,21 @@ import {
   isLatinField,
   statusColor,
 } from "../../lib/retro";
+import {
+  ensureModelInfo,
+  getCachedModelInfo,
+  type ModelInfo,
+} from "../../lib/model-info";
 import { deletePhotoFiles } from "../../lib/photos";
-import { deleteItem, getItem, type LocalItem } from "../../lib/store";
+import {
+  addRepair,
+  deleteItem,
+  getItem,
+  listChildren,
+  setItemParent,
+  type LocalItem,
+} from "../../lib/store";
+import { requestSync } from "../../lib/sync";
 import { useThemeColors } from "../../lib/theme";
 
 function Tag({
@@ -113,21 +131,54 @@ function PhotoViewer({
   );
 }
 
-function Card({
+// Collapsed by default (spec 7.2, artboard 02): header row with a summary,
+// tap expands the content
+function FoldCard({
   label,
+  summary,
   colors,
   children,
 }: {
   label: string;
+  summary: string;
   colors: ThemeColors;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
   return (
     <View style={[styles.card, { backgroundColor: colors.surface }]}>
-      <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{label}</Text>
-      {children}
+      <Pressable onPress={() => setOpen((v) => !v)} style={styles.foldHeader}>
+        <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{label}</Text>
+        <View style={styles.foldSummary}>
+          {!open ? (
+            <Text
+              numberOfLines={1}
+              style={[styles.foldSummaryText, { color: colors.textPrimary }]}
+            >
+              {summary}
+            </Text>
+          ) : null}
+          <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+            {open ? "▴" : "▾"}
+          </Text>
+        </View>
+      </Pressable>
+      {open ? <View style={styles.foldBody}>{children}</View> : null}
     </View>
   );
+}
+
+const CONFIDENCE_KEY: Record<string, string> = {
+  low: "item.confidence_low",
+  medium: "item.confidence_medium",
+  high: "item.confidence_high",
+};
+
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
 
 export default function ItemScreen() {
@@ -138,15 +189,32 @@ export default function ItemScreen() {
   const { width } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [item, setItem] = useState<LocalItem | null>(null);
+  const [children, setChildren] = useState<LocalItem[]>([]);
+  const [parent, setParent] = useState<LocalItem | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
-  // full-screen photo viewer (spec 7.2: swipe, pinch to zoom)
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [serialShown, setSerialShown] = useState(false);
+  const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
+  const [repairText, setRepairText] = useState("");
+  const [repairCost, setRepairCost] = useState("");
 
-  useFocusEffect(
-    useCallback(() => {
-      setItem(id ? getItem(id) : null);
-    }, [id]),
-  );
+  const reload = useCallback(() => {
+    const current = id ? getItem(id) : null;
+    setItem(current);
+    setChildren(current ? listChildren(current.id) : []);
+    setParent(current?.parentItemId ? getItem(current.parentItemId) : null);
+  }, [id]);
+  useFocusEffect(reload);
+
+  const manufacturer = (item?.attributes.manufacturer as string) ?? "";
+  const model = (item?.attributes.model as string) ?? "";
+  const variant = (item?.attributes.variant as string) ?? "";
+
+  // "About the model" (spec 4.6.1): cache first; the fetcher component below
+  // asks the server and shows a skeleton while generation runs in background
+  useEffect(() => {
+    setModelInfo(manufacturer && model ? getCachedModelInfo(manufacturer, model) : null);
+  }, [manufacturer, model]);
 
   if (!item) {
     return <View style={[styles.screen, { backgroundColor: colors.background }]} />;
@@ -159,8 +227,14 @@ export default function ItemScreen() {
   const incomplete = isIncomplete(item.category, item.attributes, item.conditionGrade);
   const detailFields = fieldsForCategory(item.category).filter((f) => {
     const v = item.attributes[f.key];
-    return v != null && v !== "" && f.key !== "working_status";
+    return (
+      v != null && v !== "" && f.key !== "working_status" && f.key !== "serial_number"
+    );
   });
+  const serial = item.attributes.serial_number as string | undefined;
+  const repairs = item.repairs ?? [];
+  const hasValue = item.valueFair != null || item.valueLow != null;
+  const currencySign = item.valueCurrency === "USD" ? "$" : "₪";
 
   const confirmDelete = () => {
     Alert.alert(t("item.deleteConfirmTitle"), t("item.deleteConfirmBody"), [
@@ -171,10 +245,46 @@ export default function ItemScreen() {
         onPress: () => {
           deletePhotoFiles(item.photos);
           deleteItem(item.id);
+          requestSync();
           router.back();
         },
       },
     ]);
+  };
+
+  const shareItem = () => {
+    // share sheet with the public facts only (spec 7.2: never the serial)
+    const parts = [item.title, year != null ? String(year) : null].filter(Boolean);
+    void Share.share({ message: parts.join(", ") });
+  };
+
+  const removeChild = (child: LocalItem) => {
+    Alert.alert(child.title, "", [
+      { text: t("item.cancel"), style: "cancel" },
+      {
+        text: t("set.remove"),
+        style: "destructive",
+        onPress: () => {
+          setItemParent(child.id, null);
+          reload();
+          requestSync();
+        },
+      },
+    ]);
+  };
+
+  const submitRepair = () => {
+    const description = repairText.trim();
+    if (!description) return;
+    addRepair(item.id, {
+      id: randomUUID(),
+      date: new Date().toISOString(),
+      description,
+      cost: repairCost.trim() || null,
+    });
+    setRepairText("");
+    setRepairCost("");
+    reload();
   };
 
   return (
@@ -247,15 +357,12 @@ export default function ItemScreen() {
           </Text>
 
           <View style={styles.tagsRow}>
-            <Tag
-              colors={colors}
-              dotColor={statusColor(workingStatus, colors)}
-            >
+            <Tag colors={colors} dotColor={statusColor(workingStatus, colors)}>
               {t(`status.${workingStatus ?? "untested"}`)}
             </Tag>
             {item.conditionGrade != null ? (
               <Tag colors={colors}>
-                {`${item.conditionGrade}/5 ${conditionLabels[String(item.conditionGrade)]?.[lang] ?? ""}`}
+                {`${t("item.cosmeticShort")} ${item.conditionGrade}/5`}
               </Tag>
             ) : null}
             {completeness ? (
@@ -273,8 +380,205 @@ export default function ItemScreen() {
             ) : null}
           </View>
 
-          {detailFields.length > 0 ? (
-            <Card label={t("item.details")} colors={colors}>
+          {hasValue ? (
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
+              <View style={styles.valueHeader}>
+                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+                  {t("item.valueSection")}
+                </Text>
+                <Text style={[styles.valueDate, { color: colors.textSecondary }]}>
+                  {`${t("item.valueUpdated")} ${formatDate(item.valueUpdatedAt)}`}
+                </Text>
+              </View>
+              <View style={styles.valueRow}>
+                <Text style={[styles.valueSide, { color: colors.textSecondary }]}>
+                  {item.valueLow != null ? `${currencySign}${item.valueLow}` : ""}
+                </Text>
+                <Text style={[styles.valueFair, { color: colors.accent }]}>
+                  {item.valueFair != null ? `${currencySign}${item.valueFair}` : ""}
+                </Text>
+                <Text style={[styles.valueSide, { color: colors.textSecondary }]}>
+                  {item.valueHigh != null ? `${currencySign}${item.valueHigh}` : ""}
+                </Text>
+              </View>
+              <Text style={[styles.valueNote, { color: colors.textSecondary }]}>
+                {t("item.valueEstimate")}
+                {item.valueConfidence && CONFIDENCE_KEY[item.valueConfidence]
+                  ? `, ${t(CONFIDENCE_KEY[item.valueConfidence] as string)}`
+                  : ""}
+                {"."}
+              </Text>
+            </View>
+          ) : null}
+
+          {manufacturer && model ? (
+            <Pressable
+              onPress={() =>
+                modelInfo
+                  ? router.push(
+                      `/item/model-info?manufacturer=${encodeURIComponent(manufacturer)}&model=${encodeURIComponent(model)}`,
+                    )
+                  : undefined
+              }
+              style={[styles.card, { backgroundColor: colors.surface }]}
+            >
+              <View style={styles.valueHeader}>
+                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+                  {t("modelInfo.card")}
+                </Text>
+                {modelInfo ? (
+                  <Text style={[styles.valueDate, { color: colors.accent }]}>
+                    {t("modelInfo.more")}
+                  </Text>
+                ) : null}
+              </View>
+              {modelInfo ? (
+                <>
+                  <Text
+                    numberOfLines={4}
+                    style={[styles.modelSummary, { color: colors.textPrimary }]}
+                  >
+                    {modelInfo.summary[lang] ?? modelInfo.summary.he}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.modelSpecLine, { color: colors.textSecondary }]}
+                  >
+                    {[
+                      modelInfo.specs.CPU,
+                      modelInfo.specs.RAM,
+                      modelInfo.releaseYear != null ? String(modelInfo.releaseYear) : null,
+                      modelInfo.specs["Launch price"],
+                    ]
+                      // the mono LTR line only takes pure latin values,
+                      // Hebrew fragments would render broken in Menlo
+                      .filter((v): v is string => !!v && /^[\x20-\x7E]+$/.test(v))
+                      .join(" · ")}
+                  </Text>
+                </>
+              ) : clerkEnabled ? (
+                <ModelInfoFetcher
+                  manufacturer={manufacturer}
+                  model={model}
+                  variant={variant}
+                  colors={colors}
+                  onReady={setModelInfo}
+                />
+              ) : (
+                <Text style={[styles.modelLoading, { color: colors.textSecondary }]}>
+                  {t("modelInfo.unavailable")}
+                </Text>
+              )}
+            </Pressable>
+          ) : null}
+
+          {(children.length > 0 || (!item.parentItemId && item.photos.length > 0)) && (
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
+              <View style={styles.valueHeader}>
+                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+                  {t("set.title")}
+                </Text>
+                {children.length > 0 ? (
+                  <Text style={[styles.valueDate, { color: colors.textSecondary }]}>
+                    {t("set.itemCount", { count: children.length })}
+                  </Text>
+                ) : null}
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.setRow}>
+                  {children.map((child) => {
+                    const photo =
+                      child.photos.find((p) => p.isPrimary) ?? child.photos[0];
+                    return (
+                      <Pressable
+                        key={child.id}
+                        onPress={() => router.push(`/item/${child.id}`)}
+                        onLongPress={() => removeChild(child)}
+                        style={styles.setTileWrap}
+                      >
+                        <View style={[styles.setTile, { backgroundColor: colors.surface2 }]}>
+                          {photo ? (
+                            <Image
+                              source={{ uri: photo.thumbUri }}
+                              style={StyleSheet.absoluteFill}
+                              contentFit="cover"
+                            />
+                          ) : null}
+                        </View>
+                        <Text
+                          numberOfLines={1}
+                          style={[styles.setTileLabel, { color: colors.textSecondary }]}
+                        >
+                          {child.title}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                  <Pressable
+                    onPress={() => router.push(`/item/set-pick?parentId=${item.id}`)}
+                    style={styles.setTileWrap}
+                  >
+                    <View
+                      style={[
+                        styles.setTile,
+                        styles.setAdd,
+                        { borderColor: colors.line, backgroundColor: colors.background },
+                      ]}
+                    >
+                      <Text style={{ color: colors.accent, fontSize: 22 }}>+</Text>
+                    </View>
+                    <Text
+                      numberOfLines={1}
+                      style={[styles.setTileLabel, { color: colors.accent }]}
+                    >
+                      {t("set.add")}
+                    </Text>
+                  </Pressable>
+                </View>
+              </ScrollView>
+            </View>
+          )}
+
+          {parent ? (
+            <Pressable
+              onPress={() => router.push(`/item/${parent.id}`)}
+              style={[styles.card, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+                {t("set.partOf")}
+              </Text>
+              <Text style={[styles.parentLink, { color: colors.accent }]}>
+                {parent.title}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {item.purchasePrice || item.purchaseSource ? (
+            <FoldCard
+              label={t("item.purchaseSection")}
+              summary={[
+                item.purchasePrice
+                  ? `${item.purchaseCurrency === "USD" ? "$" : "₪"}${item.purchasePrice}`
+                  : null,
+                item.purchaseSource,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              colors={colors}
+            >
+              <Text style={[styles.mono, { color: colors.textPrimary, fontSize: 15 }]}>
+                {`${item.purchaseCurrency === "USD" ? "$" : "₪"}${item.purchasePrice ?? ""}`}
+                {item.purchaseSource ? `  ·  ${item.purchaseSource}` : ""}
+              </Text>
+            </FoldCard>
+          ) : null}
+
+          {detailFields.length > 0 || serial || item.conditionNotes || item.notes ? (
+            <FoldCard
+              label={t("item.details")}
+              summary={t("item.detailsSummary")}
+              colors={colors}
+            >
               {detailFields.map((field) => (
                 <View key={field.key} style={styles.detailRow}>
                   <Text style={[styles.detailKey, { color: colors.textSecondary }]}>
@@ -285,9 +589,7 @@ export default function ItemScreen() {
                       styles.detailValue,
                       { color: colors.textPrimary },
                       isLatinField(field.key) && styles.latin,
-                      // design: mono only for identifying numbers
-                      (field.key === "serial_number" || field.key === "year") &&
-                        styles.mono,
+                      field.key === "year" && styles.mono,
                     ]}
                   >
                     {field.type === "enum"
@@ -300,47 +602,101 @@ export default function ItemScreen() {
                   </Text>
                 </View>
               ))}
-            </Card>
+              {serial ? (
+                // the serial hides behind a tap and never leaves the device
+                // in shares (spec 7.2)
+                <Pressable
+                  onPress={() => setSerialShown((v) => !v)}
+                  style={styles.detailRow}
+                >
+                  <Text style={[styles.detailKey, { color: colors.textSecondary }]}>
+                    {lang === "he" ? "מספר סידורי" : "Serial number"}
+                  </Text>
+                  <Text style={[styles.detailValue, styles.mono, { color: colors.textPrimary }]}>
+                    {serialShown ? serial : `•••  (${t("item.tapToReveal")})`}
+                  </Text>
+                </Pressable>
+              ) : null}
+              {item.conditionGrade != null ? (
+                <View style={styles.detailRow}>
+                  <Text style={[styles.detailKey, { color: colors.textSecondary }]}>
+                    {t("item.conditionGrade")}
+                  </Text>
+                  <Text style={[styles.detailValue, { color: colors.textPrimary }]}>
+                    {`${item.conditionGrade}/5 ${conditionLabels[String(item.conditionGrade)]?.[lang] ?? ""}`}
+                  </Text>
+                </View>
+              ) : null}
+              {item.conditionNotes ? (
+                <Text style={[styles.freeText, { color: colors.textPrimary }]}>
+                  {item.conditionNotes}
+                </Text>
+              ) : null}
+              {item.notes ? (
+                <Text style={[styles.freeText, { color: colors.textPrimary }]}>
+                  {item.notes}
+                </Text>
+              ) : null}
+            </FoldCard>
           ) : null}
 
-          {item.purchasePrice ? (
-            <Card label={t("item.purchaseSection")} colors={colors}>
-              <Text style={[styles.mono, { color: colors.textPrimary, fontSize: 15 }]}>
-                {`${item.purchaseCurrency === "USD" ? "$" : "₪"}${item.purchasePrice}`}
-                {item.purchaseSource ? `  ·  ${item.purchaseSource}` : ""}
-              </Text>
-            </Card>
-          ) : null}
-
-          {item.conditionNotes ? (
-            <Card label={t("confirm.aiNotes")} colors={colors}>
-              <Text
-                style={{
-                  color: colors.textPrimary,
-                  fontSize: 14,
-                  lineHeight: 20,
-                  textAlign: "left",
-                }}
+          <FoldCard
+            label={t("repairs.title")}
+            summary={
+              repairs.length > 0
+                ? t("repairs.count", { count: repairs.length })
+                : t("repairs.empty")
+            }
+            colors={colors}
+          >
+            {repairs.map((repair) => (
+              <View key={repair.id} style={styles.detailRow}>
+                <Text style={[styles.detailKey, { color: colors.textSecondary }]}>
+                  {formatDate(repair.date)}
+                </Text>
+                <Text
+                  style={[styles.detailValue, { color: colors.textPrimary, flex: 1, textAlign: "left", marginStart: spacing.md }]}
+                >
+                  {repair.description}
+                  {repair.cost ? `  ·  ₪${repair.cost}` : ""}
+                </Text>
+              </View>
+            ))}
+            <View style={styles.repairForm}>
+              <TextInput
+                value={repairText}
+                onChangeText={setRepairText}
+                placeholder={t("repairs.descPlaceholder")}
+                placeholderTextColor={colors.textSecondary}
+                style={[
+                  styles.repairInput,
+                  { backgroundColor: colors.surface2, color: colors.textPrimary },
+                ]}
+              />
+              <TextInput
+                value={repairCost}
+                onChangeText={setRepairCost}
+                placeholder={t("repairs.costPlaceholder")}
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="numeric"
+                style={[
+                  styles.repairInput,
+                  { backgroundColor: colors.surface2, color: colors.textPrimary },
+                ]}
+              />
+              <Pressable
+                onPress={submitRepair}
+                style={({ pressed }) => [
+                  styles.repairAdd,
+                  { backgroundColor: pressed ? colors.accentPressed : colors.accent },
+                ]}
               >
-                {item.conditionNotes}
-              </Text>
-            </Card>
-          ) : null}
-
-          {item.notes ? (
-            <Card label={t("item.notes")} colors={colors}>
-              <Text
-                style={{
-                  color: colors.textPrimary,
-                  fontSize: 15,
-                  lineHeight: 21,
-                  textAlign: "left",
-                }}
-              >
-                {item.notes}
-              </Text>
-            </Card>
-          ) : null}
+                <Text style={{ color: colors.onAccent, fontWeight: "600" }}>
+                  {t("repairs.add")}
+                </Text>
+              </Pressable>
+            </View>
+          </FoldCard>
 
           {!item.synced ? (
             <Text style={[styles.syncNote, { color: colors.textSecondary }]}>
@@ -370,6 +726,17 @@ export default function ItemScreen() {
               </Text>
             </Pressable>
             <Pressable
+              onPress={shareItem}
+              style={({ pressed }) => [
+                styles.action,
+                { backgroundColor: pressed ? colors.surface2 : colors.surface },
+              ]}
+            >
+              <Text style={[styles.actionLabel, { color: colors.textPrimary }]}>
+                {t("item.share")}
+              </Text>
+            </Pressable>
+            <Pressable
               onPress={confirmDelete}
               style={({ pressed }) => [
                 styles.action,
@@ -384,6 +751,44 @@ export default function ItemScreen() {
         </View>
       </ScrollView>
     </>
+  );
+}
+
+// separate component so useAuth is only called when ClerkProvider exists
+function ModelInfoFetcher({
+  manufacturer,
+  model,
+  variant,
+  colors,
+  onReady,
+}: {
+  manufacturer: string;
+  model: string;
+  variant: string;
+  colors: ThemeColors;
+  onReady: (info: ModelInfo) => void;
+}) {
+  const { t } = useTranslation();
+  const { getToken } = useAuth();
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void ensureModelInfo(manufacturer, model, variant, getToken).then((info) => {
+      if (cancelled) return;
+      if (info) {
+        onReady(info);
+      } else {
+        setFailed(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [manufacturer, model, variant, getToken, onReady]);
+  return (
+    <Text style={[styles.modelLoading, { color: colors.textSecondary }]}>
+      {failed ? t("modelInfo.unavailable") : t("modelInfo.loading")}
+    </Text>
   );
 }
 
@@ -421,7 +826,6 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.title,
     fontWeight: "700",
     writingDirection: "ltr",
-    // logical start: physical right in RTL, like the design
     textAlign: "left",
   },
   subtitle: {
@@ -458,6 +862,101 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "left",
   },
+  valueHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+  },
+  // mixes Hebrew words with a date, stays in the UI font
+  valueDate: {
+    fontSize: typography.sizes.caption,
+  },
+  valueRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "center",
+    gap: spacing.lg,
+  },
+  // fair value in mono 26 accent, low and high in mono 13 muted (design)
+  valueFair: {
+    fontFamily: typography.mono,
+    fontSize: 26,
+    fontWeight: "700",
+    writingDirection: "ltr",
+  },
+  valueSide: {
+    fontFamily: typography.mono,
+    fontSize: 13,
+    writingDirection: "ltr",
+  },
+  valueNote: {
+    fontSize: typography.sizes.caption,
+    textAlign: "left",
+  },
+  modelSummary: {
+    fontSize: typography.sizes.secondary,
+    lineHeight: 20,
+    textAlign: "left",
+  },
+  modelSpecLine: {
+    fontFamily: typography.mono,
+    fontSize: typography.sizes.caption,
+    writingDirection: "ltr",
+    textAlign: "left",
+  },
+  modelLoading: {
+    fontSize: typography.sizes.secondary,
+    textAlign: "left",
+  },
+  setRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  setTileWrap: {
+    width: 64,
+    gap: 2,
+  },
+  setTile: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.tag,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  setAdd: {
+    borderWidth: 1,
+    borderStyle: "dashed",
+  },
+  setTileLabel: {
+    fontSize: 10,
+    textAlign: "center",
+  },
+  parentLink: {
+    fontSize: typography.sizes.body,
+    fontWeight: "600",
+    textAlign: "left",
+    writingDirection: "ltr",
+  },
+  foldHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  foldSummary: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    flexShrink: 1,
+  },
+  foldSummaryText: {
+    fontSize: typography.sizes.secondary,
+    writingDirection: "ltr",
+  },
+  foldBody: {
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+  },
   detailRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -475,6 +974,27 @@ const styles = StyleSheet.create({
   mono: {
     fontFamily: typography.mono,
     writingDirection: "ltr",
+  },
+  freeText: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "left",
+  },
+  repairForm: {
+    gap: spacing.sm,
+  },
+  repairInput: {
+    height: 40,
+    borderRadius: radius.tag,
+    paddingHorizontal: spacing.md,
+    fontSize: typography.sizes.secondary,
+    textAlign: "right",
+  },
+  repairAdd: {
+    height: 40,
+    borderRadius: radius.tag,
+    alignItems: "center",
+    justifyContent: "center",
   },
   syncNote: {
     fontSize: typography.sizes.caption,
