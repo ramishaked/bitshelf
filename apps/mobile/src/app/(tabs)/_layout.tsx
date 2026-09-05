@@ -6,6 +6,12 @@ import { useAuth } from "@clerk/clerk-expo";
 import { clerkEnabled, useGuest } from "../../lib/auth";
 import { useThemeColors } from "../../lib/theme";
 
+// The collection tab is the initial route. Without this, RTL mirroring makes
+// the navigator start on the last declared tab.
+export const unstable_settings = {
+  initialRouteName: "index",
+};
+
 function tabIcon(name: SFSymbol) {
   return function TabIcon({ color }: { color: ColorValue }) {
     return <SymbolView name={name} tintColor={color} size={24} />;
@@ -18,6 +24,7 @@ function TabsNav() {
 
   return (
     <Tabs
+      initialRouteName="index"
       screenOptions={{
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textSecondary,
