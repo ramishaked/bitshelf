@@ -1,6 +1,9 @@
 packages:
   - "apps/*"
   - "packages/*"
+# Hoisted layout: required for Expo Go / Metro, the isolated pnpm layout
+# breaks native module resolution at runtime (Cannot find native module)
+nodeLinker: hoisted
 allowBuilds:
   '@clerk/shared': false
   browser-tabs-lock: false
