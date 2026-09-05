@@ -12,6 +12,13 @@ export {
   type IdentifyResult,
 } from "./identify";
 export {
+  generatePost,
+  GENERATE_POST_MODEL,
+  type GeneratePostInput,
+  type GeneratePostOutcome,
+  type PostStyle,
+} from "./generate-post";
+export {
   generateModelReference,
   MODEL_REFERENCE_MODEL,
   type ModelReferenceData,

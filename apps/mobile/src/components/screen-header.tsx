@@ -5,14 +5,24 @@ import { useThemeColors } from "../lib/theme";
 
 // Large title aligned to the reading start (right in Hebrew), like the
 // approved design. Replaces the centered native navigation header.
-export function ScreenHeader({ title }: { title: string }) {
+export function ScreenHeader({
+  title,
+  transparent = false,
+}: {
+  title: string;
+  // used inside the blurred floating chrome, the blur paints the background
+  transparent?: boolean;
+}) {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   return (
     <View
       style={[
         styles.wrap,
-        { paddingTop: insets.top + spacing.sm, backgroundColor: colors.background },
+        {
+          paddingTop: insets.top + spacing.sm,
+          backgroundColor: transparent ? "transparent" : colors.background,
+        },
       ]}
     >
       <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>

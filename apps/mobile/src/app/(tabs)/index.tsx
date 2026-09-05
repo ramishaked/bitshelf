@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { BlurView } from "expo-blur";
 import { EmptyState, radius, spacing, typography } from "@bitshelf/ui";
 import { Dashboard } from "../../components/dashboard";
 import { FilterBar } from "../../components/filter-bar";
@@ -17,7 +18,10 @@ import {
   type LocalItem,
 } from "../../lib/store";
 import { requestSync } from "../../lib/sync";
-import { useThemeColors } from "../../lib/theme";
+import { useThemeColors, useThemeName } from "../../lib/theme";
+
+// room the content leaves for the translucent tab bar it scrolls under
+const TAB_BAR_INSET = 92;
 
 export default function CollectionScreen() {
   const { t } = useTranslation();
@@ -31,6 +35,8 @@ export default function CollectionScreen() {
   const [view, setView] = useState<"gallery" | "dashboard">(
     viewParam === "dashboard" ? "dashboard" : "gallery",
   );
+  const themeName = useThemeName();
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const reload = useCallback(() => setItems(listItems()), []);
   useFocusEffect(reload);
@@ -66,59 +72,82 @@ export default function CollectionScreen() {
     ]);
   };
 
+  const chrome = (
+    // floating translucent chrome, the content scrolls under it (Photos
+    // style, Rami 05.09.2026)
+    <BlurView
+      tint={themeName === "dark" ? "dark" : "light"}
+      intensity={80}
+      onLayout={(e) => setHeaderHeight(Math.round(e.nativeEvent.layout.height))}
+      style={styles.chrome}
+    >
+      <ScreenHeader title={t("collection.title")} transparent />
+      <View style={[styles.segmented, { backgroundColor: colors.surface }]}>
+        {(["gallery", "dashboard"] as const).map((key) => (
+          <Pressable
+            key={key}
+            onPress={() => setView(key)}
+            style={[
+              styles.segment,
+              view === key && { backgroundColor: colors.surface2 },
+            ]}
+          >
+            <Text
+              style={[
+                styles.segmentLabel,
+                { color: view === key ? colors.textPrimary : colors.textSecondary },
+              ]}
+            >
+              {t(`dashboard.${key}`)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      {view === "gallery" ? (
+        <>
+          <FilterBar items={items} filters={filters} onChange={setFilters} />
+          {hasActiveFilters(filters) ? (
+            <Text style={[styles.count, { color: colors.textSecondary }]}>
+              {t("collection.itemCount", { count: visible.length })}
+            </Text>
+          ) : null}
+        </>
+      ) : null}
+    </BlurView>
+  );
+
   return (
     <View style={styles.screen}>
-      <ScreenHeader title={t("collection.title")} />
       {items.length === 0 ? (
-        <EmptyState title={t("collection.emptyTitle")} colors={colors} showLogo />
+        <>
+          <ScreenHeader title={t("collection.title")} />
+          <EmptyState title={t("collection.emptyTitle")} colors={colors} showLogo />
+        </>
       ) : (
         <>
-          <View style={[styles.segmented, { backgroundColor: colors.surface }]}>
-            {(["gallery", "dashboard"] as const).map((key) => (
-              <Pressable
-                key={key}
-                onPress={() => setView(key)}
-                style={[
-                  styles.segment,
-                  view === key && { backgroundColor: colors.surface2 },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.segmentLabel,
-                    {
-                      color: view === key ? colors.textPrimary : colors.textSecondary,
-                    },
-                  ]}
-                >
-                  {t(`dashboard.${key}`)}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
           {view === "dashboard" ? (
             <Dashboard
               items={items}
+              topInset={headerHeight}
+              bottomInset={TAB_BAR_INSET}
               onFilter={(partial) => {
                 setFilters({ ...emptyFilters, ...partial });
                 setView("gallery");
               }}
             />
+          ) : visible.length === 0 ? (
+            <View style={{ flex: 1, paddingTop: headerHeight }}>
+              <EmptyState title={t("filters.noResults")} colors={colors} />
+            </View>
           ) : (
-            <>
-              <FilterBar items={items} filters={filters} onChange={setFilters} />
-              {hasActiveFilters(filters) ? (
-                <Text style={[styles.count, { color: colors.textSecondary }]}>
-                  {t("collection.itemCount", { count: visible.length })}
-                </Text>
-              ) : null}
-              {visible.length === 0 ? (
-                <EmptyState title={t("filters.noResults")} colors={colors} />
-              ) : (
-                <ItemGrid items={visible} onLongPressItem={openItemActions} />
-              )}
-            </>
+            <ItemGrid
+              items={visible}
+              onLongPressItem={openItemActions}
+              topInset={headerHeight}
+              bottomInset={TAB_BAR_INSET}
+            />
           )}
+          {chrome}
         </>
       )}
       <Pressable
@@ -166,6 +195,13 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.caption,
     textAlign: "left",
     paddingHorizontal: spacing.lg + spacing.xs,
+    paddingBottom: spacing.xs,
+  },
+  chrome: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
     paddingBottom: spacing.xs,
   },
   segmented: {

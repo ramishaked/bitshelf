@@ -186,7 +186,8 @@ export default function GalleriesScreen() {
 const styles = StyleSheet.create({
   list: {
     paddingHorizontal: spacing.lg + spacing.xs,
-    paddingBottom: spacing.xxl,
+    // clears the translucent tab bar the list scrolls under
+    paddingBottom: spacing.xxl + 92,
     gap: spacing.sm,
   },
   section: {

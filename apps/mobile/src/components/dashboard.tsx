@@ -76,10 +76,15 @@ function BarRow({
 export function Dashboard({
   items,
   onFilter,
+  topInset = 0,
+  bottomInset = 0,
 }: {
   items: LocalItem[];
   // applies a filter and flips the segmented control back to the gallery
   onFilter: (partial: Partial<ItemFilters>) => void;
+  // room for the translucent chrome and tab bar (Photos style)
+  topInset?: number;
+  bottomInset?: number;
 }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language === "en" ? "en" : "he";
@@ -134,7 +139,12 @@ export function Dashboard({
   const recent = items.slice(0, 8);
 
   return (
-    <ScrollView contentContainerStyle={styles.list}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.list,
+        { paddingTop: topInset + spacing.md, paddingBottom: bottomInset + spacing.xl },
+      ]}
+    >
       <View style={styles.statsRow}>
         <Card colors={colors}>
           <Text style={[styles.bigStat, { color: colors.textPrimary }]}>

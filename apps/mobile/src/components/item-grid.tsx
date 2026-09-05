@@ -75,12 +75,17 @@ export function ItemGrid({
   selectedIds,
   onPressItem,
   onLongPressItem,
+  topInset = 0,
+  bottomInset = 0,
 }: {
   items: LocalItem[];
   // selection mode (gallery multi-select): tiles toggle instead of navigating
   selectedIds?: Set<string>;
   onPressItem?: (item: LocalItem) => void;
   onLongPressItem?: (item: LocalItem) => void;
+  // room for translucent chrome the grid scrolls under (Photos style)
+  topInset?: number;
+  bottomInset?: number;
 }) {
   const colors = useThemeColors();
   const router = useRouter();
@@ -111,7 +116,10 @@ export function ItemGrid({
             onLongPress={onLongPressItem ? () => onLongPressItem(item) : undefined}
           />
         )}
-        contentContainerStyle={styles.grid}
+        contentContainerStyle={[
+          styles.grid,
+          { paddingTop: topInset + grid.gap, paddingBottom: bottomInset + grid.gap },
+        ]}
       />
     </View>
   );

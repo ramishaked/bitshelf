@@ -30,7 +30,7 @@ export default function FavoritesScreen() {
           colors={colors}
         />
       ) : (
-        <ItemGrid items={items} />
+        <ItemGrid items={items} bottomInset={92} />
       )}
     </View>
   );
