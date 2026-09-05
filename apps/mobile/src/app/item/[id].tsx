@@ -253,9 +253,20 @@ export default function ItemScreen() {
   };
 
   const shareItem = () => {
-    // share sheet with the public facts only (spec 7.2: never the serial)
-    const parts = [item.title, year != null ? String(year) : null].filter(Boolean);
-    void Share.share({ message: parts.join(", ") });
+    // quick share or the post generator (spec 8.2); never the serial
+    const quick = () => {
+      const parts = [item.title, year != null ? String(year) : null].filter(Boolean);
+      void Share.share({ message: parts.join(", ") });
+    };
+    if (!clerkEnabled) {
+      quick();
+      return;
+    }
+    Alert.alert(t("item.share"), "", [
+      { text: t("post.quickShare"), onPress: quick },
+      { text: t("post.create"), onPress: () => router.push(`/item/post?id=${item.id}`) },
+      { text: t("item.cancel"), style: "cancel" },
+    ]);
   };
 
   const removeChild = (child: LocalItem) => {

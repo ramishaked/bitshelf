@@ -50,6 +50,19 @@
     "confidence_medium": "ביטחון בינוני",
     "confidence_high": "ביטחון גבוה"
   },
+  "post": {
+    "title": "יצירת פוסט",
+    "style_story": "סיפור",
+    "style_sale": "מכירה",
+    "style_question": "שאלה",
+    "pricePlaceholder": "מחיר מבוקש בשקלים",
+    "generating": "כותב פוסט...",
+    "failed": "היצירה נכשלה. נסו שוב.",
+    "share": "שיתוף",
+    "regenerate": "נסח מחדש",
+    "quickShare": "שיתוף מהיר",
+    "create": "צור פוסט"
+  },
   "modelInfo": {
     "card": "על הדגם",
     "title": "מידע על הדגם",

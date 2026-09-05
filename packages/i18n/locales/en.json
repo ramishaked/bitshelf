@@ -50,6 +50,19 @@
     "confidence_medium": "medium confidence",
     "confidence_high": "high confidence"
   },
+  "post": {
+    "title": "Create post",
+    "style_story": "Story",
+    "style_sale": "Sale",
+    "style_question": "Question",
+    "pricePlaceholder": "Asking price in ILS",
+    "generating": "Writing the post...",
+    "failed": "Generation failed. Try again.",
+    "share": "Share",
+    "regenerate": "Rewrite",
+    "quickShare": "Quick share",
+    "create": "Create post"
+  },
   "modelInfo": {
     "card": "About the model",
     "title": "Model info",

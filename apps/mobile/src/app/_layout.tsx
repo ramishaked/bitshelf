@@ -50,6 +50,10 @@ export default function RootLayout() {
           options={{ presentation: "modal", headerShown: true }}
         />
         <Stack.Screen
+          name="item/post"
+          options={{ presentation: "modal", headerShown: true }}
+        />
+        <Stack.Screen
           name="gallery/new"
           options={{ presentation: "modal", headerShown: true }}
         />
