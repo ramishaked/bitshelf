@@ -14,6 +14,7 @@
   "item": {
     "newTitle": "פריט חדש",
     "editTitle": "עריכת פריט",
+    "edit": "ערוך",
     "photos": "תמונות",
     "takePhoto": "צילום",
     "fromLibrary": "מהספרייה",
@@ -183,7 +184,7 @@
     "empty": "אין פריטים בגלריה עדיין",
     "addItems": "הוספת פריטים",
     "edit": "עריכה",
-    "share": "שיתוף בקישור",
+    "share": "שיתוף",
     "copyLink": "העתקת קישור",
     "revokeLink": "ביטול הקישור",
     "revokeConfirmTitle": "לבטל את הקישור?",

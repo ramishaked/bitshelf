@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { controls, radius, spacing, typography } from "@bitshelf/ui";
+import { Button, controls, radius, spacing, typography } from "@bitshelf/ui";
 import { ItemGrid } from "../../components/item-grid";
 import {
   getGallery,
@@ -134,21 +134,13 @@ export default function GalleryFormScreen() {
             });
           }}
         />
-        <Pressable
-          disabled={!canSave}
+        <Button
+          label={t("gallery.save")}
           onPress={save}
-          style={({ pressed }) => [
-            styles.save,
-            {
-              backgroundColor: pressed ? colors.accentPressed : colors.accent,
-              opacity: canSave ? 1 : 0.4,
-            },
-          ]}
-        >
-          <Text style={[styles.saveLabel, { color: colors.onAccent }]}>
-            {t("gallery.save")}
-          </Text>
-        </Pressable>
+          colors={colors}
+          disabled={!canSave}
+          style={styles.save}
+        />
       </View>
     </>
   );
@@ -184,13 +176,5 @@ const styles = StyleSheet.create({
     bottom: 28,
     start: spacing.lg,
     end: spacing.lg,
-    height: controls.buttonHeight,
-    borderRadius: radius.card,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveLabel: {
-    fontSize: typography.sizes.body,
-    fontWeight: "600",
   },
 });

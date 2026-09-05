@@ -13,7 +13,7 @@ import { Image } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
-import { EmptyState, controls, radius, spacing, typography } from "@bitshelf/ui";
+import { Button, EmptyState, controls, radius, spacing, typography } from "@bitshelf/ui";
 import { clerkEnabled } from "../lib/auth";
 import { addPhotos, deletePhotoFiles } from "../lib/photos";
 import { buildTitle } from "../lib/retro";
@@ -169,28 +169,17 @@ export default function ShelfScanScreen() {
             <Text style={[styles.limits, { color: colors.textSecondary }]}>
               {t("shelfScan.limits")}
             </Text>
-            <Pressable
-              onPress={() => startScan("camera")}
-              style={({ pressed }) => [
-                styles.bigButton,
-                { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-              ]}
-            >
-              <Text style={[styles.bigButtonLabel, { color: colors.onAccent }]}>
-                {t("item.takePhoto")}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => startScan("library")}
-              style={({ pressed }) => [
-                styles.bigButton,
-                { backgroundColor: pressed ? colors.surface2 : colors.surface },
-              ]}
-            >
-              <Text style={[styles.bigButtonLabel, { color: colors.textPrimary }]}>
-                {t("item.fromLibrary")}
-              </Text>
-            </Pressable>
+            <Button
+              label={t("item.takePhoto")}
+              onPress={() => void startScan("camera")}
+              colors={colors}
+            />
+            <Button
+              label={t("item.fromLibrary")}
+              onPress={() => void startScan("library")}
+              colors={colors}
+              variant="secondary"
+            />
           </View>
         ) : phase === "scanning" ? (
           <View style={styles.center}>
@@ -275,21 +264,12 @@ export default function ShelfScanScreen() {
                   { backgroundColor: colors.surface, color: colors.textPrimary },
                 ]}
               />
-              <Pressable
-                disabled={selectedCount === 0 || saving}
+              <Button
+                label={t("shelfScan.saveAll", { count: selectedCount })}
                 onPress={saveAll}
-                style={({ pressed }) => [
-                  styles.save,
-                  {
-                    backgroundColor: pressed ? colors.accentPressed : colors.accent,
-                    opacity: selectedCount === 0 || saving ? 0.4 : 1,
-                  },
-                ]}
-              >
-                <Text style={[styles.saveLabel, { color: colors.onAccent }]}>
-                  {t("shelfScan.saveAll", { count: selectedCount })}
-                </Text>
-              </Pressable>
+                colors={colors}
+                disabled={selectedCount === 0 || saving}
+              />
             </View>
           </>
         ) : (
@@ -300,17 +280,13 @@ export default function ShelfScanScreen() {
               }
               colors={colors}
             />
-            <Pressable
+            <Button
+              label={t("confirm.retry")}
               onPress={() => setPhase("start")}
-              style={({ pressed }) => [
-                styles.bigButton,
-                { backgroundColor: pressed ? colors.surface2 : colors.surface },
-              ]}
-            >
-              <Text style={[styles.bigButtonLabel, { color: colors.textPrimary }]}>
-                {t("confirm.retry")}
-              </Text>
-            </Pressable>
+              colors={colors}
+              variant="secondary"
+              style={styles.retry}
+            />
           </View>
         )}
       </View>
@@ -429,24 +405,7 @@ const styles = StyleSheet.create({
     // TextInput alignment is physical on iOS, right hugs the RTL start
     textAlign: "right",
   },
-  save: {
-    height: controls.buttonHeight,
-    borderRadius: radius.card,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveLabel: {
-    fontSize: typography.sizes.body,
-    fontWeight: "600",
-  },
-  bigButton: {
-    height: controls.buttonHeight,
-    borderRadius: radius.card,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bigButtonLabel: {
-    fontSize: typography.sizes.body,
-    fontWeight: "600",
+  retry: {
+    alignSelf: "stretch",
   },
 });

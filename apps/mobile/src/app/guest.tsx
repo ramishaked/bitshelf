@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { controls, radius, spacing } from "@bitshelf/ui";
+import { Button, radius, spacing } from "@bitshelf/ui";
 import { useGuest } from "../lib/auth";
 import { useThemeColors } from "../lib/theme";
 
@@ -37,15 +37,12 @@ export default function GuestScreen() {
         autoCapitalize="none"
         style={[styles.input, { backgroundColor: colors.surface, color: colors.textPrimary }]}
       />
-      <Pressable
+      <Button
+        label={t("guest.open")}
         onPress={openGallery}
-        style={({ pressed }) => [
-          styles.button,
-          { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-        ]}
-      >
-        <Text style={[styles.buttonLabel, { color: colors.onAccent }]}>{t("guest.open")}</Text>
-      </Pressable>
+        colors={colors}
+        style={styles.open}
+      />
       <Pressable onPress={backToSignIn} style={styles.link}>
         <Text style={[styles.linkLabel, { color: colors.accent }]}>{t("guest.backToSignIn")}</Text>
       </Pressable>
@@ -78,15 +75,8 @@ const styles = StyleSheet.create({
     textAlign: "right",
     writingDirection: "ltr",
   },
-  button: {
-    borderRadius: radius.card,
-    height: controls.buttonHeight,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonLabel: {
-    fontSize: 16,
-    fontWeight: "600",
+  open: {
+    alignSelf: "stretch",
   },
   link: {
     alignItems: "center",

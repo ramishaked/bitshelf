@@ -12,12 +12,13 @@ import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useTranslation } from "react-i18next";
 import { useSignIn, useSignUp, useSSO } from "@clerk/clerk-expo";
-import { controls, LogoPlaceholder, radius, spacing, type ThemeColors } from "@bitshelf/ui";
+import { Button, LogoPlaceholder, radius, spacing, type ThemeColors } from "@bitshelf/ui";
 import { clerkEnabled, useGuest } from "../lib/auth";
 import { useThemeColors } from "../lib/theme";
 
 WebBrowser.maybeCompleteAuthSession();
 
+// thin wrapper over the shared Button, keeps the call sites short
 function AuthButton({
   label,
   onPress,
@@ -30,28 +31,12 @@ function AuthButton({
   prominent?: boolean;
 }) {
   return (
-    <Pressable
+    <Button
+      label={label}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        {
-          backgroundColor: pressed
-            ? colors.accentPressed
-            : prominent
-              ? colors.accent
-              : colors.surface,
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.buttonLabel,
-          { color: prominent ? colors.onAccent : colors.textPrimary },
-        ]}
-      >
-        {label}
-      </Text>
-    </Pressable>
+      colors={colors}
+      variant={prominent ? "primary" : "secondary"}
+    />
   );
 }
 
@@ -252,16 +237,6 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     marginTop: spacing.xxl,
     gap: spacing.sm,
-  },
-  button: {
-    borderRadius: radius.card,
-    height: controls.buttonHeight,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonLabel: {
-    fontSize: 16,
-    fontWeight: "600",
   },
   input: {
     borderRadius: radius.card,

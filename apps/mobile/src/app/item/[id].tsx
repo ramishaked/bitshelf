@@ -17,7 +17,7 @@ import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-rou
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
 import {
-  controls,
+  Button,
   photoOverlay,
   radius,
   spacing,
@@ -684,17 +684,11 @@ export default function ItemScreen() {
                   { backgroundColor: colors.surface2, color: colors.textPrimary },
                 ]}
               />
-              <Pressable
+              <Button
+                label={t("repairs.add")}
                 onPress={submitRepair}
-                style={({ pressed }) => [
-                  styles.repairAdd,
-                  { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-                ]}
-              >
-                <Text style={{ color: colors.onAccent, fontWeight: "600" }}>
-                  {t("repairs.add")}
-                </Text>
-              </Pressable>
+                colors={colors}
+              />
             </View>
           </FoldCard>
 
@@ -714,39 +708,26 @@ export default function ItemScreen() {
           ) : null}
 
           <View style={styles.actions}>
-            <Pressable
+            <Button
+              label={t("item.edit")}
               onPress={() => router.push(`/item/new?id=${item.id}`)}
-              style={({ pressed }) => [
-                styles.action,
-                { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-              ]}
-            >
-              <Text style={[styles.actionLabel, { color: colors.onAccent }]}>
-                {t("item.editTitle")}
-              </Text>
-            </Pressable>
-            <Pressable
+              colors={colors}
+              style={styles.action}
+            />
+            <Button
+              label={t("item.share")}
               onPress={shareItem}
-              style={({ pressed }) => [
-                styles.action,
-                { backgroundColor: pressed ? colors.surface2 : colors.surface },
-              ]}
-            >
-              <Text style={[styles.actionLabel, { color: colors.textPrimary }]}>
-                {t("item.share")}
-              </Text>
-            </Pressable>
-            <Pressable
+              colors={colors}
+              variant="secondary"
+              style={styles.action}
+            />
+            <Button
+              label={t("item.delete")}
               onPress={confirmDelete}
-              style={({ pressed }) => [
-                styles.action,
-                { backgroundColor: pressed ? colors.surface2 : colors.surface },
-              ]}
-            >
-              <Text style={[styles.actionLabel, { color: colors.statusNotWorking }]}>
-                {t("item.delete")}
-              </Text>
-            </Pressable>
+              colors={colors}
+              variant="destructive"
+              style={styles.action}
+            />
           </View>
         </View>
       </ScrollView>
@@ -1039,13 +1020,5 @@ const styles = StyleSheet.create({
   },
   action: {
     flex: 1,
-    height: controls.buttonHeight,
-    borderRadius: radius.card,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  actionLabel: {
-    fontSize: typography.sizes.body,
-    fontWeight: "600",
   },
 });

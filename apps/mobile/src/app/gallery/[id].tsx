@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { EmptyState, controls, radius, spacing, typography } from "@bitshelf/ui";
+import { Button, EmptyState, spacing, typography } from "@bitshelf/ui";
 import { ItemGrid } from "../../components/item-grid";
 import { makeSlug, publicGalleryUrl } from "../../lib/gallery-link";
 import {
@@ -154,52 +154,35 @@ export default function GalleryScreen() {
           <ItemGrid items={items} onLongPressItem={removeItem} />
         )}
         <View style={styles.actions}>
-          <Pressable
-            onPress={shareLink}
-            style={({ pressed }) => [
-              styles.action,
-              { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-            ]}
-          >
-            <Text style={[styles.actionLabel, { color: colors.onAccent }]}>
-              {t("gallery.share")}
-            </Text>
-          </Pressable>
-          <Pressable
+          <Button
+            label={t("gallery.share")}
+            onPress={() => void shareLink()}
+            colors={colors}
+            style={styles.action}
+          />
+          <Button
+            label={t("gallery.edit")}
             onPress={() => router.push(`/gallery/new?id=${gallery.id}`)}
-            style={({ pressed }) => [
-              styles.action,
-              { backgroundColor: pressed ? colors.surface2 : colors.surface },
-            ]}
-          >
-            <Text style={[styles.actionLabel, { color: colors.textPrimary }]}>
-              {t("gallery.edit")}
-            </Text>
-          </Pressable>
+            colors={colors}
+            variant="secondary"
+            style={styles.action}
+          />
           {isPublic ? (
-            <Pressable
+            <Button
+              label={t("gallery.revoke")}
               onPress={revokeLink}
-              style={({ pressed }) => [
-                styles.action,
-                { backgroundColor: pressed ? colors.surface2 : colors.surface },
-              ]}
-            >
-              <Text style={[styles.actionLabel, { color: colors.statusPartiallyWorking }]}>
-                {t("gallery.revoke")}
-              </Text>
-            </Pressable>
+              colors={colors}
+              variant="warning"
+              style={styles.action}
+            />
           ) : (
-            <Pressable
+            <Button
+              label={t("item.delete")}
               onPress={confirmDelete}
-              style={({ pressed }) => [
-                styles.action,
-                { backgroundColor: pressed ? colors.surface2 : colors.surface },
-              ]}
-            >
-              <Text style={[styles.actionLabel, { color: colors.statusNotWorking }]}>
-                {t("item.delete")}
-              </Text>
-            </Pressable>
+              colors={colors}
+              variant="destructive"
+              style={styles.action}
+            />
           )}
         </View>
       </View>
@@ -233,13 +216,5 @@ const styles = StyleSheet.create({
   },
   action: {
     flex: 1,
-    height: controls.buttonHeight,
-    borderRadius: radius.card,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  actionLabel: {
-    fontSize: typography.sizes.secondary + 1,
-    fontWeight: "600",
   },
 });

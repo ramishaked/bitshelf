@@ -16,6 +16,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useTranslation } from "react-i18next";
 import {
+  Button,
   controls,
   radius,
   spacing,
@@ -428,17 +429,12 @@ export default function ItemFormScreen() {
             />
           </View>
 
-          <Pressable
+          <Button
+            label={t("item.save")}
             onPress={save}
-            style={({ pressed }) => [
-              styles.saveButton,
-              { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-            ]}
-          >
-            <Text style={[styles.saveLabel, { color: colors.onAccent }]}>
-              {t("item.save")}
-            </Text>
-          </Pressable>
+            colors={colors}
+            style={styles.saveButton}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </>
@@ -561,13 +557,5 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: spacing.xl,
-    height: controls.buttonHeight,
-    borderRadius: radius.card,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveLabel: {
-    fontSize: typography.sizes.body,
-    fontWeight: "600",
   },
 });

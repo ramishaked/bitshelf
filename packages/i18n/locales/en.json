@@ -14,6 +14,7 @@
   "item": {
     "newTitle": "New item",
     "editTitle": "Edit item",
+    "edit": "Edit",
     "photos": "Photos",
     "takePhoto": "Take photo",
     "fromLibrary": "From library",
@@ -183,7 +184,7 @@
     "empty": "No items in this gallery yet",
     "addItems": "Add items",
     "edit": "Edit",
-    "share": "Share with a link",
+    "share": "Share",
     "copyLink": "Copy link",
     "revokeLink": "Revoke link",
     "revokeConfirmTitle": "Revoke the link?",

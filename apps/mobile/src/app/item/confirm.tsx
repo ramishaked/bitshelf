@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
 import {
+  Button,
   controls,
   radius,
   spacing,
@@ -363,28 +364,19 @@ function ConfirmInner() {
       </View>
 
       <View style={styles.actions}>
-        <Pressable
+        <Button
+          label={t("confirm.save")}
           onPress={save}
-          style={({ pressed }) => [
-            styles.action,
-            { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-          ]}
-        >
-          <Text style={[styles.actionLabel, { color: colors.onAccent }]}>
-            {t("confirm.save")}
-          </Text>
-        </Pressable>
-        <Pressable
+          colors={colors}
+          style={styles.action}
+        />
+        <Button
+          label={t("confirm.retake")}
           onPress={retake}
-          style={({ pressed }) => [
-            styles.action,
-            { backgroundColor: pressed ? colors.surface2 : colors.surface },
-          ]}
-        >
-          <Text style={[styles.actionLabel, { color: colors.textPrimary }]}>
-            {t("confirm.retake")}
-          </Text>
-        </Pressable>
+          colors={colors}
+          variant="secondary"
+          style={styles.action}
+        />
       </View>
     </ScrollView>
   );
@@ -506,13 +498,5 @@ const styles = StyleSheet.create({
   },
   action: {
     flex: 1,
-    height: controls.buttonHeight,
-    borderRadius: radius.card,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  actionLabel: {
-    fontSize: typography.sizes.body,
-    fontWeight: "600",
   },
 });
