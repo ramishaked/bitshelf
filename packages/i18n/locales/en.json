@@ -1,0 +1,51 @@
+{
+  "tabs": {
+    "collection": "Collection",
+    "galleries": "Galleries",
+    "favorites": "Favorites",
+    "profile": "Profile"
+  },
+  "collection": {
+    "emptyTitle": "The shelf is empty. Photograph your first item."
+  },
+  "galleries": {
+    "emptyTitle": "No galleries yet",
+    "emptyHint": "Once your collection has items, create galleries here and share them with a link"
+  },
+  "favorites": {
+    "emptyTitle": "No favorites yet",
+    "emptyHint": "Items you mark with a heart will show up here"
+  },
+  "profile": {
+    "title": "Profile",
+    "language": "Language",
+    "defaultCurrency": "Default currency",
+    "signOut": "Sign out",
+    "devNote": "Clerk is not configured. Development mode, no sign-in.",
+    "version": "Version"
+  },
+  "auth": {
+    "subtitle": "Your collection, in order",
+    "apple": "Continue with Apple",
+    "google": "Continue with Google",
+    "email": "Continue with email",
+    "emailPlaceholder": "Email address",
+    "sendCode": "Send code",
+    "codePlaceholder": "Verification code from the email",
+    "verify": "Verify",
+    "guest": "Continue as guest",
+    "error": "Sign-in failed",
+    "notConfigured": "Clerk is not configured yet. Add keys to the env file, or continue in development mode."
+  },
+  "guest": {
+    "title": "Guest mode",
+    "explain": "Guest mode shows public galleries only. Managing a collection requires an account.",
+    "slugPlaceholder": "Gallery code from the link",
+    "open": "Open gallery",
+    "backToSignIn": "Sign in"
+  },
+  "publicGallery": {
+    "title": "Public gallery",
+    "placeholder": "Gallery content will show here once shared galleries exist"
+  }
+}

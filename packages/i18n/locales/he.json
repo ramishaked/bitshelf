@@ -1,0 +1,51 @@
+{
+  "tabs": {
+    "collection": "אוסף",
+    "galleries": "גלריות",
+    "favorites": "מועדפים",
+    "profile": "פרופיל"
+  },
+  "collection": {
+    "emptyTitle": "המדף ריק, צלם פריט ראשון"
+  },
+  "galleries": {
+    "emptyTitle": "אין גלריות עדיין",
+    "emptyHint": "אחרי שיהיו פריטים באוסף, יוצרים כאן גלריות ומשתפים בקישור"
+  },
+  "favorites": {
+    "emptyTitle": "אין מועדפים עדיין",
+    "emptyHint": "פריטים שסומנו בלב יופיעו כאן"
+  },
+  "profile": {
+    "title": "פרופיל",
+    "language": "שפה",
+    "defaultCurrency": "מטבע ברירת מחדל",
+    "signOut": "התנתקות",
+    "devNote": "Clerk לא מוגדר. מצב פיתוח, ללא התחברות.",
+    "version": "גרסה"
+  },
+  "auth": {
+    "subtitle": "האוסף שלך, מסודר",
+    "apple": "המשך עם Apple",
+    "google": "המשך עם Google",
+    "email": "המשך עם אימייל",
+    "emailPlaceholder": "כתובת אימייל",
+    "sendCode": "שליחת קוד",
+    "codePlaceholder": "קוד אימות מהאימייל",
+    "verify": "אישור",
+    "guest": "המשך כאורח",
+    "error": "ההתחברות נכשלה",
+    "notConfigured": "Clerk לא מוגדר עדיין. הוסיפו מפתחות בקובץ env, או המשיכו במצב פיתוח."
+  },
+  "guest": {
+    "title": "מצב אורח",
+    "explain": "במצב אורח רואים גלריות ציבוריות בלבד. לניהול אוסף צריך חשבון.",
+    "slugPlaceholder": "קוד גלריה מתוך הקישור",
+    "open": "פתיחת גלריה",
+    "backToSignIn": "להתחברות"
+  },
+  "publicGallery": {
+    "title": "גלריה ציבורית",
+    "placeholder": "תוכן הגלריה יוצג כאן כשיהיו גלריות משותפות"
+  }
+}

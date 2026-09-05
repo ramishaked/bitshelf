@@ -1,0 +1,27 @@
+{
+  "name": "@bitshelf/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./locales/he.json": "./locales/he.json",
+    "./locales/en.json": "./locales/en.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "i18next": "^25.0.0",
+    "react-i18next": "^16.0.0"
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "react": "19.2.3",
+    "typescript": "^5.9.2"
+  }
+}
