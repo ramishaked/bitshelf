@@ -170,6 +170,8 @@ export default function CollectionScreen() {
                 ]
               : []),
             { text: t("fab.manual"), onPress: () => router.push("/item/new") },
+            // spec 7.9: fourth option, "looking for an item"
+            { text: t("fab.wishlist"), onPress: () => router.push("/wishlist") },
             { text: t("item.cancel"), style: "cancel" },
           ]);
         }}

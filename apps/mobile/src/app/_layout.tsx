@@ -54,6 +54,10 @@ export default function RootLayout() {
           options={{ presentation: "modal", headerShown: true }}
         />
         <Stack.Screen
+          name="wishlist"
+          options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }}
+        />
+        <Stack.Screen
           name="gallery/new"
           options={{ presentation: "modal", headerShown: true }}
         />

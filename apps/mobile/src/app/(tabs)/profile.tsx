@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Constants from "expo-constants";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
 import { radius, spacing, type ThemeColors } from "@bitshelf/ui";
@@ -54,6 +55,7 @@ export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const mode = useThemeMode();
+  const router = useRouter();
   const version = Constants.expoConfig?.version ?? "0.1.0";
 
   return (
@@ -72,6 +74,9 @@ export default function ProfileScreen() {
           value={t(`profile.appearance_${mode}`)}
           colors={colors}
         />
+      </Pressable>
+      <Pressable onPress={() => router.push("/wishlist")}>
+        <Row label={t("wishlist.title")} value="" colors={colors} />
       </Pressable>
       <Pressable
         onPress={() =>

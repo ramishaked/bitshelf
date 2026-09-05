@@ -93,6 +93,12 @@ db.execSync(`
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS wishlist (
+    id TEXT PRIMARY KEY,
+    priority INTEGER NOT NULL DEFAULT 2,
+    created_at TEXT NOT NULL,
+    json TEXT NOT NULL
+  );
 `);
 
 export function getSetting(key: string): string | null {
@@ -478,6 +484,38 @@ export function markGalleriesSynced(
       [id, updatedAt],
     );
   }
+}
+
+// --- wishlist (spec 7.9), local only for now ---
+
+export interface LocalWish {
+  id: string;
+  manufacturer: string;
+  model: string;
+  variant: string | null;
+  targetPrice: string | null;
+  priority: 1 | 2 | 3;
+  status: "searching" | "found" | "purchased";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function saveWish(wish: LocalWish): void {
+  db.runSync(
+    "INSERT OR REPLACE INTO wishlist (id, priority, created_at, json) VALUES (?, ?, ?, ?)",
+    [wish.id, wish.priority, wish.createdAt, JSON.stringify(wish)],
+  );
+}
+
+export function listWishes(): LocalWish[] {
+  const rows = db.getAllSync<{ json: string }>(
+    "SELECT json FROM wishlist ORDER BY priority, created_at DESC",
+  );
+  return rows.map((r) => JSON.parse(r.json) as LocalWish);
+}
+
+export function deleteWish(id: string): void {
+  db.runSync("DELETE FROM wishlist WHERE id = ?", [id]);
 }
 
 // membership edits must reach the server even when the gallery row itself is

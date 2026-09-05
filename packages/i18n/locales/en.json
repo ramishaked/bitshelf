@@ -120,7 +120,25 @@
   "fab": {
     "capture": "Photograph item",
     "shelfScan": "Shelf scan",
-    "manual": "Add manually"
+    "manual": "Add manually",
+    "wishlist": "Looking for an item"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "empty": "The list is empty",
+    "manufacturer": "Manufacturer",
+    "model": "Model",
+    "variant": "Variant",
+    "targetPrice": "Target price ₪",
+    "priority_1": "Urgent",
+    "priority_2": "Normal",
+    "priority_3": "Someday",
+    "status_searching": "Searching",
+    "status_found": "Found",
+    "status_purchased": "Purchased",
+    "purchased": "Purchased? Create item",
+    "add": "Add to list",
+    "deleteTitle": "Remove from the list?"
   },
   "shelfScan": {
     "title": "Shelf scan",

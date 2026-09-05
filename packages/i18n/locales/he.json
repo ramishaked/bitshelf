@@ -120,7 +120,25 @@
   "fab": {
     "capture": "צילום פריט",
     "shelfScan": "סריקת מדף",
-    "manual": "הוספה ידנית"
+    "manual": "הוספה ידנית",
+    "wishlist": "מחפש פריט"
+  },
+  "wishlist": {
+    "title": "רשימת חיפוש",
+    "empty": "אין פריטים ברשימה",
+    "manufacturer": "יצרן",
+    "model": "דגם",
+    "variant": "גרסה",
+    "targetPrice": "מחיר יעד ₪",
+    "priority_1": "דחוף",
+    "priority_2": "רגיל",
+    "priority_3": "מתישהו",
+    "status_searching": "מחפש",
+    "status_found": "נמצא",
+    "status_purchased": "נרכש",
+    "purchased": "נרכש? צור פריט",
+    "add": "הוספה לרשימה",
+    "deleteTitle": "למחוק מהרשימה?"
   },
   "shelfScan": {
     "title": "סריקת מדף",
