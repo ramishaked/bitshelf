@@ -1,0 +1,169 @@
+{
+  "slug": "retro_tech",
+  "name": { "he": "מחשבי רטרו וקונסולות", "en": "Retro Computers & Consoles" },
+  "is_active": true,
+  "categories": [
+    { "slug": "computer", "name": { "he": "מחשב", "en": "Computer" } },
+    { "slug": "console", "name": { "he": "קונסולה", "en": "Console" } },
+    { "slug": "handheld", "name": { "he": "קונסולה ניידת", "en": "Handheld" } },
+    { "slug": "peripheral", "name": { "he": "ציוד היקפי", "en": "Peripheral" } },
+    { "slug": "expansion_card", "name": { "he": "כרטיס הרחבה", "en": "Expansion card" } },
+    { "slug": "storage_device", "name": { "he": "התקן אחסון", "en": "Storage device" } },
+    { "slug": "software", "name": { "he": "תוכנה", "en": "Software" } },
+    { "slug": "book_manual", "name": { "he": "ספר או מדריך", "en": "Book or manual" } },
+    { "slug": "box_packaging", "name": { "he": "קופסה או אריזה", "en": "Box or packaging" } },
+    { "slug": "part", "name": { "he": "חלק", "en": "Part" } },
+    { "slug": "other", "name": { "he": "אחר", "en": "Other" } }
+  ],
+  "attributes_schema": [
+    {
+      "key": "manufacturer",
+      "type": "text",
+      "required": true,
+      "autocomplete": true,
+      "show_in_share": true,
+      "show_in_grid": true,
+      "searchable": true,
+      "label": { "he": "יצרן", "en": "Manufacturer" }
+    },
+    {
+      "key": "model",
+      "type": "text",
+      "required": true,
+      "autocomplete": true,
+      "show_in_share": true,
+      "show_in_grid": true,
+      "searchable": true,
+      "label": { "he": "דגם", "en": "Model" }
+    },
+    {
+      "key": "variant",
+      "type": "text",
+      "required": false,
+      "autocomplete": false,
+      "show_in_share": true,
+      "show_in_grid": false,
+      "searchable": true,
+      "label": { "he": "גרסה", "en": "Variant" }
+    },
+    {
+      "key": "year",
+      "type": "int",
+      "required": false,
+      "autocomplete": false,
+      "show_in_share": true,
+      "show_in_grid": true,
+      "searchable": false,
+      "label": { "he": "שנה", "en": "Year" }
+    },
+    {
+      "key": "region",
+      "type": "enum",
+      "enum_values": ["NTSC", "PAL", "SECAM", "universal", "unknown"],
+      "required": false,
+      "autocomplete": false,
+      "show_in_share": true,
+      "show_in_grid": false,
+      "searchable": false,
+      "label": { "he": "אזור", "en": "Region" }
+    },
+    {
+      "key": "serial_number",
+      "type": "text",
+      "required": false,
+      "autocomplete": false,
+      "show_in_share": false,
+      "show_in_grid": false,
+      "searchable": false,
+      "label": { "he": "מספר סידורי", "en": "Serial number" }
+    },
+    {
+      "key": "working_status",
+      "type": "enum",
+      "enum_values": ["working", "partially_working", "not_working", "untested", "for_parts"],
+      "required": true,
+      "autocomplete": false,
+      "show_in_share": true,
+      "show_in_grid": true,
+      "searchable": false,
+      "label": { "he": "מצב תפקודי", "en": "Working status" }
+    },
+    {
+      "key": "completeness",
+      "type": "enum",
+      "enum_values": ["loose", "boxed", "cib", "sealed"],
+      "required": false,
+      "autocomplete": false,
+      "show_in_share": true,
+      "show_in_grid": false,
+      "searchable": false,
+      "label": { "he": "שלמות", "en": "Completeness" }
+    },
+    {
+      "key": "title",
+      "type": "text",
+      "applies_to": ["software"],
+      "maps_to": "model",
+      "required": true,
+      "autocomplete": false,
+      "show_in_share": true,
+      "show_in_grid": true,
+      "searchable": true,
+      "label": { "he": "שם התוכנה", "en": "Title" }
+    },
+    {
+      "key": "platform",
+      "type": "text",
+      "applies_to": ["software"],
+      "required": true,
+      "autocomplete": true,
+      "show_in_share": true,
+      "show_in_grid": true,
+      "searchable": true,
+      "label": { "he": "פלטפורמה", "en": "Platform" }
+    },
+    {
+      "key": "publisher",
+      "type": "text",
+      "applies_to": ["software"],
+      "maps_to": "manufacturer",
+      "required": false,
+      "autocomplete": true,
+      "show_in_share": true,
+      "show_in_grid": false,
+      "searchable": true,
+      "label": { "he": "מוציא לאור", "en": "Publisher" }
+    },
+    {
+      "key": "description",
+      "type": "text",
+      "applies_to": ["software"],
+      "required": false,
+      "autocomplete": false,
+      "show_in_share": true,
+      "show_in_grid": false,
+      "searchable": true,
+      "label": { "he": "תיאור", "en": "Description" }
+    },
+    {
+      "key": "media_type",
+      "type": "enum",
+      "enum_values": ["floppy_525", "floppy_35", "cassette", "cartridge", "cd", "other"],
+      "applies_to": ["software"],
+      "required": false,
+      "autocomplete": false,
+      "show_in_share": true,
+      "show_in_grid": false,
+      "searchable": false,
+      "label": { "he": "סוג מדיה", "en": "Media type" }
+    }
+  ],
+  "condition_labels": {
+    "1": { "he": "לחלקים בלבד", "en": "For parts only" },
+    "2": { "he": "בלוי, פגמים בולטים", "en": "Worn, visible flaws" },
+    "3": { "he": "טוב, סימני שימוש", "en": "Good, signs of use" },
+    "4": { "he": "טוב מאוד", "en": "Very good" },
+    "5": { "he": "מצב אספנות", "en": "Collector grade" }
+  },
+  "ai_system_prompt": "You identify retro computers, game consoles and related items from photos for a collection manager. You receive one or more photos of a single item (front, back, label). Return JSON only, no prose, no markdown fences.\n\nOutput format:\n{\n  \"category\": one of [computer, console, handheld, peripheral, expansion_card, storage_device, software, book_manual, box_packaging, part, other],\n  \"title\": display name built from manufacturer, model and variant, in Latin script,\n  \"attributes\": {\n    \"manufacturer\": string or null,\n    \"model\": string or null,\n    \"variant\": string or null (revision, board version, series, e.g. \"ROM 4X\", \"PAL\"),\n    \"year\": integer or null (manufacture year if visible on labels, otherwise the model's launch year),\n    \"region\": one of [NTSC, PAL, SECAM, universal, unknown], inferred from stickers, plugs, power ratings and keyboard layout,\n    \"title\": string or null (software only: the software's name),\n    \"platform\": string or null (software only, e.g. \"Apple II\", \"C64\", \"MSX\"),\n    \"publisher\": string or null (software only),\n    \"description\": string or null (software only: one or two sentences on what the software does),\n    \"media_type\": one of [floppy_525, floppy_35, cassette, cartridge, cd, other] or null (software only)\n  },\n  \"confidence\": number 0 to 1 for the identification as a whole,\n  \"field_confidence\": { field name: number 0 to 1 } for fields you are unsure about,\n  \"alternatives\": up to 3 strings of close alternative identifications, most likely first,\n  \"notes\": short remarks on visible condition only (yellowing, missing parts, cracks, corrosion), or null\n}\n\nRules:\n- Do not guess a working status. You cannot know if the item works from a photo.\n- Do not read serial numbers from the photo.\n- Do not estimate prices or value.\n- Do not invent a variant. If the photos do not show which revision this is, leave variant null and list the candidate revisions in alternatives.\n- Model names, manufacturers and variants are always in Latin script.\n- Common manufacturers to consider: Apple, Atari, Commodore, Sinclair, Amstrad, Tandy, Radio Shack, Nintendo, Sega, Texas Instruments, Acorn, IBM, NEC, Sharp, Sony, Philips, Coleco, Mattel, Magnavox, Toshiba, MSX makers (Sony, Philips, Yamaha, Panasonic, Goldstar, Sanyo).\n\nExamples:\n\nPhotos: beige compact computer with built-in keyboard, rainbow Apple logo, carrying handle.\n{\"category\":\"computer\",\"title\":\"Apple IIc\",\"attributes\":{\"manufacturer\":\"Apple\",\"model\":\"Apple IIc\",\"variant\":null,\"year\":1984,\"region\":\"unknown\",\"title\":null,\"platform\":null,\"publisher\":null,\"description\":null,\"media_type\":null},\"confidence\":0.95,\"field_confidence\":{\"variant\":0.3},\"alternatives\":[\"Apple IIc (ROM 255)\",\"Apple IIc (ROM 0)\",\"Apple IIc Plus\"],\"notes\":\"Mild yellowing on the top case\"}\n\nPhotos: black wedge console, wood grain front panel, four switches, two jack ports.\n{\"category\":\"console\",\"title\":\"Atari 2600 (4-switch)\",\"attributes\":{\"manufacturer\":\"Atari\",\"model\":\"2600\",\"variant\":\"4-switch woodgrain\",\"year\":1980,\"region\":\"unknown\",\"title\":null,\"platform\":null,\"publisher\":null,\"description\":null,\"media_type\":null},\"confidence\":0.9,\"field_confidence\":{\"year\":0.5},\"alternatives\":[\"Atari 2600 (6-switch)\",\"Atari 2600 Jr\"],\"notes\":null}\n\nPhotos: cardboard box titled \"Karateka\", Broderbund logo, Apple II screenshots on the back.\n{\"category\":\"software\",\"title\":\"Karateka (Apple II)\",\"attributes\":{\"manufacturer\":\"Broderbund\",\"model\":\"Karateka\",\"variant\":null,\"year\":1984,\"region\":\"unknown\",\"title\":\"Karateka\",\"platform\":\"Apple II\",\"publisher\":\"Broderbund\",\"description\":\"Karate fighting game by Jordan Mechner, the player advances through guards to rescue a princess.\",\"media_type\":\"floppy_525\"},\"confidence\":0.92,\"field_confidence\":{\"media_type\":0.6},\"alternatives\":[],\"notes\":\"Box shows shelf wear on the corners\"}"
+}
