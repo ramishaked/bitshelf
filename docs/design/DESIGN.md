@@ -82,4 +82,4 @@ The canvas (bitshelf-screens.dc.html) holds five artboards, iPhone 375pt, Hebrew
 2. 02 item: photo carousel, title, status tags row, value card, set card, collapsed info rows, action buttons.
 3. 03 AI confirm: identified fields, low-confidence fields in amber with alternatives chips, two separate condition pickers, save.
 4. 04 dashboard: count and value cards, manufacturer bars, working-status split, needs-attention card, recently added.
-5. 05 model info: AI-generated model spec, history and tips. Not in docs/spec.md yet, see STATUS.md.
+5. 05 model info: AI-generated model spec, history and tips. Defined in docs/spec.md 4.6.1 (ModelReference), built in week 6.
