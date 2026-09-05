@@ -424,7 +424,7 @@ Payments: RevenueCat (שלב 3)
 - Local cache של רשימת הפריטים ב-expo-sqlite: פתיחה מיידית גם ללא רשת, סנכרון ברקע. כתיבה offline נכנסת לתור ונשלחת כשיש רשת.
 - יעדים: פתיחת אפליקציה לגלריה בפחות מ-1 שנייה (cache), חיפוש בפחות מ-200ms על 1,000 פריטים (חיפוש מקומי ב-SQLite, לא בשרת).
 
-**RTL:** `I18nManager.forceRTL` בהתאם לשפה, בדיקה של כל מסך בשתי הכיוונים. מספרים ושמות דגמים עטופים ב-LTR isolate.
+**RTL:** מוחל ברמת ה-native לפני שה-JS רץ, דרך `supportsRTL` ו-`forcesRTL` ב-app config (expo-localization). קריאה ל-`I18nManager.forceRTL` בזמן ריצה עם reload שוברת את Expo Go, לכן לא עושים את זה. בדיקה של כל מסך בשתי הכיוונים. מספרים ושמות דגמים עטופים ב-LTR isolate. כשתיכנס החלפת שפה (הגדרות), ההגדרה של forcesRTL תיבחן מחדש.
 
 **AI prompting:** system prompt לכל CollectionType, נשמר בשדה `ai_system_prompt`. לרטרו: רשימת יצרנים ודגמים מוכרים (Apple, Atari, Commodore, Sinclair, Amstrad, Tandy, Nintendo, Sega, TI, Acorn, MSX...) ופורמט JSON מחייב. Few-shot עם 3 עד 5 דוגמאות. תוצאות שאושרו על ידי המשתמש נשמרות ומשמשות בהמשך כ-reference (שלב 3).
 
