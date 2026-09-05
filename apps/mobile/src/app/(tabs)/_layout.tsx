@@ -1,4 +1,4 @@
-import type { ColorValue } from "react-native";
+import { StyleSheet, type ColorValue } from "react-native";
 import { Redirect, Tabs } from "expo-router";
 import { SymbolView, type SFSymbol } from "expo-symbols";
 import { useTranslation } from "react-i18next";
@@ -28,7 +28,11 @@ function TabsNav() {
       screenOptions={{
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopWidth: 0 },
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.line,
+        },
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.textPrimary,
         headerShadowVisible: false,

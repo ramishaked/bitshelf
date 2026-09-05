@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useTranslation } from "react-i18next";
 import { useSignIn, useSSO } from "@clerk/clerk-expo";
-import { LogoPlaceholder, radius, spacing, type ThemeColors } from "@bitshelf/ui";
+import { controls, LogoPlaceholder, radius, spacing, type ThemeColors } from "@bitshelf/ui";
 import { clerkEnabled, useGuest } from "../lib/auth";
 import { useThemeColors } from "../lib/theme";
 
@@ -46,7 +46,7 @@ function AuthButton({
       <Text
         style={[
           styles.buttonLabel,
-          { color: prominent ? colors.background : colors.textPrimary },
+          { color: prominent ? colors.onAccent : colors.textPrimary },
         ]}
       >
         {label}
@@ -222,8 +222,9 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: radius.card,
-    paddingVertical: spacing.md,
+    height: controls.buttonHeight,
     alignItems: "center",
+    justifyContent: "center",
   },
   buttonLabel: {
     fontSize: 16,

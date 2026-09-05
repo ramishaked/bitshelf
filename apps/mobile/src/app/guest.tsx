@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { radius, spacing } from "@bitshelf/ui";
+import { controls, radius, spacing } from "@bitshelf/ui";
 import { useGuest } from "../lib/auth";
 import { useThemeColors } from "../lib/theme";
 
@@ -44,7 +44,7 @@ export default function GuestScreen() {
           { backgroundColor: pressed ? colors.accentPressed : colors.accent },
         ]}
       >
-        <Text style={[styles.buttonLabel, { color: colors.background }]}>{t("guest.open")}</Text>
+        <Text style={[styles.buttonLabel, { color: colors.onAccent }]}>{t("guest.open")}</Text>
       </Pressable>
       <Pressable onPress={backToSignIn} style={styles.link}>
         <Text style={[styles.linkLabel, { color: colors.accent }]}>{t("guest.backToSignIn")}</Text>
@@ -80,8 +80,9 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: radius.card,
-    paddingVertical: spacing.md,
+    height: controls.buttonHeight,
     alignItems: "center",
+    justifyContent: "center",
   },
   buttonLabel: {
     fontSize: 16,

@@ -1,13 +1,24 @@
-// Source of truth for all colors and visual tokens (spec 15.3, 15.4).
+// Source of truth for all colors and visual tokens.
+// Approved in the Claude Design project "BitShelf", see docs/design/DESIGN.md
+// (spec 15.5: after approval the tokens land here and this file wins).
 // No hex values anywhere else in the repo.
 
 export interface ThemeColors {
   background: string;
   surface: string;
+  // pressed states and nested surfaces
+  surface2: string;
   textPrimary: string;
   textSecondary: string;
+  // dividers, use sparingly: separation is by tone, not by lines
+  line: string;
   accent: string;
+  // pressed accent, active chip background
   accentPressed: string;
+  // text on accent buttons
+  onAccent: string;
+  // floating add button shadow
+  glow: string;
   statusWorking: string;
   statusPartiallyWorking: string;
   statusNotWorking: string;
@@ -17,12 +28,15 @@ export interface ThemeColors {
 export const darkColors: ThemeColors = {
   background: "#0E0F0D",
   surface: "#1A1C18",
+  surface2: "#23261F",
   textPrimary: "#EDEFE8",
   textSecondary: "#9AA096",
+  line: "#2A2D27",
   // phosphor green, dimmed from the logo green so text does not burn
   accent: "#5CE65C",
-  // pressed states and active chip backgrounds
   accentPressed: "#2E8F2E",
+  onAccent: "#0E0F0D",
+  glow: "rgba(92,230,92,0.35)",
   statusWorking: "#5CE65C",
   statusPartiallyWorking: "#F5A524",
   statusNotWorking: "#E0563F",
@@ -32,17 +46,19 @@ export const darkColors: ThemeColors = {
 export const lightColors: ThemeColors = {
   background: "#F4F5F1",
   surface: "#FFFFFF",
+  surface2: "#ECEEE8",
   textPrimary: "#161815",
-  // not in spec 15.3, derived to keep contrast on the light background
-  textSecondary: "#6A6F66",
+  textSecondary: "#6B7066",
+  line: "#DDE0D8",
   // darker green, phosphor is unreadable on white
   accent: "#1E9E3A",
-  // not in spec 15.3, derived from the light accent
-  accentPressed: "#16702A",
-  statusWorking: "#5CE65C",
-  statusPartiallyWorking: "#F5A524",
-  statusNotWorking: "#E0563F",
-  statusUntested: "#7A7F76",
+  accentPressed: "#167A2C",
+  onAccent: "#FFFFFF",
+  glow: "rgba(30,158,58,0.3)",
+  statusWorking: "#1E9E3A",
+  statusPartiallyWorking: "#D98C0E",
+  statusNotWorking: "#C7432E",
+  statusUntested: "#8A8F86",
 };
 
 // Logo and splash only (spec 15.1). Never in regular UI.
@@ -58,14 +74,17 @@ export const themes: Record<ThemeName, ThemeColors> = {
   light: lightColors,
 };
 
-// 12px corners, no shadows, separation by tone and not by lines (spec 15.4)
+// 12 on cards and buttons, 8 on tags, 999 on chips. No shadows.
 export const radius = {
   card: 12,
+  tag: 8,
+  chip: 999,
 };
 
-// 2px gap so photos build a wall (spec 15.4)
+// 3 columns, 2px gap, square tiles, so photos build a wall
 export const grid = {
   gap: 2,
+  columns: 3,
 };
 
 export const typography = {
@@ -74,6 +93,19 @@ export const typography = {
   // spec 15.4 calls for SF Mono (serials, years, prices only). SF Mono is not
   // available to apps without bundling the font, Menlo stands in until then.
   mono: "Menlo",
+  sizes: {
+    largeTitle: 28,
+    title: 22,
+    body: 16,
+    secondary: 14,
+    caption: 12,
+  },
+  lineHeight: 1.3,
+};
+
+// primary: accent background, onAccent text. secondary: surface background.
+export const controls = {
+  buttonHeight: 48,
 };
 
 export const spacing = {
