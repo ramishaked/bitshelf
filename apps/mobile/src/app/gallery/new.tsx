@@ -169,8 +169,8 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.body,
     textAlign: "left",
   },
+  // no mono here: the placeholder is Hebrew and Menlo has no Hebrew glyphs
   latinInput: {
-    fontFamily: typography.mono,
     writingDirection: "ltr",
   },
   pickLabel: {

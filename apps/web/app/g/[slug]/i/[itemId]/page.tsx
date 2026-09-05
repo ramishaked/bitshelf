@@ -79,13 +79,14 @@ export default async function PublicItemPage({ params }: Params) {
         </div>
       ) : null}
 
+      {/* title in the UI font like the item screen; mono is for numbers only */}
       <h1
         style={{
           margin: `${spacing.lg}px 0 0`,
           fontSize: 24,
           direction: "ltr",
           textAlign: "right",
-          fontFamily: "ui-monospace, monospace",
+          unicodeBidi: "isolate",
         }}
       >
         {item.title}
@@ -153,8 +154,11 @@ export default async function PublicItemPage({ params }: Params) {
                 style={{
                   margin: 0,
                   fontSize: 14,
-                  fontFamily: "ui-monospace, monospace",
-                  direction: "ltr",
+                  // values mix Hebrew and Latin; plaintext bidi keeps each right
+                  unicodeBidi: "plaintext",
+                  ...(attr.key === "serial_number" || attr.key === "year"
+                    ? { fontFamily: "ui-monospace, monospace" }
+                    : {}),
                 }}
               >
                 {attr.value}

@@ -169,8 +169,8 @@ const styles = StyleSheet.create({
   chipLabel: {
     fontSize: 13,
   },
+  // chips are plain UI text in the design; latin values only get LTR isolation
   latin: {
-    fontFamily: typography.mono,
     writingDirection: "ltr",
   },
 });

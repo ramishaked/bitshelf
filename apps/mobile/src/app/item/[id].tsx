@@ -284,7 +284,10 @@ export default function ItemScreen() {
                     style={[
                       styles.detailValue,
                       { color: colors.textPrimary },
-                      isLatinField(field.key) && styles.mono,
+                      isLatinField(field.key) && styles.latin,
+                      // design: mono only for identifying numbers
+                      (field.key === "serial_number" || field.key === "year") &&
+                        styles.mono,
                     ]}
                   >
                     {field.type === "enum"
@@ -465,6 +468,9 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: typography.sizes.secondary,
+  },
+  latin: {
+    writingDirection: "ltr",
   },
   mono: {
     fontFamily: typography.mono,

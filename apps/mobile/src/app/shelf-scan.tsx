@@ -400,14 +400,12 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: typography.sizes.secondary + 1,
     fontWeight: "600",
-    fontFamily: typography.mono,
     writingDirection: "ltr",
     textAlign: "left",
   },
+  // mixes a percentage with Hebrew, stays in the UI font
   rowMeta: {
     fontSize: typography.sizes.caption,
-    fontFamily: typography.mono,
-    writingDirection: "ltr",
     textAlign: "left",
   },
   retake: {

@@ -217,14 +217,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "left",
   },
+  // the meta line mixes a count with Hebrew, so it stays in the UI font
+  // (design: mono is for identifying numbers only, and it has no Hebrew)
   rowMeta: {
     fontSize: typography.sizes.caption + 1,
-    fontFamily: typography.mono,
     textAlign: "left",
-    writingDirection: "ltr",
   },
   latin: {
-    fontFamily: typography.mono,
     writingDirection: "ltr",
   },
   createRow: {
