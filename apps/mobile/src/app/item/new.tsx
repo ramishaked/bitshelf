@@ -155,6 +155,7 @@ export default function ItemFormScreen() {
       title: buildTitle(category, finalAttrs, t("item.untitled")),
       attributes: finalAttrs,
       conditionGrade,
+      conditionNotes: existing?.conditionNotes ?? null,
       storageLocation: storageLocation.trim() || null,
       notes: notes.trim() || null,
       purchasePrice: purchasePrice.trim() || null,

@@ -238,6 +238,21 @@ export default function ItemScreen() {
             </Card>
           ) : null}
 
+          {item.conditionNotes ? (
+            <Card label={t("confirm.aiNotes")} colors={colors}>
+              <Text
+                style={{
+                  color: colors.textPrimary,
+                  fontSize: 14,
+                  lineHeight: 20,
+                  textAlign: "left",
+                }}
+              >
+                {item.conditionNotes}
+              </Text>
+            </Card>
+          ) : null}
+
           {item.notes ? (
             <Card label={t("item.notes")} colors={colors}>
               <Text

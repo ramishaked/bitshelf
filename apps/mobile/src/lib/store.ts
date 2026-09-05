@@ -17,6 +17,7 @@ export interface LocalItem {
   title: string;
   attributes: Record<string, unknown>;
   conditionGrade: number | null;
+  conditionNotes: string | null;
   storageLocation: string | null;
   notes: string | null;
   purchasePrice: string | null;
@@ -106,6 +107,30 @@ export function getItem(id: string): LocalItem | null {
 
 export function deleteItem(id: string): void {
   db.runSync("DELETE FROM items WHERE id = ?", [id]);
+}
+
+// duplicate check before save (spec 6.4): same manufacturer, model and variant
+export function findDuplicate(
+  manufacturer: unknown,
+  model: unknown,
+  variant: unknown,
+  excludeId?: string,
+): LocalItem | null {
+  if (typeof manufacturer !== "string" || typeof model !== "string") return null;
+  const rows = db.getAllSync<{ json: string }>(
+    "SELECT json FROM items WHERE manufacturer = ? AND model = ? AND id != ?",
+    [manufacturer, model, excludeId ?? ""],
+  );
+  const wanted = typeof variant === "string" ? variant.trim().toLowerCase() : "";
+  for (const row of rows) {
+    const item = parseRow(row);
+    const existing =
+      typeof item.attributes.variant === "string"
+        ? item.attributes.variant.trim().toLowerCase()
+        : "";
+    if (existing === wanted) return item;
+  }
+  return null;
 }
 
 export function listUnsynced(): LocalItem[] {

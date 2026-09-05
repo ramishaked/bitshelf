@@ -1,5 +1,12 @@
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,6 +21,7 @@ import {
   type ThemeColors,
 } from "@bitshelf/ui";
 import { ScreenHeader } from "../../components/screen-header";
+import { clerkEnabled } from "../../lib/auth";
 import { statusColor } from "../../lib/retro";
 import { listItems, type LocalItem } from "../../lib/store";
 import { useThemeColors } from "../../lib/theme";
@@ -93,7 +101,19 @@ export default function CollectionScreen() {
         </View>
       )}
       <Pressable
-        onPress={() => router.push("/item/new")}
+        onPress={() => {
+          // spec 7.1: photograph / manual add (shelf scan arrives in week 5).
+          // AI capture needs a signed-in session for the server call.
+          if (!clerkEnabled) {
+            router.push("/item/new");
+            return;
+          }
+          Alert.alert(t("item.newTitle"), "", [
+            { text: t("fab.capture"), onPress: () => router.push("/capture") },
+            { text: t("fab.manual"), onPress: () => router.push("/item/new") },
+            { text: t("item.cancel"), style: "cancel" },
+          ]);
+        }}
         style={({ pressed }) => [
           styles.fab,
           {

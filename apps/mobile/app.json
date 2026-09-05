@@ -35,6 +35,12 @@
       "expo-localization",
       "expo-sqlite",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "BitShelf מצלם את פריטי האוסף שלך. BitShelf photographs your collection items."
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "cameraPermission": "BitShelf מצלם את פריטי האוסף שלך. BitShelf photographs your collection items.",

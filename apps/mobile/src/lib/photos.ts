@@ -23,7 +23,7 @@ function persist(tempUri: string, name: string): string {
   return dest.uri;
 }
 
-interface PickedAsset {
+export interface PickedAsset {
   uri: string;
   width: number;
   height: number;
@@ -41,7 +41,8 @@ async function resizeTo(asset: PickedAsset, longSide: number): Promise<string> {
   return result.uri;
 }
 
-async function processAsset(asset: PickedAsset): Promise<LocalPhoto> {
+export async function processAsset(asset: PickedAsset): Promise<LocalPhoto> {
+  ensureDir();
   const id = randomUUID();
   const fullUri = await resizeTo(asset, 2000);
   const thumbUri = await resizeTo(asset, 400);

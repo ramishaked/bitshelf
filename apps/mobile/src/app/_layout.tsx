@@ -29,6 +29,8 @@ export default function RootLayout() {
           name="item/new"
           options={{ presentation: "modal", headerShown: true }}
         />
+        <Stack.Screen name="capture" options={{ presentation: "fullScreenModal" }} />
+        <Stack.Screen name="item/confirm" options={{ gestureEnabled: false }} />
         <Stack.Screen
           name="item/[id]"
           options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }}
