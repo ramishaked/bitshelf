@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import { useTranslation } from "react-i18next";
 import {
   controls,
@@ -265,11 +266,16 @@ export default function ItemFormScreen() {
                   </Pressable>
                 </View>
               ))}
+              {/* icon tiles like the iOS Photos add tile, captions never wrap */}
               <Pressable
                 onPress={() => void onAddPhotos("camera")}
                 style={[styles.photoAdd, { backgroundColor: colors.surface }]}
               >
-                <Text style={[styles.photoAddLabel, { color: colors.accent }]}>
+                <SymbolView name="camera" tintColor={colors.accent} size={24} />
+                <Text
+                  numberOfLines={1}
+                  style={[styles.photoAddLabel, { color: colors.textSecondary }]}
+                >
                   {t("item.takePhoto")}
                 </Text>
               </Pressable>
@@ -277,8 +283,16 @@ export default function ItemFormScreen() {
                 onPress={() => void onAddPhotos("library")}
                 style={[styles.photoAdd, { backgroundColor: colors.surface }]}
               >
-                <Text style={[styles.photoAddLabel, { color: colors.accent }]}>
-                  {t("item.fromLibrary")}
+                <SymbolView
+                  name="photo.on.rectangle"
+                  tintColor={colors.accent}
+                  size={24}
+                />
+                <Text
+                  numberOfLines={1}
+                  style={[styles.photoAddLabel, { color: colors.textSecondary }]}
+                >
+                  {t("item.libraryShort")}
                 </Text>
               </Pressable>
             </View>
@@ -474,11 +488,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.tag,
     alignItems: "center",
     justifyContent: "center",
+    gap: spacing.xs + 1,
     padding: spacing.xs,
   },
   photoAddLabel: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 11,
     textAlign: "center",
   },
   chipRow: {
