@@ -4,7 +4,7 @@ import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { defaultLanguage, initI18n } from "@bitshelf/i18n";
 import { clerkEnabled, GuestProvider } from "../lib/auth";
-import { useThemeColors } from "../lib/theme";
+import { useThemeColors, useThemeName } from "../lib/theme";
 
 initI18n(defaultLanguage);
 
@@ -15,10 +15,12 @@ initI18n(defaultLanguage);
 
 export default function RootLayout() {
   const colors = useThemeColors();
+  const themeName = useThemeName();
 
   const app = (
     <GuestProvider>
-      <StatusBar style="auto" />
+      {/* follows the in-app appearance setting, not only the OS scheme */}
+      <StatusBar style={themeName === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerShown: false,

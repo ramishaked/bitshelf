@@ -5,7 +5,12 @@ import { useAuth } from "@clerk/clerk-expo";
 import { radius, spacing, type ThemeColors } from "@bitshelf/ui";
 import { ScreenHeader } from "../../components/screen-header";
 import { clerkEnabled } from "../../lib/auth";
-import { useThemeColors } from "../../lib/theme";
+import {
+  setThemeMode,
+  useThemeColors,
+  useThemeMode,
+  type ThemeMode,
+} from "../../lib/theme";
 
 function Row({ label, value, colors }: { label: string; value: string; colors: ThemeColors }) {
   return (
@@ -38,9 +43,16 @@ function SignOutRow({ colors }: { colors: ThemeColors }) {
   );
 }
 
+const NEXT_MODE: Record<ThemeMode, ThemeMode> = {
+  system: "dark",
+  dark: "light",
+  light: "system",
+};
+
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const colors = useThemeColors();
+  const mode = useThemeMode();
   const version = Constants.expoConfig?.version ?? "0.1.0";
 
   return (
@@ -52,6 +64,14 @@ export default function ProfileScreen() {
         value={i18n.language === "he" ? "עברית" : "English"}
         colors={colors}
       />
+      {/* tap cycles system, dark, light (spec: dark default, light must work) */}
+      <Pressable onPress={() => setThemeMode(NEXT_MODE[mode])}>
+        <Row
+          label={t("profile.appearance")}
+          value={t(`profile.appearance_${mode}`)}
+          colors={colors}
+        />
+      </Pressable>
       <Row label={t("profile.version")} value={version} colors={colors} />
       {clerkEnabled ? (
         <SignOutRow colors={colors} />

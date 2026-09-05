@@ -167,7 +167,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.card - 2,
     paddingHorizontal: spacing.md,
     fontSize: typography.sizes.body,
-    textAlign: "left",
+    // TextInput alignment is physical on iOS, right hugs the RTL start
+    textAlign: "right",
   },
   // no mono here: the placeholder is Hebrew and Menlo has no Hebrew glyphs
   latinInput: {

@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.card - 2,
     paddingHorizontal: spacing.md,
     fontSize: typography.sizes.secondary + 1,
-    // logical start, physical right in RTL, like the rest of the forms
-    textAlign: "left",
+    // TextInput alignment is physical on iOS, right hugs the RTL start
+    textAlign: "right",
   },
   chips: {
     paddingHorizontal: spacing.lg + spacing.xs,

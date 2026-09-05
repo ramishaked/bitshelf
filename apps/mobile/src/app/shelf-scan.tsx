@@ -426,7 +426,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.card - 2,
     paddingHorizontal: spacing.md,
     fontSize: typography.sizes.secondary + 1,
-    textAlign: "left",
+    // TextInput alignment is physical on iOS, right hugs the RTL start
+    textAlign: "right",
   },
   save: {
     height: controls.buttonHeight,

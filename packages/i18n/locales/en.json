@@ -165,6 +165,10 @@
   "profile": {
     "title": "Profile",
     "language": "Language",
+    "appearance": "Appearance",
+    "appearance_system": "Automatic",
+    "appearance_dark": "Dark",
+    "appearance_light": "Light",
     "defaultCurrency": "Default currency",
     "signOut": "Sign out",
     "devNote": "Clerk is not configured. Development mode, no sign-in.",

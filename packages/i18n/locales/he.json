@@ -165,6 +165,10 @@
   "profile": {
     "title": "פרופיל",
     "language": "שפה",
+    "appearance": "מראה",
+    "appearance_system": "אוטומטי",
+    "appearance_dark": "כהה",
+    "appearance_light": "בהיר",
     "defaultCurrency": "מטבע ברירת מחדל",
     "signOut": "התנתקות",
     "devNote": "Clerk לא מוגדר. מצב פיתוח, ללא התחברות.",
