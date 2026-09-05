@@ -1,31 +1,19 @@
-import { useEffect } from "react";
-import { I18nManager } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
-import { defaultLanguage, initI18n, isRTL } from "@bitshelf/i18n";
+import { defaultLanguage, initI18n } from "@bitshelf/i18n";
 import { clerkEnabled, GuestProvider } from "../lib/auth";
-import { reloadApp } from "../lib/reload";
 import { useThemeColors } from "../lib/theme";
 
 initI18n(defaultLanguage);
 
-// RTL follows the app language (spec 12). forceRTL only applies after a
-// reload, so flip once and reload. On the next launch isRTL already matches.
-function useForceRTL() {
-  useEffect(() => {
-    const wantRTL = isRTL(defaultLanguage);
-    if (I18nManager.isRTL !== wantRTL) {
-      I18nManager.allowRTL(wantRTL);
-      I18nManager.forceRTL(wantRTL);
-      void reloadApp();
-    }
-  }, []);
-}
+// RTL is applied natively before JS runs, via extra.supportsRTL and
+// extra.forcesRTL in app.json (expo-localization). No runtime flip: calling
+// I18nManager.forceRTL plus reload at startup breaks the Expo Go runtime.
+// Language switching (spec 12) will revisit forcesRTL when English arrives.
 
 export default function RootLayout() {
-  useForceRTL();
   const colors = useThemeColors();
 
   const app = (
