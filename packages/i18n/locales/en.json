@@ -18,6 +18,7 @@
     "fromLibrary": "From library",
     "category": "Category",
     "conditionGrade": "Cosmetic condition",
+    "workingStatus": "Working status",
     "storageLocation": "Storage location",
     "storagePlaceholder": "Shelf, cabinet, box",
     "notes": "Notes",
@@ -35,6 +36,33 @@
     "details": "Technical details",
     "noPhoto": "No photo",
     "notSynced": "Not synced to server yet"
+  },
+  "capture": {
+    "guide": "Place the item in the frame",
+    "hint": "Shoot a few angles: front, back, label",
+    "identify": "Identify ({{count}})",
+    "fromLibrary": "From library",
+    "close": "Close",
+    "permission": "No camera permission. You can allow it in Settings."
+  },
+  "confirm": {
+    "title": "Item identified",
+    "subtitle": "Check, fix, save. You can complete it later.",
+    "identifying": "Identifying...",
+    "failed": "Identification failed. Try again or add manually.",
+    "retry": "Try again",
+    "manual": "Add manually",
+    "check": "verify",
+    "aiNotes": "Identification notes",
+    "save": "Save to collection",
+    "retake": "Retake",
+    "duplicateTitle": "You already have {{title}}",
+    "duplicateBody": "Add another copy?",
+    "addCopy": "Add copy"
+  },
+  "fab": {
+    "capture": "Photograph item",
+    "manual": "Add manually"
   },
   "status": {
     "working": "Working",

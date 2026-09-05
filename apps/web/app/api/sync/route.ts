@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
-import { auth, clerkClient } from "@clerk/nextjs/server";
-import { eq, sql } from "drizzle-orm";
-import {
-  collections,
-  collectionTypes,
-  createDb,
-  items,
-  users,
-  type Db,
-} from "@bitshelf/db";
+import { auth } from "@clerk/nextjs/server";
+import { sql } from "drizzle-orm";
+import { createDb, items } from "@bitshelf/db";
+import { ensureCollection, ensureUser } from "../../../lib/provision";
 
 // Item shape the mobile app sends. Photos are not synced yet, they wait for R2.
 interface ClientItem {
@@ -17,6 +11,7 @@ interface ClientItem {
   title: string;
   attributes: Record<string, unknown>;
   conditionGrade: number | null;
+  conditionNotes: string | null;
   storageLocation: string | null;
   notes: string | null;
   purchasePrice: string | null;
@@ -41,44 +36,6 @@ function isValidItem(value: unknown): value is ClientItem {
     v.attributes != null &&
     typeof v.attributes === "object"
   );
-}
-
-async function ensureUser(db: Db, clerkId: string) {
-  const existing = await db.select().from(users).where(eq(users.clerkId, clerkId));
-  if (existing[0]) return existing[0];
-  const clerk = await clerkClient();
-  const clerkUser = await clerk.users.getUser(clerkId);
-  const email =
-    clerkUser.primaryEmailAddress?.emailAddress ??
-    clerkUser.emailAddresses[0]?.emailAddress ??
-    null;
-  const inserted = await db
-    .insert(users)
-    .values({ clerkId, email, displayName: clerkUser.fullName })
-    .onConflictDoUpdate({ target: users.clerkId, set: { email } })
-    .returning();
-  return inserted[0]!;
-}
-
-async function ensureCollection(db: Db, ownerId: string) {
-  const existing = await db
-    .select()
-    .from(collections)
-    .where(eq(collections.ownerId, ownerId))
-    .limit(1);
-  if (existing[0]) return existing[0];
-  const type = await db
-    .select()
-    .from(collectionTypes)
-    .where(eq(collectionTypes.slug, "retro_tech"));
-  if (!type[0]) {
-    throw new Error("retro_tech collection type is missing, run the db seed");
-  }
-  const inserted = await db
-    .insert(collections)
-    .values({ ownerId, collectionTypeId: type[0].id, name: "האוסף שלי" })
-    .returning();
-  return inserted[0]!;
 }
 
 // POST { items: ClientItem[] } -> { userId, collectionId, syncedIds }
@@ -108,6 +65,7 @@ export async function POST(request: Request) {
       title: ci.title,
       attributes: ci.attributes,
       conditionGrade: ci.conditionGrade ?? null,
+      conditionNotes: ci.conditionNotes ?? null,
       storageLocation: ci.storageLocation ?? null,
       notes: ci.notes ?? null,
       purchasePrice: ci.purchasePrice ?? null,

@@ -18,6 +18,7 @@
     "fromLibrary": "מהספרייה",
     "category": "קטגוריה",
     "conditionGrade": "מצב חיצוני",
+    "workingStatus": "מצב תפקודי",
     "storageLocation": "מיקום אחסון",
     "storagePlaceholder": "מדף, ארון, קופסה",
     "notes": "הערות",
@@ -35,6 +36,33 @@
     "details": "פרטים טכניים",
     "noPhoto": "אין תמונה",
     "notSynced": "טרם סונכרן לשרת"
+  },
+  "capture": {
+    "guide": "מקם את הפריט במסגרת",
+    "hint": "צלם כמה זוויות: חזית, גב, מדבקה",
+    "identify": "זהה ({{count}})",
+    "fromLibrary": "מהספרייה",
+    "close": "סגירה",
+    "permission": "אין הרשאת מצלמה. אפשר לאשר בהגדרות."
+  },
+  "confirm": {
+    "title": "זוהה פריט",
+    "subtitle": "בדוק, תקן, שמור. אפשר להשלים אחר כך.",
+    "identifying": "מזהה...",
+    "failed": "הזיהוי נכשל. אפשר לנסות שוב או להוסיף ידנית.",
+    "retry": "נסה שוב",
+    "manual": "הוספה ידנית",
+    "check": "לבדוק",
+    "aiNotes": "הערות זיהוי",
+    "save": "שמור לאוסף",
+    "retake": "צלם שוב",
+    "duplicateTitle": "יש לך כבר {{title}}",
+    "duplicateBody": "להוסיף עותק נוסף?",
+    "addCopy": "הוסף עותק"
+  },
+  "fab": {
+    "capture": "צילום פריט",
+    "manual": "הוספה ידנית"
   },
   "status": {
     "working": "עובד",
