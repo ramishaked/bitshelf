@@ -1,11 +1,14 @@
 import { File } from "expo-file-system";
 import {
+  clearDeletedIds,
+  listDeletedIds,
   listGalleryItemIds,
   listItems,
   listUnsynced,
   listUnsyncedGalleries,
   markGalleriesSynced,
   markSynced,
+  mergeServerItems,
   updateItemPhotos,
   type LocalGallery,
   type LocalItem,
@@ -25,6 +28,8 @@ const MAX_PHOTO_UPLOADS_PER_RUN = 8;
 type GetToken = () => Promise<string | null>;
 
 let running = false;
+// the full-catalog pull runs once per app session, later runs only push
+let pulledOnce = false;
 
 interface UploadTarget {
   uploadUrl: string;
@@ -159,6 +164,7 @@ export async function syncNow(getToken: GetToken): Promise<number> {
   try {
     const unsynced = listUnsynced();
     const unsyncedGalleries = listUnsyncedGalleries();
+    const deletedIds = listDeletedIds();
     const token = await getToken();
     if (!token) return 0;
 
@@ -169,9 +175,11 @@ export async function syncNow(getToken: GetToken): Promise<number> {
       (row, index, all) => all.findIndex((r) => r.id === row.id) === index,
     );
     if (
+      pulledOnce &&
       unsynced.length === 0 &&
       unsyncedGalleries.length === 0 &&
-      photoRows.length === 0
+      photoRows.length === 0 &&
+      deletedIds.length === 0
     ) {
       return 0;
     }
@@ -187,6 +195,7 @@ export async function syncNow(getToken: GetToken): Promise<number> {
         items: payload,
         galleries: unsyncedGalleries.map(galleryPayload),
         photos: photoRows,
+        deletedIds,
       }),
     });
     if (!response.ok) {
@@ -196,6 +205,15 @@ export async function syncNow(getToken: GetToken): Promise<number> {
     const result = (await response.json()) as {
       syncedIds?: string[];
       syncedGalleryIds?: string[];
+      deletedIds?: string[];
+      serverItems?: (Omit<LocalItem, "photos" | "synced"> & {
+        photos: {
+          id: string;
+          url: string;
+          thumbUrl: string | null;
+          isPrimary: boolean;
+        }[];
+      })[];
     };
     const syncedIds = new Set(result.syncedIds ?? []);
     const sent = unsynced
@@ -208,7 +226,27 @@ export async function syncNow(getToken: GetToken): Promise<number> {
         .filter((g) => syncedGalleryIds.has(g.id))
         .map((g) => ({ id: g.id, updatedAt: g.updatedAt })),
     );
-    return sent.length;
+    clearDeletedIds(result.deletedIds ?? []);
+
+    // pull: adopt server items this device has never seen. Remote URLs go
+    // straight into the photo slots, expo-image caches them on disk.
+    const pulled = (result.serverItems ?? []).map((item) => ({
+      ...item,
+      synced: true,
+      photos: item.photos
+        .filter((p) => p.url)
+        .map((p) => ({
+          id: p.id,
+          uri: p.url,
+          thumbUri: p.thumbUrl ?? p.url,
+          isPrimary: p.isPrimary,
+          remoteUrl: p.url,
+          remoteThumbUrl: p.thumbUrl ?? undefined,
+        })),
+    }));
+    const added = mergeServerItems(pulled);
+    pulledOnce = true;
+    return sent.length + added;
   } catch (err) {
     // offline or server down, the queue just waits
     console.warn("sync error", err);

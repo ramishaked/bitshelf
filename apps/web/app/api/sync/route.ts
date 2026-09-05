@@ -90,8 +90,12 @@ function isValidPhoto(value: unknown): value is ClientPhoto {
   );
 }
 
-// POST { items?, galleries?, photos? } -> { userId, collectionId, syncedIds, syncedGalleryIds, syncedPhotoIds }
+// POST { items?, galleries?, photos?, deletedIds? }
+//   -> { userId, collectionId, syncedIds, syncedGalleryIds, syncedPhotoIds,
+//        deletedIds, serverItems }
 // First call provisions the Neon user row and a default collection.
+// serverItems carries the user's full item list back so a device can pull
+// what it has never seen (fresh install, second device, server-side seed).
 export async function POST(request: Request) {
   const { userId: clerkId } = await auth();
   if (!clerkId) {
@@ -106,8 +110,12 @@ export async function POST(request: Request) {
     items?: unknown[];
     galleries?: unknown[];
     photos?: unknown[];
+    deletedIds?: unknown[];
   } | null;
   const clientItems = (body?.items ?? []).filter(isValidItem).slice(0, 200);
+  const deletedIds = ((body?.deletedIds ?? []) as unknown[])
+    .filter((v): v is string => typeof v === "string" && UUID_RE.test(v))
+    .slice(0, 200);
   const clientGalleries = (body?.galleries ?? []).filter(isValidGallery).slice(0, 50);
   const clientPhotos = (body?.photos ?? []).filter(isValidPhoto).slice(0, 200);
 
@@ -236,11 +244,65 @@ export async function POST(request: Request) {
     }
   }
 
+  if (deletedIds.length > 0) {
+    await db
+      .delete(items)
+      .where(and(eq(items.ownerId, user.id), inArray(items.id, deletedIds)));
+  }
+
+  // pull: the user's full catalog, photos attached, local-first shape
+  const itemRows = await db
+    .select()
+    .from(items)
+    .where(eq(items.ownerId, user.id))
+    .limit(500);
+  const photoRows =
+    itemRows.length > 0
+      ? await db
+          .select()
+          .from(itemPhotos)
+          .where(inArray(itemPhotos.itemId, itemRows.map((r) => r.id)))
+      : [];
+  const photosByItem = new Map<string, typeof photoRows>();
+  for (const p of photoRows) {
+    const list = photosByItem.get(p.itemId) ?? [];
+    list.push(p);
+    photosByItem.set(p.itemId, list);
+  }
+  const serverItems = itemRows.map((row) => ({
+    id: row.id,
+    category: row.category,
+    title: row.title,
+    attributes: row.attributes,
+    conditionGrade: row.conditionGrade,
+    conditionNotes: row.conditionNotes,
+    storageLocation: row.storageLocation,
+    notes: row.notes,
+    purchasePrice: row.purchasePrice,
+    purchaseCurrency: row.purchaseCurrency,
+    purchaseSource: row.purchaseSource,
+    isPrivate: row.isPrivate,
+    isFavorite: row.isFavorite,
+    tags: row.tags,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    photos: (photosByItem.get(row.id) ?? [])
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((p) => ({
+        id: p.id,
+        url: p.url,
+        thumbUrl: p.thumbUrl,
+        isPrimary: p.isPrimary,
+      })),
+  }));
+
   return NextResponse.json({
     userId: user.id,
     collectionId: collection.id,
     syncedIds,
     syncedGalleryIds,
     syncedPhotoIds,
+    deletedIds,
+    serverItems,
   });
 }

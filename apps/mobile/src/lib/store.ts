@@ -68,7 +68,29 @@ db.execSync(`
     sort_order INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (gallery_id, item_id)
   );
+  CREATE TABLE IF NOT EXISTS deleted_items (
+    id TEXT PRIMARY KEY
+  );
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
+
+export function getSetting(key: string): string | null {
+  const row = db.getFirstSync<{ value: string }>(
+    "SELECT value FROM settings WHERE key = ?",
+    [key],
+  );
+  return row?.value ?? null;
+}
+
+export function setSetting(key: string, value: string): void {
+  db.runSync("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [
+    key,
+    value,
+  ]);
+}
 
 export function newItemId(): string {
   return randomUUID();
@@ -123,8 +145,44 @@ export function getItem(id: string): LocalItem | null {
   return row ? parseRow(row) : null;
 }
 
+// a tombstone rides on the next sync so the server row is deleted too and
+// the pull merge does not resurrect the item
 export function deleteItem(id: string): void {
   db.runSync("DELETE FROM items WHERE id = ?", [id]);
+  db.runSync("INSERT OR IGNORE INTO deleted_items (id) VALUES (?)", [id]);
+}
+
+export function listDeletedIds(): string[] {
+  const rows = db.getAllSync<{ id: string }>("SELECT id FROM deleted_items");
+  return rows.map((r) => r.id);
+}
+
+export function clearDeletedIds(ids: string[]): void {
+  for (const id of ids) {
+    db.runSync("DELETE FROM deleted_items WHERE id = ?", [id]);
+  }
+}
+
+// pull merge (spec 10: the server is the backup): inserts server items this
+// device has never seen. Local rows always win, tombstoned ids stay dead.
+// One exception: a synced local item with no photos adopts server photos,
+// so photos attached elsewhere reach this device.
+export function mergeServerItems(serverItems: LocalItem[]): number {
+  const tombstones = new Set(listDeletedIds());
+  let added = 0;
+  for (const item of serverItems) {
+    if (tombstones.has(item.id)) continue;
+    const existing = getItem(item.id);
+    if (existing) {
+      if (existing.synced && existing.photos.length === 0 && item.photos.length > 0) {
+        updateItemPhotos(item.id, item.photos);
+      }
+      continue;
+    }
+    saveItem({ ...item, synced: true });
+    added += 1;
+  }
+  return added;
 }
 
 // duplicate check before save (spec 6.4): same manufacturer, model and variant
