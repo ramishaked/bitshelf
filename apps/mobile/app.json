@@ -32,7 +32,15 @@
       ],
       "expo-secure-store",
       "expo-web-browser",
-      "expo-localization"
+      "expo-localization",
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "BitShelf מצלם את פריטי האוסף שלך. BitShelf photographs your collection items.",
+          "photosPermission": "BitShelf בוחר תמונות של פריטי האוסף מהספרייה. BitShelf picks collection item photos from your library."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
