@@ -46,6 +46,9 @@
     "valueSection": "שווי משוער",
     "valueUpdated": "עודכן",
     "valueEstimate": "הערכה",
+    "valueRefresh": "עדכן שווי",
+    "valueNotConfigured": "מפתחות eBay עדיין לא הוגדרו בשרת",
+    "valueFailed": "עדכון השווי נכשל",
     "confidence_low": "ביטחון נמוך",
     "confidence_medium": "ביטחון בינוני",
     "confidence_high": "ביטחון גבוה"

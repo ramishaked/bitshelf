@@ -11,6 +11,13 @@ export {
   type IdentifyOutcome,
   type IdentifyResult,
 } from "./identify";
+export { ebayConfigured, searchAskingPrices, type EbayListing } from "./ebay";
+export {
+  computeValue,
+  type ValueItemFacts,
+  type ValueObservation,
+  type ValueResult,
+} from "./value";
 export {
   generatePost,
   GENERATE_POST_MODEL,

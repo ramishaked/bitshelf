@@ -51,6 +51,10 @@ async function fetchExisting(
   return data.status === "ready" && data.data ? data.data : null;
 }
 
+// one generation request per model per app session, reopening the screen
+// while a generation runs must not fire another paid POST
+const inFlight = new Set<string>();
+
 // kicks generation on the server; resolves when the record is ready or the
 // wait budget runs out (the caller keeps showing the skeleton either way)
 export async function ensureModelInfo(
@@ -68,17 +72,23 @@ export async function ensureModelInfo(
     return existing;
   }
 
-  const token = await getToken();
-  if (!token) return null;
-  // fire and forget: the server generates and saves even when we stop waiting
-  void fetch(`${API_URL}/api/model-info`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ manufacturer, model, variant }),
-  }).catch(() => undefined);
+  const key = cacheKey(manufacturer, model);
+  if (!inFlight.has(key)) {
+    const token = await getToken();
+    if (!token) return null;
+    inFlight.add(key);
+    // fire and forget: the server generates and saves even when we stop waiting
+    void fetch(`${API_URL}/api/model-info`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ manufacturer, model, variant }),
+    })
+      .catch(() => undefined)
+      .finally(() => inFlight.delete(key));
+  }
 
   // poll for up to four minutes
   for (let attempt = 0; attempt < 12; attempt += 1) {

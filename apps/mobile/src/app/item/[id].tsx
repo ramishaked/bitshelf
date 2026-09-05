@@ -44,6 +44,7 @@ import {
   getItem,
   listChildren,
   setItemParent,
+  updateItemValues,
   type LocalItem,
 } from "../../lib/store";
 import { requestSync } from "../../lib/sync";
@@ -196,6 +197,11 @@ export default function ItemScreen() {
   const [serialShown, setSerialShown] = useState(false);
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [repairText, setRepairText] = useState("");
+  // clerkEnabled is constant for the app's lifetime, the hook order is stable
+  const { getToken } = clerkEnabled
+    ? // eslint-disable-next-line react-hooks/rules-of-hooks
+      useAuth()
+    : { getToken: async () => null };
   const [repairCost, setRepairCost] = useState("");
 
   const reload = useCallback(() => {
@@ -282,6 +288,55 @@ export default function ItemScreen() {
         },
       },
     ]);
+  };
+
+  // "update value" (spec 9): eBay asking prices, computed on the server.
+  // 503 means the eBay keys are not configured yet.
+  const [valueBusy, setValueBusy] = useState(false);
+  const refreshValue = async () => {
+    if (valueBusy) return;
+    setValueBusy(true);
+    try {
+      const token = await getToken();
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000"}/api/refresh-value`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ itemId: item.id }),
+        },
+      );
+      if (response.status === 503) {
+        Alert.alert(t("item.valueNotConfigured"), "");
+        return;
+      }
+      if (!response.ok) {
+        Alert.alert(t("item.valueFailed"), "");
+        return;
+      }
+      const data = (await response.json()) as {
+        low: number;
+        fair: number;
+        high: number;
+        confidence: string;
+      };
+      updateItemValues(item.id, {
+        valueLow: String(data.low),
+        valueFair: String(data.fair),
+        valueHigh: String(data.high),
+        valueCurrency: "USD",
+        valueConfidence: data.confidence,
+        valueUpdatedAt: new Date().toISOString(),
+      });
+      reload();
+    } catch {
+      Alert.alert(t("item.valueFailed"), "");
+    } finally {
+      setValueBusy(false);
+    }
   };
 
   const submitRepair = () => {
@@ -397,9 +452,14 @@ export default function ItemScreen() {
                 <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
                   {t("item.valueSection")}
                 </Text>
-                <Text style={[styles.valueDate, { color: colors.textSecondary }]}>
-                  {`${t("item.valueUpdated")} ${formatDate(item.valueUpdatedAt)}`}
-                </Text>
+                <Pressable onPress={() => void refreshValue()} disabled={valueBusy}>
+                  <Text style={[styles.valueDate, { color: colors.textSecondary }]}>
+                    {`${t("item.valueUpdated")} ${formatDate(item.valueUpdatedAt)}  ·  `}
+                    <Text style={{ color: colors.accent }}>
+                      {valueBusy ? t("modelInfo.loading") : t("item.valueRefresh")}
+                    </Text>
+                  </Text>
+                </Pressable>
               </View>
               <View style={styles.valueRow}>
                 <Text style={[styles.valueSide, { color: colors.textSecondary }]}>
@@ -420,6 +480,16 @@ export default function ItemScreen() {
                 {"."}
               </Text>
             </View>
+          ) : null}
+
+          {!hasValue && clerkEnabled && manufacturer && model ? (
+            <Button
+              label={valueBusy ? "..." : t("item.valueRefresh")}
+              onPress={() => void refreshValue()}
+              colors={colors}
+              variant="secondary"
+              disabled={valueBusy}
+            />
           ) : null}
 
           {manufacturer && model ? (

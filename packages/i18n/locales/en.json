@@ -46,6 +46,9 @@
     "valueSection": "Estimated value",
     "valueUpdated": "Updated",
     "valueEstimate": "Estimate",
+    "valueRefresh": "Update value",
+    "valueNotConfigured": "eBay keys are not configured on the server yet",
+    "valueFailed": "Value update failed",
     "confidence_low": "low confidence",
     "confidence_medium": "medium confidence",
     "confidence_high": "high confidence"

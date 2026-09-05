@@ -1,0 +1,20 @@
+{
+  "comment": "Value engine coefficients (spec 9). Initial guesses, tune here, not in code.",
+  "max_observation_age_days": 180,
+  "sold_weight": 2,
+  "working_status_factor": {
+    "working": 1.0,
+    "untested": 0.8,
+    "not_working": 0.5,
+    "for_parts": 0.3,
+    "partially_working": 0.65
+  },
+  "completeness_factor": {
+    "loose": 1.0,
+    "boxed": 1.1,
+    "cib": 1.3,
+    "sealed": 2.0
+  },
+  "low_condition_factor": 0.7,
+  "low_condition_max_grade": 2
+}

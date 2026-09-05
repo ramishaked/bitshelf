@@ -486,6 +486,22 @@ export function markGalleriesSynced(
   }
 }
 
+// mirrors values the server just computed, without touching the synced flag
+export function updateItemValues(
+  id: string,
+  values: Pick<
+    LocalItem,
+    "valueLow" | "valueFair" | "valueHigh" | "valueCurrency" | "valueConfidence" | "valueUpdatedAt"
+  >,
+): void {
+  const item = getItem(id);
+  if (!item) return;
+  db.runSync("UPDATE items SET json = ? WHERE id = ?", [
+    JSON.stringify({ ...item, ...values }),
+    id,
+  ]);
+}
+
 // --- wishlist (spec 7.9), local only for now ---
 
 export interface LocalWish {
