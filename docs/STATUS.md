@@ -28,11 +28,12 @@
 - `pnpm typecheck` עובר על כל 6 החבילות.
 - האפליקציה רצה ב-Expo Go על סימולטור iPhone 17 Pro (iOS 26.5): dark, עברית, RTL מלא, טאב אוסף פעיל עם המצב הריק, סדר טאבים נכון. הרצה: `pnpm --filter @bitshelf/mobile ios`.
 
-## מה צריך להגדיר ידנית
+## מה מוגדר ומה חסר
 
-1. **Clerk:** ליצור אפליקציה ב-dashboard, להפעיל Apple, Google ו-email code, ולמלא CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ו-EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY. בלי מפתחות, המובייל רץ במצב פיתוח בלי התחברות (ישר לטאבים) וה-web מדלג על ה-middleware.
-2. **Neon:** ליצור פרויקט ולמלא DATABASE_URL, ואז להריץ push ו-seed (פקודות למעלה).
-3. **R2:** ליצור bucket ו-API token עם הרשאת קריאה וכתיבה לאובייקטים, ולמלא את חמשת משתני R2_*.
+1. **Clerk: מוגדר (05.09.2026).** אפליקציית bitshelf, passwordless: קוד אימייל, Google ו-Apple. חשוב: password, username ו-phone כבויים בהגדרות, אחרת ההרשמה נתקעת על missing_requirements. מסך הכניסה עושה sign-in וכשהחשבון לא קיים עובר אוטומטית ל-sign-up עם אותו קוד. המפתחות ב-apps/web/.env.local וב-apps/mobile/.env (מקומיים, לא ב-git).
+2. **Neon: מוגדר (05.09.2026).** פרויקט bitshelf ב-Frankfurt, כל הטבלאות נוצרו (drizzle push) ו-retro_tech נזרע. מיגרציות רצות מול ה-endpoint הישיר (בלי pooler-), האפליקציה מול ה-pooler.
+3. **R2: עדיין חסר.** ליצור bucket ו-API token עם הרשאת קריאה וכתיבה לאובייקטים, ולמלא את חמשת משתני R2_*. נחוץ להעלאת תמונות לענן.
+4. **סנכרון לשרת: עדיין לא נבנה.** התחברות עובדת אבל פריטים נשמרים רק מקומית; אין עדיין שורת משתמש ב-Neon. זה הצעד הבא.
 
 ## הערות
 

@@ -11,7 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useTranslation } from "react-i18next";
-import { useSignIn, useSSO } from "@clerk/clerk-expo";
+import { useSignIn, useSignUp, useSSO } from "@clerk/clerk-expo";
 import { controls, LogoPlaceholder, radius, spacing, type ThemeColors } from "@bitshelf/ui";
 import { clerkEnabled, useGuest } from "../lib/auth";
 import { useThemeColors } from "../lib/theme";
@@ -61,9 +61,12 @@ function ClerkSignIn({ colors }: { colors: ThemeColors }) {
   const router = useRouter();
   const { startSSOFlow } = useSSO();
   const { signIn, setActive, isLoaded } = useSignIn();
+  const { signUp, setActive: setActiveSignUp, isLoaded: signUpLoaded } = useSignUp();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"buttons" | "email" | "code">("buttons");
+  // email code signs in an existing account, or signs up a new one
+  const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
   const [failed, setFailed] = useState(false);
 
   const signInWith = async (strategy: "oauth_apple" | "oauth_google") => {
@@ -80,20 +83,49 @@ function ClerkSignIn({ colors }: { colors: ThemeColors }) {
   };
 
   const sendCode = async () => {
-    if (!isLoaded || !email.trim()) return;
+    if (!isLoaded || !signUpLoaded || !email.trim()) return;
     setFailed(false);
+    const address = email.trim();
     try {
-      await signIn.create({ identifier: email.trim(), strategy: "email_code" });
+      await signIn.create({ identifier: address, strategy: "email_code" });
+      setMode("signIn");
       setStep("code");
-    } catch {
-      setFailed(true);
+    } catch (err) {
+      const errorCode = (err as { errors?: { code?: string }[] })?.errors?.[0]?.code;
+      if (errorCode !== "form_identifier_not_found") {
+        console.warn("sign-in failed", err);
+        setFailed(true);
+        return;
+      }
+      // no such account: sign up with the same email code flow
+      try {
+        await signUp.create({ emailAddress: address });
+        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+        setMode("signUp");
+        setStep("code");
+      } catch (signUpErr) {
+        console.warn("sign-up failed", signUpErr);
+        setFailed(true);
+      }
     }
   };
 
   const verifyCode = async () => {
-    if (!isLoaded || !code.trim()) return;
+    if (!isLoaded || !signUpLoaded || !code.trim()) return;
     setFailed(false);
     try {
+      if (mode === "signUp") {
+        const attempt = await signUp.attemptEmailAddressVerification({
+          code: code.trim(),
+        });
+        if (attempt.status === "complete") {
+          await setActiveSignUp({ session: attempt.createdSessionId });
+          router.replace("/");
+          return;
+        }
+        setFailed(true);
+        return;
+      }
       const attempt = await signIn.attemptFirstFactor({
         strategy: "email_code",
         code: code.trim(),
@@ -104,7 +136,8 @@ function ClerkSignIn({ colors }: { colors: ThemeColors }) {
       } else {
         setFailed(true);
       }
-    } catch {
+    } catch (err) {
+      console.warn("verify failed", err);
       setFailed(true);
     }
   };
