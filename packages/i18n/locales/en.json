@@ -8,7 +8,8 @@
   "collection": {
     "title": "Collection",
     "emptyTitle": "The shelf is empty. Photograph your first item.",
-    "itemCount": "{{count}} items"
+    "itemCount_one": "1 item",
+    "itemCount_other": "{{count}} items"
   },
   "item": {
     "newTitle": "New item",
@@ -127,7 +128,8 @@
     "revokeConfirmBody": "The link will stop working immediately.",
     "revoke": "Revoke",
     "linkCopied": "Link copied",
-    "itemCount": "{{count}} items",
+    "itemCount_one": "1 item",
+    "itemCount_other": "{{count}} items",
     "pickTitle": "Which gallery?",
     "pickEmpty": "No galleries yet. Create one in the Galleries tab.",
     "remove": "Remove from gallery",
@@ -172,6 +174,7 @@
     "loading": "Loading gallery...",
     "notFound": "Gallery not found, or the link was revoked",
     "loadError": "Loading failed. Check your connection and try again.",
-    "itemCount": "{{count}} items"
+    "itemCount_one": "1 item",
+    "itemCount_other": "{{count}} items"
   }
 }

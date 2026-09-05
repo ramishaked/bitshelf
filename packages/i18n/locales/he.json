@@ -8,7 +8,8 @@
   "collection": {
     "title": "האוסף",
     "emptyTitle": "המדף ריק, צלם פריט ראשון",
-    "itemCount": "{{count}} פריטים"
+    "itemCount_one": "פריט אחד",
+    "itemCount_other": "{{count}} פריטים"
   },
   "item": {
     "newTitle": "פריט חדש",
@@ -127,7 +128,8 @@
     "revokeConfirmBody": "הקישור יפסיק לעבוד מיד.",
     "revoke": "ביטול קישור",
     "linkCopied": "הקישור הועתק",
-    "itemCount": "{{count}} פריטים",
+    "itemCount_one": "פריט אחד",
+    "itemCount_other": "{{count}} פריטים",
     "pickTitle": "לאיזו גלריה?",
     "pickEmpty": "אין עדיין גלריות. יוצרים אחת בטאב הגלריות.",
     "remove": "הסרה מהגלריה",
@@ -172,6 +174,7 @@
     "loading": "טוען גלריה...",
     "notFound": "הגלריה לא נמצאה, או שהקישור בוטל",
     "loadError": "הטעינה נכשלה. בדקו חיבור ונסו שוב.",
-    "itemCount": "{{count}} פריטים"
+    "itemCount_one": "פריט אחד",
+    "itemCount_other": "{{count}} פריטים"
   }
 }

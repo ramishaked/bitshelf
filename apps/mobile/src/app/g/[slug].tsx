@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -83,6 +82,7 @@ export default function PublicGalleryScreen() {
         options={{
           headerShown: true,
           title,
+          headerBackButtonDisplayMode: "minimal",
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.textPrimary,
         }}
@@ -94,7 +94,7 @@ export default function PublicGalleryScreen() {
           </View>
         ) : state === "ready" && gallery ? (
           <>
-            <ScrollView style={styles.meta} scrollEnabled={false}>
+            <View style={styles.meta}>
               {gallery.description?.he ? (
                 <Text style={[styles.description, { color: colors.textSecondary }]}>
                   {gallery.description.he}
@@ -103,7 +103,7 @@ export default function PublicGalleryScreen() {
               <Text style={[styles.count, { color: colors.textSecondary }]}>
                 {t("publicGallery.itemCount", { count: gallery.itemCount })}
               </Text>
-            </ScrollView>
+            </View>
             <View style={styles.gridWrap}>
               <FlashList
                 data={gallery.items}
