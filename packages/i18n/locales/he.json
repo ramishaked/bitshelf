@@ -6,7 +6,55 @@
     "profile": "פרופיל"
   },
   "collection": {
-    "emptyTitle": "המדף ריק, צלם פריט ראשון"
+    "emptyTitle": "המדף ריק, צלם פריט ראשון",
+    "itemCount": "{{count}} פריטים"
+  },
+  "item": {
+    "newTitle": "פריט חדש",
+    "editTitle": "עריכת פריט",
+    "photos": "תמונות",
+    "takePhoto": "צילום",
+    "fromLibrary": "מהספרייה",
+    "category": "קטגוריה",
+    "conditionGrade": "מצב חיצוני",
+    "storageLocation": "מיקום אחסון",
+    "storagePlaceholder": "מדף, ארון, קופסה",
+    "notes": "הערות",
+    "purchaseSection": "רכישה",
+    "purchasePrice": "מחיר",
+    "purchaseSource": "מאיפה",
+    "isPrivate": "פרטי",
+    "save": "שמירה",
+    "delete": "מחיקה",
+    "deleteConfirmTitle": "למחוק את הפריט?",
+    "deleteConfirmBody": "הפריט והתמונות שלו יימחקו מהמכשיר.",
+    "cancel": "ביטול",
+    "untitled": "פריט ללא שם",
+    "toComplete": "להשלים",
+    "details": "פרטים טכניים",
+    "noPhoto": "אין תמונה",
+    "notSynced": "טרם סונכרן לשרת"
+  },
+  "status": {
+    "working": "עובד",
+    "partially_working": "עובד חלקית",
+    "not_working": "לא עובד",
+    "untested": "לא נבדק",
+    "for_parts": "לחלקים"
+  },
+  "media": {
+    "floppy_525": "דיסקט 5.25",
+    "floppy_35": "דיסקט 3.5",
+    "cassette": "קלטת",
+    "cartridge": "קרטרידג'",
+    "cd": "CD",
+    "other": "אחר"
+  },
+  "completeness": {
+    "loose": "בודד",
+    "boxed": "עם קופסה",
+    "cib": "CIB",
+    "sealed": "חתום"
   },
   "galleries": {
     "emptyTitle": "אין גלריות עדיין",

@@ -67,6 +67,14 @@ export const brand = {
   splashBackground: "#0B0B0A",
 };
 
+// Text over photos is theme independent: white on the tile's bottom gradient,
+// the only allowed gradient (design "Do not" list)
+export const photoOverlay = {
+  text: "#FFFFFF",
+  gradientStart: "transparent",
+  gradientEnd: "rgba(0,0,0,0.75)",
+};
+
 export type ThemeName = "dark" | "light";
 
 export const themes: Record<ThemeName, ThemeColors> = {

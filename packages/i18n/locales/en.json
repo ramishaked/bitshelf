@@ -6,7 +6,55 @@
     "profile": "Profile"
   },
   "collection": {
-    "emptyTitle": "The shelf is empty. Photograph your first item."
+    "emptyTitle": "The shelf is empty. Photograph your first item.",
+    "itemCount": "{{count}} items"
+  },
+  "item": {
+    "newTitle": "New item",
+    "editTitle": "Edit item",
+    "photos": "Photos",
+    "takePhoto": "Take photo",
+    "fromLibrary": "From library",
+    "category": "Category",
+    "conditionGrade": "Cosmetic condition",
+    "storageLocation": "Storage location",
+    "storagePlaceholder": "Shelf, cabinet, box",
+    "notes": "Notes",
+    "purchaseSection": "Purchase",
+    "purchasePrice": "Price",
+    "purchaseSource": "Where from",
+    "isPrivate": "Private",
+    "save": "Save",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete this item?",
+    "deleteConfirmBody": "The item and its photos will be removed from this device.",
+    "cancel": "Cancel",
+    "untitled": "Untitled item",
+    "toComplete": "To complete",
+    "details": "Technical details",
+    "noPhoto": "No photo",
+    "notSynced": "Not synced to server yet"
+  },
+  "status": {
+    "working": "Working",
+    "partially_working": "Partially working",
+    "not_working": "Not working",
+    "untested": "Untested",
+    "for_parts": "For parts"
+  },
+  "media": {
+    "floppy_525": "5.25 floppy",
+    "floppy_35": "3.5 floppy",
+    "cassette": "Cassette",
+    "cartridge": "Cartridge",
+    "cd": "CD",
+    "other": "Other"
+  },
+  "completeness": {
+    "loose": "Loose",
+    "boxed": "Boxed",
+    "cib": "CIB",
+    "sealed": "Sealed"
   },
   "galleries": {
     "emptyTitle": "No galleries yet",

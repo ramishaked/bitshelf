@@ -24,7 +24,13 @@ export default function RootLayout() {
           headerShown: false,
           contentStyle: { backgroundColor: colors.background },
         }}
-      />
+      >
+        <Stack.Screen
+          name="item/new"
+          options={{ presentation: "modal", headerShown: true }}
+        />
+        <Stack.Screen name="item/[id]" options={{ headerShown: true }} />
+      </Stack>
     </GuestProvider>
   );
 
