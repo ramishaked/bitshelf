@@ -118,7 +118,10 @@
     "retake": "Retake",
     "duplicateTitle": "You already have {{title}}",
     "duplicateBody": "Add another copy?",
-    "addCopy": "Add copy"
+    "addCopy": "Add copy",
+    "badge_one": "1 photo",
+    "badge_other": "{{count}} photos",
+    "badgeSeconds": "{{seconds}} seconds"
   },
   "fab": {
     "capture": "Photograph item",

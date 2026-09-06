@@ -118,7 +118,10 @@
     "retake": "צלם שוב",
     "duplicateTitle": "יש לך כבר {{title}}",
     "duplicateBody": "להוסיף עותק נוסף?",
-    "addCopy": "הוסף עותק"
+    "addCopy": "הוסף עותק",
+    "badge_one": "תמונה אחת",
+    "badge_other": "{{count}} תמונות",
+    "badgeSeconds": "{{seconds}} שניות"
   },
   "fab": {
     "capture": "צילום פריט",

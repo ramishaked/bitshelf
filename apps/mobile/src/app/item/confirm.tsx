@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,16 +10,11 @@ import {
   View,
 } from "react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
-import {
-  controls,
-  radius,
-  spacing,
-  typography,
-  type ThemeColors,
-} from "@bitshelf/ui";
+import { photoOverlay, radius, spacing, typography } from "@bitshelf/ui";
 import {
   GLASS_ACTION_BAR_INSET,
   GlassActionBar,
@@ -57,9 +52,10 @@ export default function ConfirmScreen() {
   return <ConfirmInner />;
 }
 
-// Confirm screen after AI identification (spec 6.1 steps 4 and 5, design 03):
-// fields prefilled, low-confidence fields in amber, alternatives as chips,
-// condition and working status as two separate pickers, nothing blocks saving.
+// Confirm screen after AI identification (spec 6.1 steps 4 and 5, liquid
+// glass handoff G03): glass field card over a soft glow, low-confidence
+// fields in amber, alternatives as chips, condition and working status as
+// two separate pickers, nothing blocks saving.
 function ConfirmInner() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language === "en" ? "en" : "he";
@@ -75,11 +71,15 @@ function ConfirmInner() {
   const [conditionGrade, setConditionGrade] = useState<number | null>(null);
   const [workingStatus, setWorkingStatus] = useState("untested");
   const [storageLocation, setStorageLocation] = useState("");
+  const [seconds, setSeconds] = useState<string | null>(null);
+  const startedAt = useRef(0);
 
   const runIdentify = async () => {
     setPhase("identifying");
+    startedAt.current = Date.now();
     try {
       const result = await identifyPhotos(photos, getToken);
+      setSeconds(((Date.now() - startedAt.current) / 1000).toFixed(1));
       setAi(result);
       setCategory(result.category ?? "other");
       const next: Record<string, string> = {};
@@ -204,14 +204,18 @@ function ConfirmInner() {
     );
   }
 
-  const renderRow = (field: AttributeField) => {
+  // one row inside the glass field card (G03): label start, value end
+  const renderRow = (field: AttributeField, last = false) => {
     if (field.key === "completeness" || field.key === "serial_number") {
       return null; // completed later from the item form, keep confirm short
     }
     const low = isLow(field.key);
     const ltr = isLatinField(field.key) || field.type === "int";
     return (
-      <View key={field.key} style={[styles.row, { borderBottomColor: colors.line }]}>
+      <View
+        key={field.key}
+        style={[styles.row, !last && { borderBottomColor: colors.tileBorder }]}
+      >
         <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>
           {field.label[lang]}
           {low ? (
@@ -231,6 +235,7 @@ function ConfirmInner() {
               color: low ? colors.statusPartiallyWorking : colors.textPrimary,
             },
             ltr && styles.ltr,
+            field.type === "int" && styles.monoInput,
           ]}
         />
       </View>
@@ -238,139 +243,207 @@ function ConfirmInner() {
   };
 
   const alternatives = ai?.alternatives ?? [];
+  const primaryFields = fields.filter((f) =>
+    ["manufacturer", "model", "title"].includes(f.key),
+  );
+  const restFields = fields.filter(
+    (f) =>
+      !["manufacturer", "model", "title", "completeness", "serial_number"].includes(f.key),
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-    <ScrollView contentContainerStyle={styles.content}>
-      <Text style={[styles.title, { color: colors.textPrimary }]}>
-        {t("confirm.title")}
-      </Text>
-      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        {t("confirm.subtitle")}
-      </Text>
+      {/* soft glow bleeding from the top, per G03 */}
+      <LinearGradient
+        pointerEvents="none"
+        colors={[colors.accentSoft, "transparent"]}
+        start={{ x: 0.8, y: 0 }}
+        end={{ x: 0.3, y: 1 }}
+        style={styles.glowLayer}
+      />
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          {t("confirm.title")}
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          {t("confirm.subtitle")}
+        </Text>
 
-      {photos[0] ? (
-        <Image source={{ uri: photos[0].uri }} style={styles.hero} />
-      ) : null}
-
-      {fields.filter((f) => ["manufacturer", "model", "title"].includes(f.key)).map(renderRow)}
-
-      {alternatives.length > 0 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.altRow}>
-            {alternatives.map((alt) => (
-              <Pressable
-                key={alt}
-                onPress={() => setAttrs((prev) => ({ ...prev, model: alt }))}
-                style={[styles.altChip, { borderColor: colors.line }]}
-              >
-                <Text style={[styles.altLabel, { color: colors.textSecondary }]}>{alt}</Text>
-              </Pressable>
-            ))}
+        {photos[0] ? (
+          <View style={[styles.hero, { borderColor: colors.glassCardBorder }]}>
+            <Image source={{ uri: photos[0].uri }} style={StyleSheet.absoluteFill} />
+            <View style={[styles.heroBadge, { backgroundColor: photoOverlay.viewerControl }]}>
+              <Text style={styles.heroBadgeText}>
+                {t("confirm.badge", { count: photos.length })}
+                {seconds ? `, ${t("confirm.badgeSeconds", { seconds })}` : ""}
+              </Text>
+            </View>
           </View>
-        </ScrollView>
-      ) : null}
+        ) : null}
 
-      {fields
-        .filter((f) => !["manufacturer", "model", "title"].includes(f.key))
-        .map(renderRow)}
+        <View
+          style={[
+            styles.fieldCard,
+            { backgroundColor: colors.glassCard, borderColor: colors.glassCardBorder },
+          ]}
+        >
+          {primaryFields.map((f) => renderRow(f))}
 
-      <View style={styles.pickers}>
-        <View style={[styles.pickerCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.pickerLabel, { color: colors.textSecondary }]}>
-            {t("item.conditionGrade")}
-          </Text>
-          <View style={styles.starsRow}>
-            {[1, 2, 3, 4, 5].map((grade) => (
-              <Pressable
-                key={grade}
-                onPress={() => setConditionGrade(conditionGrade === grade ? null : grade)}
-              >
-                <Text
-                  style={{
-                    fontSize: 22,
-                    color:
-                      conditionGrade != null && grade <= conditionGrade
-                        ? colors.accent
-                        : colors.line,
-                  }}
-                >
-                  {"★"}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-          {conditionGrade != null ? (
-            <Text style={[styles.pickerHint, { color: colors.textSecondary }]}>
-              {conditionLabels[String(conditionGrade)]?.[lang]}
-            </Text>
+          {alternatives.length > 0 ? (
+            <View style={[styles.altRow, { borderBottomColor: colors.tileBorder }]}>
+              {alternatives.map((alt) => {
+                const active = attrs.model === alt;
+                return (
+                  <Pressable
+                    key={alt}
+                    onPress={() => setAttrs((prev) => ({ ...prev, model: alt }))}
+                    style={[
+                      styles.altChip,
+                      active
+                        ? { backgroundColor: colors.accentSoft, borderColor: colors.accent }
+                        : { backgroundColor: colors.tileBg, borderColor: colors.tileBorder },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.altLabel,
+                        { color: active ? colors.accent : colors.textSecondary },
+                      ]}
+                    >
+                      {alt}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           ) : null}
+
+          {restFields.map((f, i) => renderRow(f, i === restFields.length - 1))}
         </View>
-        <View style={[styles.pickerCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.pickerLabel, { color: colors.textSecondary }]}>
-            {t("item.workingStatus")}
-          </Text>
-          <View style={styles.statusWrap}>
-            {["working", "partially_working", "not_working", "untested", "for_parts"].map(
-              (value) => (
+
+        <View style={styles.pickers}>
+          <View
+            style={[
+              styles.pickerCard,
+              { backgroundColor: colors.glassCard, borderColor: colors.glassCardBorder },
+            ]}
+          >
+            <Text style={[styles.pickerLabel, { color: colors.textSecondary }]}>
+              {t("item.conditionGrade")}
+            </Text>
+            <View style={styles.starsRow}>
+              {[1, 2, 3, 4, 5].map((grade) => (
                 <Pressable
-                  key={value}
-                  onPress={() => setWorkingStatus(value)}
-                  style={[
-                    styles.statusChip,
-                    {
-                      backgroundColor:
-                        workingStatus === value ? colors.statusUntested : colors.surface2,
-                    },
-                  ]}
+                  key={grade}
+                  onPress={() => setConditionGrade(conditionGrade === grade ? null : grade)}
                 >
                   <Text
                     style={{
-                      fontSize: 11,
+                      fontSize: 20,
                       color:
-                        workingStatus === value ? colors.textPrimary : colors.textSecondary,
+                        conditionGrade != null && grade <= conditionGrade
+                          ? colors.accent
+                          : colors.line,
                     }}
                   >
-                    {t(`status.${value}`)}
+                    {"★"}
                   </Text>
                 </Pressable>
-              ),
-            )}
+              ))}
+            </View>
+            {conditionGrade != null ? (
+              <Text style={[styles.pickerHint, { color: colors.textSecondary }]}>
+                {conditionLabels[String(conditionGrade)]?.[lang]}
+              </Text>
+            ) : null}
+          </View>
+          <View
+            style={[
+              styles.pickerCard,
+              { backgroundColor: colors.glassCard, borderColor: colors.glassCardBorder },
+            ]}
+          >
+            <Text style={[styles.pickerLabel, { color: colors.textSecondary }]}>
+              {t("item.workingStatus")}
+            </Text>
+            <View style={styles.statusWrap}>
+              {["working", "partially_working", "not_working", "untested", "for_parts"].map(
+                (value) => {
+                  const active = workingStatus === value;
+                  return (
+                    <Pressable
+                      key={value}
+                      onPress={() => setWorkingStatus(value)}
+                      style={[
+                        styles.statusChip,
+                        active
+                          ? { backgroundColor: colors.textPrimary }
+                          : {
+                              backgroundColor: colors.tileBg,
+                              borderWidth: 1,
+                              borderColor: colors.tileBorder,
+                            },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: active ? "600" : "400",
+                          color: active ? colors.background : colors.textSecondary,
+                        }}
+                      >
+                        {t(`status.${value}`)}
+                      </Text>
+                    </Pressable>
+                  );
+                },
+              )}
+            </View>
           </View>
         </View>
-      </View>
 
-      {ai?.notes ? (
-        <View style={[styles.notesCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.pickerLabel, { color: colors.textSecondary }]}>
-            {t("confirm.aiNotes")}
-          </Text>
-          <Text style={{ color: colors.textPrimary, fontSize: 14, textAlign: "left" }}>
-            {ai.notes}
-          </Text>
+        {ai?.notes ? (
+          <View
+            style={[
+              styles.notesCard,
+              { backgroundColor: colors.glassCard, borderColor: colors.glassCardBorder },
+            ]}
+          >
+            <Text style={[styles.pickerLabel, { color: colors.textSecondary }]}>
+              {t("confirm.aiNotes")}
+            </Text>
+            <Text style={{ color: colors.textPrimary, fontSize: 14, textAlign: "left" }}>
+              {ai.notes}
+            </Text>
+          </View>
+        ) : null}
+
+        <View
+          style={[
+            styles.locationCard,
+            { backgroundColor: colors.glassCard, borderColor: colors.glassCardBorder },
+          ]}
+        >
+          <View style={styles.row}>
+            <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>
+              {t("item.storageLocation")}
+            </Text>
+            <TextInput
+              value={storageLocation}
+              onChangeText={setStorageLocation}
+              placeholder={t("item.storagePlaceholder")}
+              placeholderTextColor={colors.textSecondary}
+              style={[styles.rowInput, { color: colors.textPrimary }]}
+            />
+          </View>
         </View>
-      ) : null}
-
-      <View style={[styles.row, { borderBottomColor: colors.line }]}>
-        <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>
-          {t("item.storageLocation")}
-        </Text>
-        <TextInput
-          value={storageLocation}
-          onChangeText={setStorageLocation}
-          placeholder={t("item.storagePlaceholder")}
-          placeholderTextColor={colors.textSecondary}
-          style={[styles.rowInput, { color: colors.textPrimary }]}
-        />
-      </View>
-
-    </ScrollView>
-    <GlassActionBar
-      actions={[
-        { label: t("confirm.save"), onPress: save, variant: "primary" },
-        { label: t("confirm.retake"), onPress: retake },
-      ]}
-    />
+      </ScrollView>
+      <GlassActionBar
+        actions={[
+          { label: t("confirm.save"), onPress: save, variant: "primary" },
+          { label: t("confirm.retake"), onPress: retake },
+        ]}
+      />
     </View>
   );
 }
@@ -388,9 +461,17 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: radius.card,
   },
+  glowLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 380,
+  },
   content: {
     padding: spacing.lg,
     paddingTop: 68,
+    gap: spacing.md,
     // clears the floating glass save capsule
     paddingBottom: GLASS_ACTION_BAR_INSET,
   },
@@ -402,14 +483,33 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: typography.sizes.secondary,
-    marginTop: 2,
-    marginBottom: spacing.md,
+    marginTop: -spacing.md + 2,
     textAlign: "left",
   },
   hero: {
-    height: 170,
-    borderRadius: radius.card,
-    marginBottom: spacing.sm,
+    height: 180,
+    borderRadius: 22,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  heroBadge: {
+    position: "absolute",
+    bottom: spacing.sm,
+    right: spacing.sm,
+    borderRadius: radius.chip,
+    paddingHorizontal: spacing.sm + 1,
+    paddingVertical: spacing.xs,
+  },
+  heroBadgeText: {
+    fontSize: 11,
+    color: photoOverlay.text,
+  },
+  // G03: one translucent card holds the identified fields
+  fieldCard: {
+    borderRadius: 22,
+    borderWidth: 1,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 2,
   },
   row: {
     flexDirection: "row",
@@ -417,6 +517,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing.sm + 3,
     borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "transparent",
     gap: spacing.md,
   },
   rowLabel: {
@@ -431,16 +532,21 @@ const styles = StyleSheet.create({
   ltr: {
     writingDirection: "ltr",
   },
+  monoInput: {
+    fontFamily: typography.mono,
+  },
   altRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.xs + 2,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.sm + 2,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   altChip: {
     borderWidth: 1,
     borderRadius: radius.chip,
-    paddingHorizontal: spacing.md - 2,
-    paddingVertical: spacing.xs + 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
   },
   altLabel: {
     fontSize: 12,
@@ -449,11 +555,11 @@ const styles = StyleSheet.create({
   pickers: {
     flexDirection: "row",
     gap: spacing.sm + 2,
-    marginTop: spacing.md,
   },
   pickerCard: {
     flex: 1,
-    borderRadius: radius.card,
+    borderRadius: 18,
+    borderWidth: 1,
     padding: spacing.md,
     gap: spacing.sm,
   },
@@ -475,14 +581,19 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   statusChip: {
-    borderRadius: radius.tag - 2,
-    paddingHorizontal: spacing.sm - 1,
+    borderRadius: radius.chip,
+    paddingHorizontal: spacing.sm + 1,
     paddingVertical: spacing.xs,
   },
   notesCard: {
-    borderRadius: radius.card,
+    borderRadius: 18,
+    borderWidth: 1,
     padding: spacing.md,
     gap: spacing.xs + 2,
-    marginTop: spacing.md,
+  },
+  locationCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: spacing.lg,
   },
 });
