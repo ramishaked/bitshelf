@@ -21,6 +21,12 @@ export interface ThemeColors {
   onAccent: string;
   // floating add button shadow
   glow: string;
+  // dashboard cards per handoff G04: translucent fill with a light edge
+  glassCard: string;
+  glassCardBorder: string;
+  // small nested tiles inside a card (working status 4-up)
+  tileBg: string;
+  tileBorder: string;
   statusWorking: string;
   statusPartiallyWorking: string;
   statusNotWorking: string;
@@ -40,6 +46,10 @@ export const darkColors: ThemeColors = {
   accentSoft: "rgba(92,230,92,0.18)",
   onAccent: "#0E0F0D",
   glow: "rgba(92,230,92,0.35)",
+  glassCard: "rgba(30,32,36,0.55)",
+  glassCardBorder: "rgba(255,255,255,0.14)",
+  tileBg: "rgba(255,255,255,0.06)",
+  tileBorder: "rgba(255,255,255,0.09)",
   statusWorking: "#5CE65C",
   statusPartiallyWorking: "#F5A524",
   statusNotWorking: "#E0563F",
@@ -59,6 +69,10 @@ export const lightColors: ThemeColors = {
   accentSoft: "rgba(30,158,58,0.15)",
   onAccent: "#FFFFFF",
   glow: "rgba(30,158,58,0.3)",
+  glassCard: "rgba(255,255,255,0.72)",
+  glassCardBorder: "rgba(0,0,0,0.08)",
+  tileBg: "rgba(0,0,0,0.04)",
+  tileBorder: "rgba(0,0,0,0.08)",
   statusWorking: "#1E9E3A",
   statusPartiallyWorking: "#D98C0E",
   statusNotWorking: "#C7432E",

@@ -194,7 +194,44 @@ export default function CollectionScreen() {
                 />
                 <SymbolView name="magnifyingglass" size={16} tintColor={photoOverlay.text} />
               </Pressable>
-            ) : null}
+            ) : (
+              // G04: on the dashboard the segmented pill sits beside the title
+              <View style={[styles.segmented, { borderColor: photoOverlay.glassBorder }]}>
+                <BlurView
+                  tint={themeName === "dark" ? "dark" : "light"}
+                  intensity={80}
+                  style={StyleSheet.absoluteFill}
+                />
+                {(["gallery", "dashboard"] as const).map((key) => (
+                  <Pressable
+                    key={key}
+                    onPress={() => setView(key)}
+                    style={[
+                      styles.segmentCompact,
+                      view === key && { backgroundColor: photoOverlay.segmentActive },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.segmentCompactLabel,
+                        {
+                          color:
+                            view === key
+                              ? themeName === "dark"
+                                ? photoOverlay.text
+                                : colors.textPrimary
+                              : themeName === "dark"
+                                ? photoOverlay.glassText
+                                : colors.textSecondary,
+                        },
+                      ]}
+                    >
+                      {t(`dashboard.${key}`)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
           </View>
         )}
 
@@ -209,7 +246,9 @@ export default function CollectionScreen() {
           </View>
         ) : null}
 
-        {/* floating glass segmented pill (G01), above the tab row */}
+        {/* floating glass segmented pill above the tab row, gallery only:
+            on the dashboard it moves up into the title row (G04) */}
+        {gallery ? (
         <View pointerEvents="box-none" style={styles.segmentedWrap}>
           <View style={[styles.segmented, { borderColor: photoOverlay.glassBorder }]}>
             <BlurView
@@ -247,6 +286,7 @@ export default function CollectionScreen() {
             ))}
           </View>
         </View>
+        ) : null}
       </View>
     </View>
   );
@@ -337,6 +377,16 @@ const styles = StyleSheet.create({
   },
   segmentLabel: {
     fontSize: 13,
+    fontWeight: "600",
+  },
+  // the inline pill in the dashboard title row is a size down (G04)
+  segmentCompact: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: radius.chip,
+  },
+  segmentCompactLabel: {
+    fontSize: 12,
     fontWeight: "600",
   },
 });
