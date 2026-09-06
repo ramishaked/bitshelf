@@ -4,6 +4,10 @@ import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-rou
 import { useTranslation } from "react-i18next";
 import { EmptyState, radius, spacing, typography } from "@bitshelf/ui";
 import {
+  GLASS_ACTION_BAR_INSET,
+  GlassActionBar,
+} from "../../components/glass-action-bar";
+import {
   addItemToGallery,
   galleryItemCount,
   listGalleries,
@@ -109,6 +113,13 @@ export default function GalleryPickScreen() {
             {`+ ${t("galleries.create")}`}
           </Text>
         </Pressable>
+        {/* membership is applied on tap; this just closes (Rami: there was
+            no way forward after picking a gallery) */}
+        <GlassActionBar
+          actions={[
+            { label: t("gallery.done"), onPress: () => router.back(), variant: "primary" },
+          ]}
+        />
       </View>
     </>
   );
@@ -140,6 +151,8 @@ const styles = StyleSheet.create({
   },
   createRow: {
     margin: spacing.lg,
+    // clears the floating done pill
+    marginBottom: GLASS_ACTION_BAR_INSET,
     borderRadius: radius.card,
     paddingVertical: spacing.md,
     alignItems: "center",

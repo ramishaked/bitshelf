@@ -252,7 +252,8 @@
     "remove": "הסרה מהגלריה",
     "visibilityPrivate": "פרטית",
     "visibilityPublic": "ציבורית",
-    "notSynced": "טרם סונכרן לשרת, הקישור יעבוד אחרי סנכרון"
+    "notSynced": "טרם סונכרן לשרת, הקישור יעבוד אחרי סנכרון",
+    "done": "סיום"
   },
   "favorites": {
     "emptyTitle": "אין מועדפים עדיין",

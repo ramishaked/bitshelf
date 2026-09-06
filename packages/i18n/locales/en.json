@@ -252,7 +252,8 @@
     "remove": "Remove from gallery",
     "visibilityPrivate": "Private",
     "visibilityPublic": "Public",
-    "notSynced": "Not synced yet, the link will work after sync"
+    "notSynced": "Not synced yet, the link will work after sync",
+    "done": "Done"
   },
   "favorites": {
     "emptyTitle": "No favorites yet",
