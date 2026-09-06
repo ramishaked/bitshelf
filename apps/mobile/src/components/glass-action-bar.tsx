@@ -14,7 +14,15 @@ export interface GlassAction {
   variant?: "primary" | "plain" | "destructive" | "warning";
 }
 
-export function GlassActionBar({ actions }: { actions: GlassAction[] }) {
+export function GlassActionBar({
+  actions,
+  aboveTabBar = false,
+}: {
+  actions: GlassAction[];
+  // inside the tab screens the pills must clear the floating tab row,
+  // which sits at the same bottom offset and would cover them
+  aboveTabBar?: boolean;
+}) {
   const colors = useThemeColors();
   const themeName = useThemeName();
   const insets = useSafeAreaInsets();
@@ -22,7 +30,10 @@ export function GlassActionBar({ actions }: { actions: GlassAction[] }) {
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.row, { bottom: Math.max(insets.bottom, spacing.md) + 6 }]}
+      style={[
+        styles.row,
+        { bottom: aboveTabBar ? 110 : Math.max(insets.bottom, spacing.md) + 6 },
+      ]}
     >
       {actions.map((action) => {
         const variant = action.variant ?? "plain";

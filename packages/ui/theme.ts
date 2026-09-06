@@ -125,9 +125,10 @@ export const radius = {
   chip: 999,
 };
 
-// 3 columns, 1px gap (liquid glass handoff), square tiles: a photo wall
+// 3 columns, square tiles: a photo wall. 2px gap: the handoff drew 1px,
+// Rami asked for slightly wider seams (06.09.2026)
 export const grid = {
-  gap: 1,
+  gap: 2,
   columns: 3,
 };
 

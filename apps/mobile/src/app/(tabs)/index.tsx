@@ -504,6 +504,7 @@ export default function CollectionScreen() {
       {/* selection actions, like Photos' bottom bar in select mode */}
       {selecting ? (
         <GlassActionBar
+          aboveTabBar
           actions={[
             {
               label: t("actions.favorite"),
