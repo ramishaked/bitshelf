@@ -268,7 +268,8 @@
     "defaultCurrency": "מטבע ברירת מחדל",
     "signOut": "התנתקות",
     "devNote": "Clerk לא מוגדר. מצב פיתוח, ללא התחברות.",
-    "version": "גרסה"
+    "version": "גרסה",
+    "account": "חשבון"
   },
   "auth": {
     "subtitle": "האוסף שלך, מסודר",

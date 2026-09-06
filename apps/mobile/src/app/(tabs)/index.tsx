@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -32,7 +32,7 @@ import { useThemeColors, useThemeName } from "../../lib/theme";
 // Collection per the liquid glass handoff (G01): the photo wall runs edge
 // to edge under everything, the title and glass controls float on scrims,
 // filters are always-visible glass capsules, and the gallery/dashboard
-// switch is a floating glass segmented pill above the tab row.
+// switch lives beside the title (its one fixed home, per G04).
 
 export default function CollectionScreen() {
   const { t } = useTranslation();
@@ -47,6 +47,11 @@ export default function CollectionScreen() {
     viewParam === "dashboard" ? "dashboard" : "gallery",
   );
   const [searchActive, setSearchActive] = useState(false);
+
+  // deep links (?view=dashboard) must also switch an already-mounted screen
+  useEffect(() => {
+    if (viewParam === "dashboard" || viewParam === "gallery") setView(viewParam);
+  }, [viewParam]);
 
   const reload = useCallback(() => setItems(listItems()), []);
   useFocusEffect(reload);
@@ -182,20 +187,9 @@ export default function CollectionScreen() {
             >
               {t("collection.title")}
             </Text>
-            {gallery ? (
-              <Pressable
-                onPress={() => setSearchActive(true)}
-                style={[styles.circle, { borderColor: photoOverlay.glassBorder }]}
-              >
-                <BlurView
-                  tint={themeName === "dark" ? "dark" : "light"}
-                  intensity={60}
-                  style={StyleSheet.absoluteFill}
-                />
-                <SymbolView name="magnifyingglass" size={16} tintColor={photoOverlay.text} />
-              </Pressable>
-            ) : (
-              // G04: on the dashboard the segmented pill sits beside the title
+            {/* one fixed home for the view switch: beside the title (G04),
+                in both views, so it never jumps around the screen */}
+            <View style={styles.titleControls}>
               <View style={[styles.segmented, { borderColor: photoOverlay.glassBorder }]}>
                 <BlurView
                   tint={themeName === "dark" ? "dark" : "light"}
@@ -217,10 +211,10 @@ export default function CollectionScreen() {
                         {
                           color:
                             view === key
-                              ? themeName === "dark"
+                              ? gallery || themeName === "dark"
                                 ? photoOverlay.text
                                 : colors.textPrimary
-                              : themeName === "dark"
+                              : gallery || themeName === "dark"
                                 ? photoOverlay.glassText
                                 : colors.textSecondary,
                         },
@@ -231,7 +225,20 @@ export default function CollectionScreen() {
                   </Pressable>
                 ))}
               </View>
-            )}
+              {gallery ? (
+                <Pressable
+                  onPress={() => setSearchActive(true)}
+                  style={[styles.circle, { borderColor: photoOverlay.glassBorder }]}
+                >
+                  <BlurView
+                    tint={themeName === "dark" ? "dark" : "light"}
+                    intensity={60}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <SymbolView name="magnifyingglass" size={16} tintColor={photoOverlay.text} />
+                </Pressable>
+              ) : null}
+            </View>
           </View>
         )}
 
@@ -246,47 +253,6 @@ export default function CollectionScreen() {
           </View>
         ) : null}
 
-        {/* floating glass segmented pill above the tab row, gallery only:
-            on the dashboard it moves up into the title row (G04) */}
-        {gallery ? (
-        <View pointerEvents="box-none" style={styles.segmentedWrap}>
-          <View style={[styles.segmented, { borderColor: photoOverlay.glassBorder }]}>
-            <BlurView
-              tint={themeName === "dark" ? "dark" : "light"}
-              intensity={80}
-              style={StyleSheet.absoluteFill}
-            />
-            {(["gallery", "dashboard"] as const).map((key) => (
-              <Pressable
-                key={key}
-                onPress={() => setView(key)}
-                style={[
-                  styles.segment,
-                  view === key && { backgroundColor: photoOverlay.segmentActive },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.segmentLabel,
-                    {
-                      color:
-                        view === key
-                          ? gallery || themeName === "dark"
-                            ? photoOverlay.text
-                            : colors.textPrimary
-                          : gallery || themeName === "dark"
-                            ? photoOverlay.glassText
-                            : colors.textSecondary,
-                    },
-                  ]}
-                >
-                  {t(`dashboard.${key}`)}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-        ) : null}
       </View>
     </View>
   );
@@ -356,30 +322,18 @@ const styles = StyleSheet.create({
     // TextInput alignment is physical on iOS, right hugs the RTL start
     textAlign: "right",
   },
-  segmentedWrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 110,
+  titleControls: {
+    flexDirection: "row",
     alignItems: "center",
+    gap: spacing.sm,
   },
   segmented: {
     flexDirection: "row",
-    padding: 4,
+    padding: 3,
     borderRadius: radius.chip,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
   },
-  segment: {
-    paddingVertical: 7,
-    paddingHorizontal: 22,
-    borderRadius: radius.chip,
-  },
-  segmentLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  // the inline pill in the dashboard title row is a size down (G04)
   segmentCompact: {
     paddingVertical: 6,
     paddingHorizontal: 14,

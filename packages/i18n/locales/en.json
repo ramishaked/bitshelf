@@ -268,7 +268,8 @@
     "defaultCurrency": "Default currency",
     "signOut": "Sign out",
     "devNote": "Clerk is not configured. Development mode, no sign-in.",
-    "version": "Version"
+    "version": "Version",
+    "account": "Account"
   },
   "auth": {
     "subtitle": "Your collection, in order",

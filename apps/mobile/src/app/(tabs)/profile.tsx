@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { radius, spacing, type ThemeColors } from "@bitshelf/ui";
 import { ScreenHeader } from "../../components/screen-header";
 import { clerkEnabled } from "../../lib/auth";
@@ -23,25 +23,32 @@ function Row({ label, value, colors }: { label: string; value: string; colors: T
   );
 }
 
-// Separate component so useAuth is only called when ClerkProvider exists
+// Separate component so the Clerk hooks are only called when ClerkProvider
+// exists. Always visible with Clerk configured: inside the tabs the user is
+// signed in by definition, and hiding it while Clerk loads made it look
+// like sign-out does not exist.
 function SignOutRow({ colors }: { colors: ThemeColors }) {
   const { t } = useTranslation();
-  const { isSignedIn, signOut } = useAuth();
-  if (!isSignedIn) {
-    return null;
-  }
+  const { signOut } = useAuth();
+  const { user } = useUser();
+  const email = user?.primaryEmailAddress?.emailAddress ?? "";
   return (
-    <Pressable
-      onPress={() => void signOut()}
-      style={({ pressed }) => [
-        styles.row,
-        { backgroundColor: pressed ? colors.accentPressed : colors.surface },
-      ]}
-    >
-      <Text style={[styles.rowLabel, { color: colors.statusNotWorking }]}>
-        {t("profile.signOut")}
-      </Text>
-    </Pressable>
+    <>
+      {email ? (
+        <Row label={t("profile.account")} value={email} colors={colors} />
+      ) : null}
+      <Pressable
+        onPress={() => void signOut()}
+        style={({ pressed }) => [
+          styles.row,
+          { backgroundColor: pressed ? colors.surface2 : colors.surface },
+        ]}
+      >
+        <Text style={[styles.rowLabel, { color: colors.statusNotWorking }]}>
+          {t("profile.signOut")}
+        </Text>
+      </Pressable>
+    </>
   );
 }
 
