@@ -270,12 +270,12 @@ const styles = StyleSheet.create({
     right: 0,
     height: 190,
   },
+  // no fixed height: paddingTop carries the device inset, content sets the rest
   titleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
     paddingHorizontal: spacing.lg + spacing.xs,
-    height: 96,
     paddingBottom: spacing.xs,
   },
   title: {
