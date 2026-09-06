@@ -43,7 +43,7 @@ export default function SetPickScreen() {
         {candidates.length === 0 ? (
           <EmptyState title={t("set.pickEmpty")} colors={colors} />
         ) : (
-          <ItemGrid items={candidates} onPressItem={attach} />
+          <ItemGrid items={candidates} onPressItem={attach} showNames />
         )}
       </View>
     </>

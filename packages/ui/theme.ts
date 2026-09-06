@@ -77,8 +77,21 @@ export const photoOverlay = {
   text: "#FFFFFF",
   gradientStart: "transparent",
   gradientEnd: "rgba(0,0,0,0.75)",
-  // top scrim behind the floating title on the photo wall (Photos style)
-  scrim: "rgba(0,0,0,0.45)",
+  // scrims over the photo wall (liquid glass handoff G01): top fades
+  // 0.65 -> 0.25 -> clear, bottom rises to 0.55 behind the controls
+  scrim: "rgba(0,0,0,0.65)",
+  scrimMid: "rgba(0,0,0,0.25)",
+  scrimBottom: "rgba(0,0,0,0.55)",
+  // glass controls floating over photos (chips, segmented, circles)
+  glassBorder: "rgba(255,255,255,0.16)",
+  glassText: "rgba(255,255,255,0.85)",
+  // active chip flips to near solid white with dark ink (G01)
+  chipActiveBg: "rgba(255,255,255,0.92)",
+  chipActiveText: "#111111",
+  // active segment gets a white wash on the glass pill
+  segmentActive: "rgba(255,255,255,0.22)",
+  // ring that keeps the status dot readable on bright photos
+  dotRing: "rgba(0,0,0,0.4)",
   // full-screen photo viewer is black in both themes
   viewerBackground: "#000000",
   viewerControl: "rgba(0,0,0,0.45)",
@@ -98,9 +111,9 @@ export const radius = {
   chip: 999,
 };
 
-// 3 columns, 2px gap, square tiles, so photos build a wall
+// 3 columns, 1px gap (liquid glass handoff), square tiles: a photo wall
 export const grid = {
-  gap: 2,
+  gap: 1,
   columns: 3,
 };
 

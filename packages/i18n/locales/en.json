@@ -199,6 +199,7 @@
     "fromScan": "from scan only"
   },
   "filters": {
+    "all": "All",
     "searchPlaceholder": "Search the collection",
     "favorites": "Favorites",
     "noResults": "No items found"

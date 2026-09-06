@@ -126,6 +126,7 @@ export default function GalleryFormScreen() {
         <ItemGrid
           items={items}
           selectedIds={selected}
+          showNames
           bottomInset={GLASS_ACTION_BAR_INSET}
           onPressItem={(item) => {
             setSelected((prev) => {

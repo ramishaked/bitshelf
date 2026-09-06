@@ -21,6 +21,7 @@ function ItemTile({
   colors,
   size,
   selected,
+  showName,
   onPress,
   onLongPress,
 }: {
@@ -28,6 +29,7 @@ function ItemTile({
   colors: ThemeColors;
   size: number;
   selected?: boolean;
+  showName?: boolean;
   onPress: () => void;
   onLongPress?: () => void;
 }) {
@@ -58,14 +60,16 @@ function ItemTile({
           <Text style={[styles.checkMark, { color: colors.onAccent }]}>{"✓"}</Text>
         </View>
       ) : null}
-      <LinearGradient
-        colors={[photoOverlay.gradientStart, photoOverlay.gradientEnd]}
-        style={styles.nameBar}
-      >
-        <Text numberOfLines={1} style={styles.name}>
-          {item.title}
-        </Text>
-      </LinearGradient>
+      {showName ? (
+        <LinearGradient
+          colors={[photoOverlay.gradientStart, photoOverlay.gradientEnd]}
+          style={styles.nameBar}
+        >
+          <Text numberOfLines={1} style={styles.name}>
+            {item.title}
+          </Text>
+        </LinearGradient>
+      ) : null}
     </Pressable>
   );
 }
@@ -77,6 +81,7 @@ export function ItemGrid({
   onLongPressItem,
   topInset = 0,
   bottomInset = 0,
+  showNames = false,
 }: {
   items: LocalItem[];
   // selection mode (gallery multi-select): tiles toggle instead of navigating
@@ -86,6 +91,8 @@ export function ItemGrid({
   // room for translucent chrome the grid scrolls under (Photos style)
   topInset?: number;
   bottomInset?: number;
+  // the main wall is pure photos (handoff G01); selection screens show names
+  showNames?: boolean;
 }) {
   const colors = useThemeColors();
   const router = useRouter();
@@ -108,6 +115,7 @@ export function ItemGrid({
             colors={colors}
             size={tileSize}
             selected={selectedIds?.has(item.id)}
+            showName={showNames}
             onPress={
               onPressItem
                 ? () => onPressItem(item)
@@ -139,13 +147,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     transform: [{ scaleX: -1 }],
   },
+  // the dark ring keeps the dot readable on bright photos (handoff G01)
   dot: {
     position: "absolute",
-    top: 6,
-    right: 6,
+    top: 7,
+    right: 7,
     width: 8,
     height: 8,
     borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: photoOverlay.dotRing,
     zIndex: 1,
   },
   check: {

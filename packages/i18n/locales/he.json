@@ -199,6 +199,7 @@
     "fromScan": "מסריקה בלבד"
   },
   "filters": {
+    "all": "הכול",
     "searchPlaceholder": "חיפוש באוסף",
     "favorites": "מועדפים",
     "noResults": "לא נמצאו פריטים"
