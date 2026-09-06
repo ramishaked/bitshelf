@@ -335,9 +335,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  // sits above the floating tab capsule, like the mockup
   fab: {
     position: "absolute",
-    bottom: 24,
+    bottom: 118,
     end: 20,
     width: 56,
     height: 56,

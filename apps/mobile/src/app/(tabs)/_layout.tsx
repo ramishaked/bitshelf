@@ -1,13 +1,13 @@
 import { useEffect } from "react";
-import { StyleSheet, type ColorValue } from "react-native";
-import { BlurView } from "expo-blur";
+import { type ColorValue } from "react-native";
 import { Redirect, Tabs } from "expo-router";
 import { SymbolView, type SFSymbol } from "expo-symbols";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
+import { GlassTabBar, type GlassTabBarProps } from "../../components/glass-tab-bar";
 import { clerkEnabled, useGuest } from "../../lib/auth";
 import { setSyncTrigger, syncNow } from "../../lib/sync";
-import { useThemeColors, useThemeName } from "../../lib/theme";
+import { useThemeColors } from "../../lib/theme";
 
 // The collection tab is the initial route. Without this, RTL mirroring makes
 // the navigator start on the last declared tab.
@@ -24,31 +24,15 @@ function tabIcon(name: SFSymbol) {
 function TabsNav() {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const themeName = useThemeName();
 
   return (
     <Tabs
       initialRouteName="index"
+      // floating glass capsule instead of the system bar (Liquid Glass)
+      tabBar={(props) => <GlassTabBar {...(props as unknown as GlassTabBarProps)} />}
       screenOptions={{
         // screens render their own large right-aligned titles (design 01)
         headerShown: false,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textSecondary,
-        // translucent bar like Photos (Rami, 05.09.2026): content scrolls
-        // under it through a blur
-        tabBarStyle: {
-          position: "absolute",
-          backgroundColor: "transparent",
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: colors.line,
-        },
-        tabBarBackground: () => (
-          <BlurView
-            tint={themeName === "dark" ? "dark" : "light"}
-            intensity={80}
-            style={StyleSheet.absoluteFill}
-          />
-        ),
         sceneStyle: { backgroundColor: colors.background },
       }}
     >

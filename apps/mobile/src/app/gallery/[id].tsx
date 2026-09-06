@@ -9,7 +9,11 @@ import {
 } from "react-native";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button, EmptyState, spacing, typography } from "@bitshelf/ui";
+import { EmptyState, spacing, typography } from "@bitshelf/ui";
+import {
+  GLASS_ACTION_BAR_INSET,
+  GlassActionBar,
+} from "../../components/glass-action-bar";
 import { ItemGrid } from "../../components/item-grid";
 import { makeSlug, publicGalleryUrl } from "../../lib/gallery-link";
 import {
@@ -151,40 +155,28 @@ export default function GalleryScreen() {
         {items.length === 0 ? (
           <EmptyState title={t("gallery.empty")} colors={colors} />
         ) : (
-          <ItemGrid items={items} onLongPressItem={removeItem} />
+          <ItemGrid
+            items={items}
+            onLongPressItem={removeItem}
+            bottomInset={GLASS_ACTION_BAR_INSET}
+          />
         )}
-        <View style={styles.actions}>
-          <Button
-            label={t("gallery.share")}
-            onPress={() => void shareLink()}
-            colors={colors}
-            style={styles.action}
-          />
-          <Button
-            label={t("gallery.edit")}
-            onPress={() => router.push(`/gallery/new?id=${gallery.id}`)}
-            colors={colors}
-            variant="secondary"
-            style={styles.action}
-          />
-          {isPublic ? (
-            <Button
-              label={t("gallery.revoke")}
-              onPress={revokeLink}
-              colors={colors}
-              variant="warning"
-              style={styles.action}
-            />
-          ) : (
-            <Button
-              label={t("item.delete")}
-              onPress={confirmDelete}
-              colors={colors}
-              variant="destructive"
-              style={styles.action}
-            />
-          )}
-        </View>
+        <GlassActionBar
+          actions={[
+            {
+              label: t("gallery.share"),
+              onPress: () => void shareLink(),
+              variant: "primary",
+            },
+            {
+              label: t("gallery.edit"),
+              onPress: () => router.push(`/gallery/new?id=${gallery.id}`),
+            },
+            isPublic
+              ? { label: t("gallery.revoke"), onPress: revokeLink, variant: "warning" as const }
+              : { label: t("item.delete"), onPress: confirmDelete, variant: "destructive" as const },
+          ]}
+        />
       </View>
     </>
   );
@@ -208,13 +200,5 @@ const styles = StyleSheet.create({
     fontFamily: typography.mono,
     textAlign: "left",
     writingDirection: "ltr",
-  },
-  actions: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    padding: spacing.lg,
-  },
-  action: {
-    flex: 1,
   },
 });

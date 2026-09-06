@@ -15,6 +15,8 @@ export interface ThemeColors {
   accent: string;
   // pressed accent, active chip background
   accentPressed: string;
+  // soft accent wash behind an active glass control
+  accentSoft: string;
   // text on accent buttons
   onAccent: string;
   // floating add button shadow
@@ -35,6 +37,7 @@ export const darkColors: ThemeColors = {
   // phosphor green, dimmed from the logo green so text does not burn
   accent: "#5CE65C",
   accentPressed: "#2E8F2E",
+  accentSoft: "rgba(92,230,92,0.18)",
   onAccent: "#0E0F0D",
   glow: "rgba(92,230,92,0.35)",
   statusWorking: "#5CE65C",
@@ -53,6 +56,7 @@ export const lightColors: ThemeColors = {
   // darker green, phosphor is unreadable on white
   accent: "#1E9E3A",
   accentPressed: "#167A2C",
+  accentSoft: "rgba(30,158,58,0.15)",
   onAccent: "#FFFFFF",
   glow: "rgba(30,158,58,0.3)",
   statusWorking: "#1E9E3A",

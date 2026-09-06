@@ -32,6 +32,10 @@ import {
   isLatinField,
   statusColor,
 } from "../../lib/retro";
+import {
+  GLASS_ACTION_BAR_INSET,
+  GlassActionBar,
+} from "../../components/glass-action-bar";
 import { formatMoney } from "../../lib/format";
 import {
   ensureModelInfo,
@@ -793,30 +797,19 @@ export default function ItemScreen() {
             />
           ) : null}
 
-          <View style={styles.actions}>
-            <Button
-              label={t("item.edit")}
-              onPress={() => router.push(`/item/new?id=${item.id}`)}
-              colors={colors}
-              style={styles.action}
-            />
-            <Button
-              label={t("item.share")}
-              onPress={shareItem}
-              colors={colors}
-              variant="secondary"
-              style={styles.action}
-            />
-            <Button
-              label={t("item.delete")}
-              onPress={confirmDelete}
-              colors={colors}
-              variant="destructive"
-              style={styles.action}
-            />
-          </View>
         </View>
       </ScrollView>
+      <GlassActionBar
+        actions={[
+          {
+            label: t("item.edit"),
+            onPress: () => router.push(`/item/new?id=${item.id}`),
+            variant: "primary",
+          },
+          { label: t("item.share"), onPress: shareItem },
+          { label: t("item.delete"), onPress: confirmDelete, variant: "destructive" },
+        ]}
+      />
     </>
   );
 }
@@ -864,7 +857,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: spacing.xxl,
+    // clears the floating glass action capsule
+    paddingBottom: GLASS_ACTION_BAR_INSET,
   },
   noPhoto: {
     height: 180,
@@ -1101,13 +1095,5 @@ const styles = StyleSheet.create({
     fontFamily: typography.mono,
     fontSize: 13,
     writingDirection: "ltr",
-  },
-  actions: {
-    flexDirection: "row",
-    gap: spacing.sm + 2,
-    marginTop: spacing.sm,
-  },
-  action: {
-    flex: 1,
   },
 });
