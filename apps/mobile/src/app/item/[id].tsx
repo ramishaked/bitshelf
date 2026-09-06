@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { randomUUID } from "expo-crypto";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -152,7 +153,7 @@ function FoldCard({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}>
+    <View style={[styles.card, { backgroundColor: colors.surface }]}>
       <Pressable onPress={() => setOpen((v) => !v)} style={styles.foldHeader}>
         <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{label}</Text>
         <View style={styles.foldSummary}>
@@ -385,12 +386,18 @@ export default function ItemScreen() {
                 <Pressable key={photo.id} onPress={() => setViewerIndex(index)}>
                   <Image
                     source={{ uri: photo.uri }}
-                    style={{ width, height: 260 }}
+                    style={{ width, height: 340 }}
                     contentFit="cover"
                   />
                 </Pressable>
               ))}
             </ScrollView>
+            {/* handoff G02: full bleed hero, a soft top fade for the chrome */}
+            <LinearGradient
+              pointerEvents="none"
+              colors={[photoOverlay.scrimMid, photoOverlay.gradientStart]}
+              style={styles.heroFade}
+            />
             {item.photos.length > 1 ? (
               <View style={styles.dots}>
                 {item.photos.map((photo, i) => (
@@ -451,7 +458,7 @@ export default function ItemScreen() {
           </View>
 
           {hasValue ? (
-            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}>
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
               <View style={styles.valueHeader}>
                 <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
                   {t("item.valueSection")}
@@ -510,7 +517,7 @@ export default function ItemScreen() {
                     )
                   : undefined
               }
-              style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}
+              style={[styles.card, { backgroundColor: colors.surface }]}
             >
               <View style={styles.valueHeader}>
                 <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
@@ -563,7 +570,7 @@ export default function ItemScreen() {
           ) : null}
 
           {(children.length > 0 || (!item.parentItemId && item.photos.length > 0)) && (
-            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}>
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
               <View style={styles.valueHeader}>
                 <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
                   {t("set.title")}
@@ -632,7 +639,7 @@ export default function ItemScreen() {
           {parent ? (
             <Pressable
               onPress={() => router.push(`/item/${parent.id}`)}
-              style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}
+              style={[styles.card, { backgroundColor: colors.surface }]}
             >
               <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
                 {t("set.partOf")}
@@ -801,12 +808,12 @@ export default function ItemScreen() {
       </ScrollView>
       <GlassActionBar
         actions={[
+          // handoff G02: share is the prominent action
+          { label: t("item.share"), onPress: shareItem, variant: "primary" },
           {
             label: t("item.edit"),
             onPress: () => router.push(`/item/new?id=${item.id}`),
-            variant: "primary",
           },
-          { label: t("item.share"), onPress: shareItem },
           { label: t("item.delete"), onPress: confirmDelete, variant: "destructive" },
         ]}
       />
@@ -865,6 +872,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  heroFade: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 110,
+  },
   dots: {
     position: "absolute",
     bottom: 10,
@@ -914,10 +928,9 @@ const styles = StyleSheet.create({
   tagLabel: {
     fontSize: 13,
   },
-  // hairline edge like the glass cards in the design
+  // tonal surface, no border (handoff: cards separate by tone, not lines)
   card: {
     borderRadius: radius.card,
-    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md + 2,
     gap: spacing.sm,
   },

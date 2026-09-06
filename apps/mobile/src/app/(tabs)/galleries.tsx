@@ -43,10 +43,7 @@ function GalleryRow({ row }: { row: Row }) {
       onPress={row.onPress}
       style={({ pressed }) => [
         styles.row,
-        {
-          backgroundColor: pressed ? colors.surface2 : colors.surface,
-          borderColor: colors.line,
-        },
+        { backgroundColor: pressed ? colors.surface2 : colors.surface },
       ]}
     >
       <View style={[styles.cover, { backgroundColor: colors.surface2 }]}>
@@ -200,12 +197,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
-  // hairline edge like the glass cards in the design
+  // tonal surface, no border (handoff: separate surfaces by tone, not lines)
   row: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: radius.card,
-    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.sm,
     gap: spacing.md,
   },

@@ -20,7 +20,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}>
+    <View style={[styles.card, { backgroundColor: colors.surface }]}>
       <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{label}</Text>
       {children}
     </View>
@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radius.card,
-    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md + 2,
     gap: spacing.sm,
   },
