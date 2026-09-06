@@ -1,11 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
-import { spacing, typography } from "@bitshelf/ui";
+import { photoOverlay, radius, spacing, typography } from "@bitshelf/ui";
 import { useThemeColors, useThemeName } from "../lib/theme";
 
-// Floating glass action capsule (Liquid Glass design): the primary action
-// sits on an accent pill, the rest are plain labels on the glass.
+// Floating action pills per the liquid glass handoff (G02): equal-width
+// capsules across the bottom, the primary on a glowing accent fill and the
+// rest on glass.
 
 export interface GlassAction {
   label: string;
@@ -21,78 +22,79 @@ export function GlassActionBar({ actions }: { actions: GlassAction[] }) {
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.wrap, { bottom: Math.max(insets.bottom, spacing.md) + 4 }]}
+      style={[styles.row, { bottom: Math.max(insets.bottom, spacing.md) + 6 }]}
     >
-      <View style={[styles.capsule, { borderColor: colors.line }]}>
-        <BlurView
-          tint={themeName === "dark" ? "dark" : "light"}
-          intensity={80}
-          style={StyleSheet.absoluteFill}
-        />
-        {actions.map((action) => {
-          const primary = (action.variant ?? "plain") === "primary";
-          const labelColor = primary
-            ? colors.onAccent
-            : action.variant === "destructive"
-              ? colors.statusNotWorking
-              : action.variant === "warning"
-                ? colors.statusPartiallyWorking
-                : colors.textPrimary;
-          return (
-            <Pressable
-              key={action.label}
-              onPress={action.onPress}
-              style={({ pressed }) => [
-                styles.action,
-                primary && {
-                  backgroundColor: pressed ? colors.accentPressed : colors.accent,
-                },
-                !primary && pressed && { backgroundColor: colors.accentSoft },
-              ]}
+      {actions.map((action) => {
+        const variant = action.variant ?? "plain";
+        const primary = variant === "primary";
+        const labelColor = primary
+          ? colors.onAccent
+          : variant === "destructive"
+            ? colors.statusNotWorking
+            : variant === "warning"
+              ? colors.statusPartiallyWorking
+              : colors.textPrimary;
+        return (
+          <Pressable
+            key={action.label}
+            onPress={action.onPress}
+            style={({ pressed }) => [
+              styles.action,
+              primary
+                ? {
+                    backgroundColor: pressed ? colors.accentPressed : colors.accent,
+                    shadowColor: colors.accent,
+                    shadowOpacity: 0.35,
+                    shadowRadius: 12,
+                    shadowOffset: { width: 0, height: 6 },
+                  }
+                : { borderColor: photoOverlay.glassBorder, borderWidth: 1 },
+            ]}
+          >
+            {!primary ? (
+              <BlurView
+                tint={themeName === "dark" ? "dark" : "light"}
+                intensity={70}
+                style={StyleSheet.absoluteFill}
+              />
+            ) : null}
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+              style={[styles.label, { color: labelColor }]}
             >
-              <Text
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.8}
-                style={[styles.label, { color: labelColor }]}
-              >
-                {action.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+              {action.label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
 
-// room a scrolling screen leaves so content clears the floating capsule
+// room a scrolling screen leaves so content clears the floating pills
 export const GLASS_ACTION_BAR_INSET = 110;
 
 const styles = StyleSheet.create({
-  wrap: {
+  row: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  capsule: {
+    left: spacing.lg,
+    right: spacing.lg,
     flexDirection: "row",
-    gap: 6,
-    padding: 7,
-    borderRadius: 30,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: "hidden",
+    gap: spacing.sm + 2,
   },
   action: {
-    borderRadius: 24,
-    paddingVertical: spacing.md - 1,
-    paddingHorizontal: spacing.xl,
+    flex: 1,
+    height: 50,
+    borderRadius: radius.chip,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: spacing.md,
   },
   label: {
-    fontSize: typography.sizes.secondary + 1,
+    fontSize: typography.sizes.body,
     fontWeight: "600",
   },
 });

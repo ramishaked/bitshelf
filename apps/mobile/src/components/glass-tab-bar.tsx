@@ -1,13 +1,20 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { BlurView } from "expo-blur";
 import { SymbolView, type SFSymbol } from "expo-symbols";
-import { radius, spacing } from "@bitshelf/ui";
+import { photoOverlay, radius, spacing } from "@bitshelf/ui";
+import { clerkEnabled } from "../lib/auth";
+import { shelfScanEnabled } from "../lib/flags";
 import { useThemeColors, useThemeName } from "../lib/theme";
 
-// Floating glass tab capsule (Liquid Glass design, 06.09.2026): detached
-// from the bottom edge, content scrolls behind it, the active tab sits on
-// a soft accent pill.
+// Bottom row per the liquid glass handoff (G01): a green glass add button
+// beside a glass tab capsule that fills the rest of the row. The add menu
+// (spec 7.1) lives here so it is one tap from every tab.
+
+// room tab screens leave so content clears the floating row
+export const GLASS_TAB_BAR_INSET = 112;
 
 const ICONS: Record<string, SFSymbol> = {
   index: "square.grid.2x2",
@@ -31,20 +38,54 @@ export interface GlassTabBarProps {
   };
 }
 
-// room tab screens leave so content clears the floating capsule
-export const GLASS_TAB_BAR_INSET = 112;
-
 export function GlassTabBar({ state, descriptors, navigation }: GlassTabBarProps) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
   const themeName = useThemeName();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const openAddMenu = () => {
+    // spec 7.1: photograph / shelf scan / manual / wishlist
+    if (!clerkEnabled) {
+      router.push("/item/new");
+      return;
+    }
+    Alert.alert(t("item.newTitle"), "", [
+      { text: t("fab.capture"), onPress: () => router.push("/capture") },
+      ...(shelfScanEnabled
+        ? [
+            {
+              text: `${t("fab.shelfScan")} (Beta)`,
+              onPress: () => router.push("/shelf-scan"),
+            },
+          ]
+        : []),
+      { text: t("fab.manual"), onPress: () => router.push("/item/new") },
+      { text: t("fab.wishlist"), onPress: () => router.push("/wishlist") },
+      { text: t("item.cancel"), style: "cancel" },
+    ]);
+  };
 
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.wrap, { bottom: Math.max(insets.bottom, spacing.md) + 4 }]}
+      style={[styles.row, { bottom: Math.max(insets.bottom, spacing.md) + 6 }]}
     >
-      <View style={[styles.capsule, { borderColor: colors.line }]}>
+      <Pressable
+        onPress={openAddMenu}
+        style={[styles.fab, { borderColor: colors.accentSoft, shadowColor: colors.accent }]}
+      >
+        <BlurView
+          tint={themeName === "dark" ? "dark" : "light"}
+          intensity={70}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.accentSoft }]} />
+        <SymbolView name="plus" size={24} tintColor={colors.accent} />
+      </Pressable>
+
+      <View style={[styles.capsule, { borderColor: photoOverlay.glassBorder }]}>
         <BlurView
           tint={themeName === "dark" ? "dark" : "light"}
           intensity={80}
@@ -66,14 +107,11 @@ export function GlassTabBar({ state, descriptors, navigation }: GlassTabBarProps
                   navigation.navigate(route.name);
                 }
               }}
-              style={[
-                styles.tab,
-                active && { backgroundColor: colors.accentSoft },
-              ]}
+              style={styles.tab}
             >
               <SymbolView
                 name={ICONS[route.name] ?? "circle"}
-                size={20}
+                size={21}
                 tintColor={active ? colors.accent : colors.textSecondary}
               />
               <Text
@@ -93,26 +131,40 @@ export function GlassTabBar({ state, descriptors, navigation }: GlassTabBarProps
 }
 
 const styles = StyleSheet.create({
-  wrap: {
+  row: {
     position: "absolute",
-    left: 0,
-    right: 0,
+    left: spacing.lg,
+    right: spacing.lg,
+    flexDirection: "row",
     alignItems: "center",
+    gap: spacing.sm + 2,
+  },
+  fab: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 1,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
   },
   capsule: {
+    flex: 1,
+    height: 58,
     flexDirection: "row",
-    gap: 4,
-    padding: 6,
-    borderRadius: 34,
+    alignItems: "center",
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.chip,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
   },
   tab: {
+    flex: 1,
     alignItems: "center",
     gap: 3,
-    paddingVertical: spacing.xs + 2,
-    paddingHorizontal: spacing.md + 2,
-    borderRadius: radius.chip,
   },
   label: {
     fontSize: 10,
