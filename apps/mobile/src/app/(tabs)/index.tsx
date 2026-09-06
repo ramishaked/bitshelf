@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -26,6 +27,8 @@ import {
   type ItemFilters,
 } from "../../lib/filters";
 import {
+  deleteItem,
+  getItem,
   getSetting,
   listItems,
   setItemPrivate,
@@ -33,6 +36,7 @@ import {
   toggleFavorite,
   type LocalItem,
 } from "../../lib/store";
+import { deletePhotoFiles } from "../../lib/photos";
 import { requestSync } from "../../lib/sync";
 import { useThemeColors, useThemeName } from "../../lib/theme";
 
@@ -522,6 +526,30 @@ export default function CollectionScreen() {
                 const ids = [...selected].join(",");
                 stopSelecting();
                 router.push(`/gallery/pick?itemId=${ids}`);
+              },
+            },
+            {
+              label: t("item.delete"),
+              variant: "destructive",
+              onPress: () => {
+                if (selected.size === 0) return;
+                Alert.alert(
+                  t("menu.deleteSelectedTitle", { count: selected.size }),
+                  t("menu.deleteSelectedBody"),
+                  [
+                    { text: t("item.cancel"), style: "cancel" },
+                    {
+                      text: t("item.delete"),
+                      style: "destructive",
+                      onPress: () =>
+                        forSelected((id) => {
+                          const item = getItem(id);
+                          if (item) deletePhotoFiles(item.photos);
+                          deleteItem(id);
+                        }),
+                    },
+                  ],
+                );
               },
             },
           ]}

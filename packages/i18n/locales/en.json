@@ -310,6 +310,9 @@
     "sortManufacturer": "Sort by manufacturer",
     "filter": "Filter",
     "display": "View options",
-    "tileNames": "Names on tiles"
+    "tileNames": "Names on tiles",
+    "deleteSelectedTitle_one": "Delete 1 item?",
+    "deleteSelectedTitle_other": "Delete {{count}} items?",
+    "deleteSelectedBody": "The items and their photos will be removed from this device and the server."
   }
 }

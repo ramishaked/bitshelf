@@ -310,6 +310,9 @@
     "sortManufacturer": "מיון לפי יצרן",
     "filter": "סינון",
     "display": "אפשרויות תצוגה",
-    "tileNames": "שמות על האריחים"
+    "tileNames": "שמות על האריחים",
+    "deleteSelectedTitle_one": "למחוק פריט אחד?",
+    "deleteSelectedTitle_other": "למחוק {{count}} פריטים?",
+    "deleteSelectedBody": "הפריטים והתמונות שלהם יימחקו מהמכשיר ומהשרת."
   }
 }
