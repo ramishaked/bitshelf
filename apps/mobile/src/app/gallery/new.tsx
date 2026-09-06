@@ -32,12 +32,16 @@ export default function GalleryFormScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, itemIds } = useLocalSearchParams<{ id?: string; itemIds?: string }>();
   const existing = useMemo(() => (id ? getGallery(id) : null), [id]);
 
   const [nameHe, setNameHe] = useState(existing?.nameHe ?? "");
   const [nameEn, setNameEn] = useState(existing?.nameEn ?? "");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // items picked before opening the form (from the wall's selection flow)
+  // arrive preselected, so the new gallery is not born empty
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set((itemIds ?? "").split(",").filter(Boolean)),
+  );
   const items = useMemo(() => listItems(), []);
 
   useEffect(() => {

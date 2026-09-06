@@ -103,7 +103,14 @@ export default function GalleryPickScreen() {
           </ScrollView>
         )}
         <Pressable
-          onPress={() => router.push("/gallery/new")}
+          onPress={() =>
+            // carry the picked items into the new gallery form, preselected
+            router.push(
+              itemIds.length > 0
+                ? `/gallery/new?itemIds=${encodeURIComponent(itemIds.join(","))}`
+                : "/gallery/new",
+            )
+          }
           style={({ pressed }) => [
             styles.createRow,
             { backgroundColor: pressed ? colors.surface2 : colors.surface },
