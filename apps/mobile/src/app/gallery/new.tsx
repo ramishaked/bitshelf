@@ -82,7 +82,11 @@ export default function GalleryFormScreen() {
     if (existing) {
       router.back();
     } else {
-      router.replace(`/gallery/${gallery.id}`);
+      // this form opens as a modal; replacing inside it left the gallery
+      // screen trapped in the sheet with no back button (Rami). Close the
+      // modal stack first, then open the gallery as a regular screen.
+      router.dismissAll();
+      router.push(`/gallery/${gallery.id}`);
     }
   };
 
