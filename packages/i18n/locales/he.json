@@ -271,7 +271,14 @@
     "signOut": "התנתקות",
     "devNote": "Clerk לא מוגדר. מצב פיתוח, ללא התחברות.",
     "version": "גרסה",
-    "account": "חשבון"
+    "account": "חשבון",
+    "deleteAccount": "מחיקת חשבון",
+    "deleteAccountTitle": "למחוק את החשבון לצמיתות?",
+    "deleteAccountBody": "כל הפריטים, התמונות, הגלריות והרשימות יימחקו מהשרת ומהמכשיר. אין דרך חזרה.",
+    "deleteAccountConfirm": "המשך למחיקה",
+    "deleteAccountFinalTitle": "אישור אחרון: מחיקת החשבון",
+    "deleteAccountFinalConfirm": "מחק הכל",
+    "deleteAccountFailed": "מחיקת החשבון נכשלה. נסה שוב או פנה אליי."
   },
   "auth": {
     "subtitle": "האוסף שלך, מסודר",

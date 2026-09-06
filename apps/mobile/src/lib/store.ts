@@ -104,6 +104,21 @@ db.execSync(`
   );
 `);
 
+// Account deletion (spec 12): clear every data table on this device.
+// Settings (language, appearance) survive, they are not account data.
+export function wipeLocalData(): void {
+  for (const table of [
+    "items",
+    "galleries",
+    "gallery_items",
+    "deleted_items",
+    "deleted_galleries",
+    "wishlist",
+  ]) {
+    db.runSync(`DELETE FROM ${table}`);
+  }
+}
+
 export function getSetting(key: string): string | null {
   const row = db.getFirstSync<{ value: string }>(
     "SELECT value FROM settings WHERE key = ?",

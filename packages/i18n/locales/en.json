@@ -271,7 +271,14 @@
     "signOut": "Sign out",
     "devNote": "Clerk is not configured. Development mode, no sign-in.",
     "version": "Version",
-    "account": "Account"
+    "account": "Account",
+    "deleteAccount": "Delete account",
+    "deleteAccountTitle": "Delete this account permanently?",
+    "deleteAccountBody": "All items, photos, galleries and lists will be removed from the server and this device. There is no way back.",
+    "deleteAccountConfirm": "Continue to delete",
+    "deleteAccountFinalTitle": "Final confirmation: delete account",
+    "deleteAccountFinalConfirm": "Delete everything",
+    "deleteAccountFailed": "Account deletion failed. Try again."
   },
   "auth": {
     "subtitle": "Your collection, in order",

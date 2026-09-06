@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,9 @@ import { radius, spacing, type ThemeColors } from "@bitshelf/ui";
 import { ScreenHeader } from "../../components/screen-header";
 import { clerkEnabled } from "../../lib/auth";
 import { exportCsv } from "../../lib/export";
+import { wipeLocalData } from "../../lib/store";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
 import {
   setThemeMode,
   useThemeColors,
@@ -29,9 +32,48 @@ function Row({ label, value, colors }: { label: string; value: string; colors: T
 // like sign-out does not exist.
 function SignOutRow({ colors }: { colors: ThemeColors }) {
   const { t } = useTranslation();
-  const { signOut } = useAuth();
+  const { signOut, getToken } = useAuth();
   const { user } = useUser();
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
+
+  // account deletion (spec 12, App Store requirement): two explicit
+  // confirmations, then the server wipes Neon and the Clerk user, the
+  // device wipes its cache and the session signs out
+  const deleteAccount = () => {
+    Alert.alert(t("profile.deleteAccountTitle"), t("profile.deleteAccountBody"), [
+      { text: t("item.cancel"), style: "cancel" },
+      {
+        text: t("profile.deleteAccountConfirm"),
+        style: "destructive",
+        onPress: () => {
+          Alert.alert(t("profile.deleteAccountFinalTitle"), email, [
+            { text: t("item.cancel"), style: "cancel" },
+            {
+              text: t("profile.deleteAccountFinalConfirm"),
+              style: "destructive",
+              onPress: () => {
+                void (async () => {
+                  try {
+                    const token = await getToken();
+                    const response = await fetch(`${API_URL}/api/account`, {
+                      method: "DELETE",
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (!response.ok) throw new Error(String(response.status));
+                    wipeLocalData();
+                    await signOut();
+                  } catch {
+                    Alert.alert(t("profile.deleteAccountFailed"));
+                  }
+                })();
+              },
+            },
+          ]);
+        },
+      },
+    ]);
+  };
+
   return (
     <>
       {email ? (
@@ -46,6 +88,17 @@ function SignOutRow({ colors }: { colors: ThemeColors }) {
       >
         <Text style={[styles.rowLabel, { color: colors.statusNotWorking }]}>
           {t("profile.signOut")}
+        </Text>
+      </Pressable>
+      <Pressable
+        onPress={deleteAccount}
+        style={({ pressed }) => [
+          styles.row,
+          { backgroundColor: pressed ? colors.surface2 : colors.surface },
+        ]}
+      >
+        <Text style={[styles.rowLabel, { color: colors.statusNotWorking }]}>
+          {t("profile.deleteAccount")}
         </Text>
       </Pressable>
     </>
