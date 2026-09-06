@@ -205,7 +205,8 @@
     "all": "All",
     "searchPlaceholder": "Search the collection",
     "favorites": "Favorites",
-    "noResults": "No items found"
+    "noResults": "No items found",
+    "privateOnly": "Private"
   },
   "actions": {
     "favorite": "Add to favorites",
@@ -298,5 +299,16 @@
     "loadError": "Loading failed. Check your connection and try again.",
     "itemCount_one": "1 item",
     "itemCount_other": "{{count}} items"
+  },
+  "menu": {
+    "select": "Select",
+    "selectedCount_one": "1 selected",
+    "selectedCount_other": "{{count}} selected",
+    "sortAdded": "Sort by date added",
+    "sortYear": "Sort by model year",
+    "sortManufacturer": "Sort by manufacturer",
+    "filter": "Filter",
+    "display": "View options",
+    "tileNames": "Names on tiles"
   }
 }

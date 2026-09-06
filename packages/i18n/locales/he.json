@@ -205,7 +205,8 @@
     "all": "הכול",
     "searchPlaceholder": "חיפוש באוסף",
     "favorites": "מועדפים",
-    "noResults": "לא נמצאו פריטים"
+    "noResults": "לא נמצאו פריטים",
+    "privateOnly": "פרטיים"
   },
   "actions": {
     "favorite": "הוספה למועדפים",
@@ -298,5 +299,16 @@
     "loadError": "הטעינה נכשלה. בדקו חיבור ונסו שוב.",
     "itemCount_one": "פריט אחד",
     "itemCount_other": "{{count}} פריטים"
+  },
+  "menu": {
+    "select": "בחירה",
+    "selectedCount_one": "פריט אחד נבחר",
+    "selectedCount_other": "נבחרו {{count}} פריטים",
+    "sortAdded": "מיון לפי תאריך הוספה",
+    "sortYear": "מיון לפי שנת הדגם",
+    "sortManufacturer": "מיון לפי יצרן",
+    "filter": "סינון",
+    "display": "אפשרויות תצוגה",
+    "tileNames": "שמות על האריחים"
   }
 }

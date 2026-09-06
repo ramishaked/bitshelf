@@ -22,31 +22,39 @@ export default function GalleryPickScreen() {
   const lang = i18n.language === "en" ? "en" : "he";
   const colors = useThemeColors();
   const router = useRouter();
+  // accepts one id or a comma list (multi-select from the collection wall)
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
+  const itemIds = (itemId ?? "").split(",").filter(Boolean);
   const [galleries, setGalleries] = useState<LocalGallery[]>([]);
   const [memberOf, setMemberOf] = useState<Set<string>>(new Set());
 
   const reload = useCallback(() => {
     const all = listGalleries();
     setGalleries(all);
-    if (itemId) {
+    if (itemIds.length > 0) {
       setMemberOf(
         new Set(
           all
-            .filter((g) => listGalleryItemIds(g.id).includes(itemId))
+            .filter((g) => {
+              const inGallery = listGalleryItemIds(g.id);
+              return itemIds.every((id) => inGallery.includes(id));
+            })
             .map((g) => g.id),
         ),
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemId]);
   useFocusEffect(reload);
 
   const toggle = (gallery: LocalGallery) => {
-    if (!itemId) return;
-    if (memberOf.has(gallery.id)) {
-      removeItemFromGallery(gallery.id, itemId);
-    } else {
-      addItemToGallery(gallery.id, itemId);
+    if (itemIds.length === 0) return;
+    for (const id of itemIds) {
+      if (memberOf.has(gallery.id)) {
+        removeItemFromGallery(gallery.id, id);
+      } else {
+        addItemToGallery(gallery.id, id);
+      }
     }
     touchGallery(gallery.id);
     reload();
