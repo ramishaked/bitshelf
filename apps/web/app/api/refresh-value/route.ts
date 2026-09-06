@@ -4,6 +4,7 @@ import { and, eq, gte } from "drizzle-orm";
 import { createDb, items, priceObservations } from "@bitshelf/db";
 import { computeValue, ebayConfigured, searchAskingPrices } from "@bitshelf/api";
 import { ensureUser } from "../../../lib/provision";
+import { upsertValueSnapshot } from "../../../lib/value-snapshot";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -94,6 +95,12 @@ export async function POST(request: Request) {
         valueBasis: { asking: result.askingCount, sold: result.soldCount },
       })
       .where(eq(items.id, item.id));
+
+    // keep the daily collection totals in step (spec 9 snapshots)
+    await upsertValueSnapshot(db, item.collectionId).catch(() => {
+      // the item update already succeeded; a missed snapshot self-heals
+      // on the next refresh
+    });
 
     return NextResponse.json(result);
   } catch (err) {
