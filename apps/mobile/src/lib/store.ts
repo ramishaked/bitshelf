@@ -550,7 +550,8 @@ export function updateItemValues(
   ]);
 }
 
-// --- wishlist (spec 7.9), local only for now ---
+// --- wishlist (spec 7.9), device is the source of truth, mirrored to the
+// server wholesale on sync (the dirty flag marks pending changes) ---
 
 export interface LocalWish {
   id: string;
@@ -569,6 +570,7 @@ export function saveWish(wish: LocalWish): void {
     "INSERT OR REPLACE INTO wishlist (id, priority, created_at, json) VALUES (?, ?, ?, ?)",
     [wish.id, wish.priority, wish.createdAt, JSON.stringify(wish)],
   );
+  setSetting("wishlist_dirty", "1");
 }
 
 export function listWishes(): LocalWish[] {
@@ -580,6 +582,7 @@ export function listWishes(): LocalWish[] {
 
 export function deleteWish(id: string): void {
   db.runSync("DELETE FROM wishlist WHERE id = ?", [id]);
+  setSetting("wishlist_dirty", "1");
 }
 
 // membership edits must reach the server even when the gallery row itself is

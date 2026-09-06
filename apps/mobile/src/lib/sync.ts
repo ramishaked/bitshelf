@@ -2,20 +2,25 @@ import { File } from "expo-file-system";
 import {
   clearDeletedGalleryIds,
   clearDeletedIds,
+  getSetting,
   listDeletedGalleryIds,
   listDeletedIds,
   listGalleryItemIds,
   listItems,
   listUnsynced,
   listUnsyncedGalleries,
+  listWishes,
   markGalleriesSynced,
   markSynced,
   mergeServerGalleries,
   mergeServerItems,
+  saveWish,
+  setSetting,
   updateItemPhotos,
   type LocalGallery,
   type LocalItem,
   type LocalPhoto,
+  type LocalWish,
 } from "./store";
 
 // Pushes locally saved items, galleries and photos to the server (spec 10:
@@ -178,13 +183,15 @@ export async function syncNow(getToken: GetToken): Promise<number> {
     const photoRows = [...uploadedPhotoRows(), ...uploadedNow].filter(
       (row, index, all) => all.findIndex((r) => r.id === row.id) === index,
     );
+    const wishlistDirty = getSetting("wishlist_dirty") === "1";
     if (
       pulledOnce &&
       unsynced.length === 0 &&
       unsyncedGalleries.length === 0 &&
       photoRows.length === 0 &&
       deletedIds.length === 0 &&
-      deletedGalleryIds.length === 0
+      deletedGalleryIds.length === 0 &&
+      !wishlistDirty
     ) {
       return 0;
     }
@@ -200,6 +207,9 @@ export async function syncNow(getToken: GetToken): Promise<number> {
         items: payload,
         galleries: unsyncedGalleries.map(galleryPayload),
         photos: photoRows,
+        // full list every time: small, and wholesale replace on the server
+        // covers deletions without tombstones
+        wishlist: listWishes(),
         deletedIds,
         deletedGalleryIds,
       }),
@@ -214,6 +224,7 @@ export async function syncNow(getToken: GetToken): Promise<number> {
       deletedIds?: string[];
       deletedGalleryIds?: string[];
       serverGalleries?: (LocalGallery & { itemIds: string[] })[];
+      serverWishlist?: LocalWish[];
       serverItems?: (Omit<LocalItem, "photos" | "synced"> & {
         photos: {
           id: string;
@@ -237,6 +248,16 @@ export async function syncNow(getToken: GetToken): Promise<number> {
     clearDeletedIds(result.deletedIds ?? []);
     clearDeletedGalleryIds(result.deletedGalleryIds ?? []);
     mergeServerGalleries(result.serverGalleries ?? []);
+    // the push above delivered the current list, the flag can drop
+    setSetting("wishlist_dirty", "0");
+
+    // wishlist pull: only a device with no list adopts the server's (fresh
+    // install); anywhere else the local list is the source of truth
+    const serverWishes = result.serverWishlist ?? [];
+    if (listWishes().length === 0 && serverWishes.length > 0) {
+      for (const wish of serverWishes) saveWish(wish);
+      setSetting("wishlist_dirty", "0");
+    }
 
     // pull: adopt server items this device has never seen. Remote URLs go
     // straight into the photo slots, expo-image caches them on disk.

@@ -1,11 +1,28 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { createDb, galleries, galleryItems, itemPhotos, items } from "@bitshelf/db";
+import {
+  createDb,
+  galleries,
+  galleryItems,
+  itemPhotos,
+  items,
+  repairLogs,
+  wishlistItems,
+} from "@bitshelf/db";
 import { ensureCollection, ensureUser } from "../../../lib/provision";
+
+// Repair rows ride inside the item JSON (spec 4.5)
+interface ClientRepair {
+  id: string;
+  date: string;
+  description: string;
+  cost: string | null;
+}
 
 // Item shape the mobile app sends
 interface ClientItem {
+  repairs?: unknown;
   id: string;
   category: string;
   title: string;
@@ -49,7 +66,46 @@ interface ClientPhoto {
   sortOrder: number;
 }
 
+// Wishlist shape the mobile app sends (spec 7.9): the device is the source
+// of truth and the list is small, so it replaces the table wholesale
+interface ClientWish {
+  id: string;
+  manufacturer: string;
+  model: string;
+  variant: string | null;
+  targetPrice: string | null;
+  priority: 1 | 2 | 3;
+  status: "searching" | "found" | "purchased";
+  createdAt: string;
+  updatedAt: string;
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidWish(value: unknown): value is ClientWish {
+  const v = value as ClientWish;
+  return (
+    v != null &&
+    typeof v.id === "string" &&
+    UUID_RE.test(v.id) &&
+    typeof v.manufacturer === "string" &&
+    typeof v.model === "string" &&
+    [1, 2, 3].includes(v.priority) &&
+    ["searching", "found", "purchased"].includes(v.status)
+  );
+}
+
+function isValidRepair(value: unknown): value is ClientRepair {
+  const v = value as ClientRepair;
+  return (
+    v != null &&
+    typeof v.id === "string" &&
+    UUID_RE.test(v.id) &&
+    typeof v.date === "string" &&
+    typeof v.description === "string" &&
+    v.description.length > 0
+  );
+}
 
 function isValidItem(value: unknown): value is ClientItem {
   const v = value as ClientItem;
@@ -111,6 +167,7 @@ export async function POST(request: Request) {
     items?: unknown[];
     galleries?: unknown[];
     photos?: unknown[];
+    wishlist?: unknown[];
     deletedIds?: unknown[];
     deletedGalleryIds?: unknown[];
   } | null;
@@ -193,6 +250,63 @@ export async function POST(request: Request) {
         setWhere: sql`${items.ownerId} = ${user.id}`,
       });
     syncedIds.push(ci.id);
+  }
+
+  // repairs (spec 4.5): ride inside the item JSON, replace per item wholesale.
+  // Only for items this user actually owns; an id collision with another
+  // user's item must never touch that item's log.
+  const withRepairs = clientItems.filter((ci) => Array.isArray(ci.repairs));
+  if (withRepairs.length > 0) {
+    const owned = await db
+      .select({ id: items.id })
+      .from(items)
+      .where(
+        and(eq(items.ownerId, user.id), inArray(items.id, withRepairs.map((ci) => ci.id))),
+      );
+    const ownedIds = new Set(owned.map((r) => r.id));
+    for (const ci of withRepairs) {
+      if (!ownedIds.has(ci.id)) continue;
+      const repairs = (ci.repairs as unknown[]).filter(isValidRepair).slice(0, 100);
+      await db.delete(repairLogs).where(eq(repairLogs.itemId, ci.id));
+      if (repairs.length > 0) {
+        await db.insert(repairLogs).values(
+          repairs.map((r) => ({
+            id: r.id,
+            itemId: ci.id,
+            date: r.date.slice(0, 10),
+            description: r.description.slice(0, 2000),
+            cost: r.cost ?? null,
+            costCurrency: r.cost != null ? ("ILS" as const) : null,
+          })),
+        );
+      }
+    }
+  }
+
+  // wishlist (spec 7.9): wholesale replace when the device sends one; the
+  // list is small and the device is the source of truth
+  if (Array.isArray(body?.wishlist)) {
+    const wishes = body.wishlist.filter(isValidWish).slice(0, 200);
+    await db.delete(wishlistItems).where(eq(wishlistItems.ownerId, user.id));
+    if (wishes.length > 0) {
+      await db.insert(wishlistItems).values(
+        wishes.map((w) => ({
+          id: w.id,
+          ownerId: user.id,
+          collectionId: collection.id,
+          attributes: {
+            manufacturer: w.manufacturer,
+            model: w.model,
+            ...(w.variant ? { variant: w.variant } : {}),
+          },
+          targetPrice: w.targetPrice ?? null,
+          currency: w.targetPrice != null ? ("ILS" as const) : null,
+          priority: w.priority,
+          status: w.status,
+          createdAt: new Date(w.createdAt),
+        })),
+      );
+    }
   }
 
   const syncedGalleryIds: string[] = [];
@@ -313,6 +427,19 @@ export async function POST(request: Request) {
     list.push(p);
     photosByItem.set(p.itemId, list);
   }
+  const repairRows =
+    itemRows.length > 0
+      ? await db
+          .select()
+          .from(repairLogs)
+          .where(inArray(repairLogs.itemId, itemRows.map((r) => r.id)))
+      : [];
+  const repairsByItem = new Map<string, ClientRepair[]>();
+  for (const r of repairRows) {
+    const list = repairsByItem.get(r.itemId) ?? [];
+    list.push({ id: r.id, date: r.date, description: r.description, cost: r.cost });
+    repairsByItem.set(r.itemId, list);
+  }
   const serverItems = itemRows.map((row) => ({
     id: row.id,
     category: row.category,
@@ -335,6 +462,7 @@ export async function POST(request: Request) {
     valueCurrency: row.valueCurrency,
     valueConfidence: row.valueConfidence,
     valueUpdatedAt: row.valueUpdatedAt?.toISOString() ?? null,
+    repairs: repairsByItem.get(row.id) ?? [],
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     photos: (photosByItem.get(row.id) ?? [])
@@ -381,6 +509,24 @@ export async function POST(request: Request) {
       .map((m) => m.itemId),
   }));
 
+  // wishlist pull, LocalWish shape, for a fresh install to adopt
+  const wishRows = await db
+    .select()
+    .from(wishlistItems)
+    .where(eq(wishlistItems.ownerId, user.id))
+    .limit(200);
+  const serverWishlist = wishRows.map((w) => ({
+    id: w.id,
+    manufacturer: (w.attributes.manufacturer as string) ?? "",
+    model: (w.attributes.model as string) ?? "",
+    variant: (w.attributes.variant as string) ?? null,
+    targetPrice: w.targetPrice,
+    priority: w.priority as 1 | 2 | 3,
+    status: w.status,
+    createdAt: w.createdAt.toISOString(),
+    updatedAt: w.createdAt.toISOString(),
+  }));
+
   return NextResponse.json({
     userId: user.id,
     collectionId: collection.id,
@@ -391,5 +537,6 @@ export async function POST(request: Request) {
     deletedGalleryIds,
     serverItems,
     serverGalleries,
+    serverWishlist,
   });
 }
