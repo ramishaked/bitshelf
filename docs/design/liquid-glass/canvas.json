@@ -1,0 +1,11 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "01 אוסף, Liquid Glass" },
+    { "file": "Item.dc.html", "x": 490, "y": 0, "w": 390, "h": 844, "title": "02 פריט, Liquid Glass" },
+    { "file": "Dashboard.dc.html", "x": 980, "y": 0, "w": 390, "h": 844, "title": "04 דשבורד, Liquid Glass" }
+  ],
+  "annotations": [
+    { "id": "glass-note", "x": 0, "y": -170, "w": 420, "text": "גרסת Liquid Glass של שלושת המסכים המרכזיים: קיר התמונות רץ מקצה לקצה, הכותרת צפה על scrim, החיפוש הצטמצם לעיגול זכוכית, וה-tab bar הפך לקפסולת זכוכית צפה. הפלטה, הירוק הזרחני והמונו למספרים נשארו מהעיצוב המקורי." }
+  ],
+  "launch": { "view": "canvas" }
+}

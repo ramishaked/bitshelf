@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: -apple-system, "SF Pro", system-ui, sans-serif; }
+    a { color: #5CE65C; } a:hover { color: #2E8F2E; }
+    .glass {
+      background: rgba(20, 22, 19, 0.52);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      backdrop-filter: blur(24px) saturate(1.5);
+      border: 1px solid rgba(237, 239, 232, 0.16);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+    .tile-name {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      padding: 20px 6px 5px; font-size: 9px; color: #fff;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
+      font-family: ui-monospace, "SF Mono", Menlo, monospace; text-align: left;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; }
+  </style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; background: #0E0F0D; color: #EDEFE8; border-radius: 44px; overflow: hidden; position: relative;">
+
+  <!-- edge to edge photo wall, runs behind every control -->
+  <div dir="ltr" style="position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; align-content: start; padding: 0 0 2px;">
+    <div style="aspect-ratio: 1; position: relative; background: #D8CDB4;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">Apple IIc (ROM 4X)</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #4A4640;"><span class="dot" style="background: #7A7F76;"></span><div class="tile-name">Commodore 64</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #C9BEA5;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">Apple IIe</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #8F5B3A;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">Atari 2600</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #E4DCC8;"><span class="dot" style="background: #F5A524;"></span><div class="tile-name">Macintosh SE/30</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #B9AE96;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">Amiga 500</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #3E3B36;"><span class="dot" style="background: #E0563F;"></span><div class="tile-name">Macintosh 128K</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #CEC3AA;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">Apple IIGS</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #57524B;"><span class="dot" style="background: #7A7F76;"></span><div class="tile-name">VIC-20</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #DED4BE;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">Macintosh Plus</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #6B6157;"><span class="dot" style="background: #F5A524;"></span><div class="tile-name">Commodore 128</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #C4B99F;"><span class="dot" style="background: #7A7F76;"></span><div class="tile-name">Apple IIc Plus</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #46423C;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">NES-001</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #D2C7AE;"><span class="dot" style="background: #7A7F76;"></span><div class="tile-name">Disk II Drive</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #7E736A;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">Monitor II</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #CFC5AF;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">PowerBook 100</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #39362F;"><span class="dot" style="background: #7A7F76;"></span><div class="tile-name">VisiCalc</div></div>
+    <div style="aspect-ratio: 1; position: relative; background: #C0B59B;"><span class="dot" style="background: #5CE65C;"></span><div class="tile-name">Oregon Trail</div></div>
+  </div>
+
+  <!-- top scrim keeps the floating title readable -->
+  <div style="position: absolute; top: 0; left: 0; right: 0; height: 170px; background: linear-gradient(rgba(0, 0, 0, 0.55), transparent);"></div>
+
+  <!-- floating title, like the library header in the system photo apps -->
+  <div style="position: absolute; top: 64px; right: 20px; text-align: right;">
+    <div style="font-size: 30px; font-weight: 700; letter-spacing: -0.3px; color: #fff;">האוסף</div>
+    <div style="font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.85);"><span style="font-family: ui-monospace, 'SF Mono', Menlo, monospace;">214</span> פריטים</div>
+  </div>
+
+  <!-- floating glass controls -->
+  <div style="position: absolute; top: 64px; left: 20px; display: flex; gap: 10px;">
+    <div class="glass" style="width: 42px; height: 42px; border-radius: 21px; display: flex; align-items: center; justify-content: center;">
+      <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><circle cx="7.2" cy="7.2" r="5.4"></circle><line x1="11.6" y1="11.6" x2="15.4" y2="15.4"></line></svg>
+    </div>
+    <div class="glass" style="width: 42px; height: 42px; border-radius: 21px; display: flex; align-items: center; justify-content: center;">
+      <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="15" x2="3" y2="9"></line><line x1="9" y1="15" x2="9" y2="3"></line><line x1="15" y1="15" x2="15" y2="7"></line></svg>
+    </div>
+  </div>
+
+  <!-- floating add button with the phosphor glow -->
+  <div style="position: absolute; bottom: 120px; left: 20px; width: 56px; height: 56px; border-radius: 28px; background: #5CE65C; color: #0E0F0D; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 28px rgba(92, 230, 92, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);">
+    <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="4" x2="12" y2="20"></line><line x1="4" y1="12" x2="20" y2="12"></line></svg>
+  </div>
+
+  <!-- floating glass tab capsule, detached from the bottom edge -->
+  <div class="glass" style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); border-radius: 32px; display: flex; gap: 6px; padding: 8px 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 14px; border-radius: 22px; background: rgba(92, 230, 92, 0.18);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#5CE65C" stroke-width="1.7"><rect x="2.5" y="2.5" width="6" height="6" rx="1.5"></rect><rect x="11.5" y="2.5" width="6" height="6" rx="1.5"></rect><rect x="2.5" y="11.5" width="6" height="6" rx="1.5"></rect><rect x="11.5" y="11.5" width="6" height="6" rx="1.5"></rect></svg>
+      <span style="font-size: 10px; color: #5CE65C; font-weight: 600;">אוסף</span>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 14px; border-radius: 22px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.7"><rect x="2.5" y="4.5" width="12" height="10" rx="2"></rect><path d="M5.5 4.5v-2h12v10h-2"></path></svg>
+      <span style="font-size: 10px; color: rgba(255, 255, 255, 0.75);">גלריות</span>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 14px; border-radius: 22px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.7"><path d="M10 16.5S3 12.2 3 7.6A3.8 3.8 0 0 1 10 5.5a3.8 3.8 0 0 1 7 2.1c0 4.6-7 8.9-7 8.9Z"></path></svg>
+      <span style="font-size: 10px; color: rgba(255, 255, 255, 0.75);">מועדפים</span>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 14px; border-radius: 22px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.7"><circle cx="10" cy="6.5" r="3.2"></circle><path d="M3.5 17c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"></path></svg>
+      <span style="font-size: 10px; color: rgba(255, 255, 255, 0.75);">פרופיל</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
