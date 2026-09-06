@@ -140,11 +140,18 @@ export default function GalleryFormScreen() {
             });
           }}
         />
-        {canSave ? (
-          <GlassActionBar
-            actions={[{ label: t("gallery.save"), onPress: save, variant: "primary" }]}
-          />
-        ) : null}
+        {/* always visible so the way forward is obvious; disabled until
+            a name exists (an invisible save read as being stuck) */}
+        <GlassActionBar
+          actions={[
+            {
+              label: t("gallery.save"),
+              onPress: save,
+              variant: "primary",
+              disabled: !canSave,
+            },
+          ]}
+        />
       </View>
     </>
   );

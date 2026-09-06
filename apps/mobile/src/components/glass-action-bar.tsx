@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { photoOverlay, radius, spacing, typography } from "@bitshelf/ui";
@@ -12,6 +13,8 @@ export interface GlassAction {
   label: string;
   onPress: () => void;
   variant?: "primary" | "plain" | "destructive" | "warning";
+  // rendered dimmed and unpressable (e.g. save before a required field)
+  disabled?: boolean;
 }
 
 export function GlassActionBar({
@@ -27,12 +30,28 @@ export function GlassActionBar({
   const themeName = useThemeName();
   const insets = useSafeAreaInsets();
 
+  // the bar is pinned to the screen bottom, so an open keyboard would
+  // cover it (Rami got stuck on the gallery name form); ride above it
+  const [keyboard, setKeyboard] = useState(0);
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardWillShow", (e) =>
+      setKeyboard(e.endCoordinates.height),
+    );
+    const hide = Keyboard.addListener("keyboardWillHide", () => setKeyboard(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  const restingBottom = aboveTabBar ? 110 : Math.max(insets.bottom, spacing.md) + 6;
+
   return (
     <View
       pointerEvents="box-none"
       style={[
         styles.row,
-        { bottom: aboveTabBar ? 110 : Math.max(insets.bottom, spacing.md) + 6 },
+        { bottom: keyboard > 0 ? keyboard + spacing.sm : restingBottom },
       ]}
     >
       {actions.map((action) => {
@@ -48,9 +67,10 @@ export function GlassActionBar({
         return (
           <Pressable
             key={action.label}
-            onPress={action.onPress}
+            onPress={action.disabled ? undefined : action.onPress}
             style={({ pressed }) => [
               styles.action,
+              action.disabled && { opacity: 0.4 },
               primary
                 ? {
                     backgroundColor: pressed ? colors.accentPressed : colors.accent,
