@@ -23,8 +23,7 @@ import {
 import { requestSync } from "../../lib/sync";
 import { useThemeColors, useThemeName } from "../../lib/theme";
 
-// room the content leaves for the translucent tab bar it scrolls under
-const TAB_BAR_INSET = 92;
+import { GLASS_TAB_BAR_INSET as TAB_BAR_INSET } from "../../components/glass-tab-bar";
 
 // floating circular control on a blur pill, like the buttons in Photos
 function CircleButton({

@@ -143,7 +143,7 @@ export default function WishlistScreen() {
         style={{ flex: 1, backgroundColor: colors.background }}
         contentContainerStyle={styles.content}
       >
-        <View style={[styles.form, { backgroundColor: colors.surface }]}>
+        <View style={[styles.form, { backgroundColor: colors.surface, borderColor: colors.line }]}>
           <View style={styles.formRow}>
             <TextInput
               value={manufacturer}
@@ -219,7 +219,7 @@ export default function WishlistScreen() {
             <Pressable
               key={wish.id}
               onLongPress={() => confirmDelete(wish)}
-              style={[styles.card, { backgroundColor: colors.surface }]}
+              style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}
             >
               <View style={styles.cardTop}>
                 <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
@@ -279,6 +279,7 @@ const styles = StyleSheet.create({
   },
   form: {
     borderRadius: radius.card,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md,
     gap: spacing.sm,
     marginBottom: spacing.sm,
@@ -306,6 +307,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radius.card,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md,
     gap: spacing.sm,
   },

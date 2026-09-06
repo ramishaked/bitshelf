@@ -28,7 +28,7 @@ function Card({
   label?: string;
 }) {
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface }]}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}>
       {label ? (
         <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{label}</Text>
       ) : null}
@@ -297,6 +297,7 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: radius.card,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md + 2,
     gap: spacing.sm,
   },

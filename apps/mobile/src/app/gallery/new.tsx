@@ -8,7 +8,11 @@ import {
 } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button, controls, radius, spacing, typography } from "@bitshelf/ui";
+import { controls, radius, spacing, typography } from "@bitshelf/ui";
+import {
+  GLASS_ACTION_BAR_INSET,
+  GlassActionBar,
+} from "../../components/glass-action-bar";
 import { ItemGrid } from "../../components/item-grid";
 import {
   getGallery,
@@ -122,6 +126,7 @@ export default function GalleryFormScreen() {
         <ItemGrid
           items={items}
           selectedIds={selected}
+          bottomInset={GLASS_ACTION_BAR_INSET}
           onPressItem={(item) => {
             setSelected((prev) => {
               const next = new Set(prev);
@@ -134,13 +139,11 @@ export default function GalleryFormScreen() {
             });
           }}
         />
-        <Button
-          label={t("gallery.save")}
-          onPress={save}
-          colors={colors}
-          disabled={!canSave}
-          style={styles.save}
-        />
+        {canSave ? (
+          <GlassActionBar
+            actions={[{ label: t("gallery.save"), onPress: save, variant: "primary" }]}
+          />
+        ) : null}
       </View>
     </>
   );
@@ -170,11 +173,5 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.caption + 1,
     textAlign: "left",
     marginTop: spacing.xs,
-  },
-  save: {
-    position: "absolute",
-    bottom: 28,
-    start: spacing.lg,
-    end: spacing.lg,
   },
 });

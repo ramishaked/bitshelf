@@ -14,6 +14,10 @@ import { Stack, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
 import { Button, EmptyState, controls, radius, spacing, typography } from "@bitshelf/ui";
+import {
+  GLASS_ACTION_BAR_INSET,
+  GlassActionBar,
+} from "../components/glass-action-bar";
 import { clerkEnabled } from "../lib/auth";
 import { addPhotos, deletePhotoFiles } from "../lib/photos";
 import { buildTitle } from "../lib/retro";
@@ -252,8 +256,6 @@ export default function ShelfScanScreen() {
                   </Pressable>
                 </View>
               ))}
-            </ScrollView>
-            <View style={styles.footer}>
               <TextInput
                 value={storageLocation}
                 onChangeText={setStorageLocation}
@@ -264,13 +266,18 @@ export default function ShelfScanScreen() {
                   { backgroundColor: colors.surface, color: colors.textPrimary },
                 ]}
               />
-              <Button
-                label={t("shelfScan.saveAll", { count: selectedCount })}
-                onPress={saveAll}
-                colors={colors}
-                disabled={selectedCount === 0 || saving}
+            </ScrollView>
+            {selectedCount > 0 && !saving ? (
+              <GlassActionBar
+                actions={[
+                  {
+                    label: t("shelfScan.saveAll", { count: selectedCount }),
+                    onPress: saveAll,
+                    variant: "primary",
+                  },
+                ]}
               />
-            </View>
+            ) : null}
           </>
         ) : (
           <View style={styles.center}>
@@ -333,7 +340,8 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
+    // clears the floating glass save capsule
+    paddingBottom: GLASS_ACTION_BAR_INSET,
     gap: spacing.sm,
   },
   row: {

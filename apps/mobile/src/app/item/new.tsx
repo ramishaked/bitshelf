@@ -16,7 +16,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useTranslation } from "react-i18next";
 import {
-  Button,
   controls,
   radius,
   spacing,
@@ -32,6 +31,10 @@ import {
   isLatinField,
   type AttributeField,
 } from "../../lib/retro";
+import {
+  GLASS_ACTION_BAR_INSET,
+  GlassActionBar,
+} from "../../components/glass-action-bar";
 import { addPhotos, deletePhotoFiles } from "../../lib/photos";
 import { requestSync } from "../../lib/sync";
 import {
@@ -429,13 +432,10 @@ export default function ItemFormScreen() {
             />
           </View>
 
-          <Button
-            label={t("item.save")}
-            onPress={save}
-            colors={colors}
-            style={styles.saveButton}
-          />
         </ScrollView>
+        <GlassActionBar
+          actions={[{ label: t("item.save"), onPress: save, variant: "primary" }]}
+        />
       </KeyboardAvoidingView>
     </>
   );
@@ -447,7 +447,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
-    paddingBottom: spacing.xxl,
+    // clears the floating glass save capsule
+    paddingBottom: GLASS_ACTION_BAR_INSET,
   },
   sectionLabel: {
     fontSize: 13,
@@ -554,8 +555,5 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: spacing.lg,
-  },
-  saveButton: {
-    marginTop: spacing.xl,
   },
 });

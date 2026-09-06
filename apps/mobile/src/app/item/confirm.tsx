@@ -14,13 +14,16 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
 import {
-  Button,
   controls,
   radius,
   spacing,
   typography,
   type ThemeColors,
 } from "@bitshelf/ui";
+import {
+  GLASS_ACTION_BAR_INSET,
+  GlassActionBar,
+} from "../../components/glass-action-bar";
 import {
   applyMapsTo,
   buildTitle,
@@ -237,10 +240,8 @@ function ConfirmInner() {
   const alternatives = ai?.alternatives ?? [];
 
   return (
-    <ScrollView
-      style={{ backgroundColor: colors.background }}
-      contentContainerStyle={styles.content}
-    >
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <ScrollView contentContainerStyle={styles.content}>
       <Text style={[styles.title, { color: colors.textPrimary }]}>
         {t("confirm.title")}
       </Text>
@@ -363,22 +364,14 @@ function ConfirmInner() {
         />
       </View>
 
-      <View style={styles.actions}>
-        <Button
-          label={t("confirm.save")}
-          onPress={save}
-          colors={colors}
-          style={styles.action}
-        />
-        <Button
-          label={t("confirm.retake")}
-          onPress={retake}
-          colors={colors}
-          variant="secondary"
-          style={styles.action}
-        />
-      </View>
     </ScrollView>
+    <GlassActionBar
+      actions={[
+        { label: t("confirm.save"), onPress: save, variant: "primary" },
+        { label: t("confirm.retake"), onPress: retake },
+      ]}
+    />
+    </View>
   );
 }
 
@@ -398,7 +391,8 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     paddingTop: 68,
-    paddingBottom: spacing.xxl,
+    // clears the floating glass save capsule
+    paddingBottom: GLASS_ACTION_BAR_INSET,
   },
   title: {
     fontSize: typography.sizes.largeTitle,
@@ -490,13 +484,5 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.xs + 2,
     marginTop: spacing.md,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: spacing.sm + 2,
-    marginTop: spacing.xl,
-  },
-  action: {
-    flex: 1,
   },
 });

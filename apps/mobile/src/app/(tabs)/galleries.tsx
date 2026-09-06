@@ -4,6 +4,7 @@ import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { EmptyState, radius, spacing, typography } from "@bitshelf/ui";
+import { GLASS_TAB_BAR_INSET } from "../../components/glass-tab-bar";
 import { ScreenHeader } from "../../components/screen-header";
 import { categoriesOf, manufacturersOf } from "../../lib/filters";
 import { categories as seedCategories } from "../../lib/retro";
@@ -42,7 +43,10 @@ function GalleryRow({ row }: { row: Row }) {
       onPress={row.onPress}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: pressed ? colors.surface2 : colors.surface },
+        {
+          backgroundColor: pressed ? colors.surface2 : colors.surface,
+          borderColor: colors.line,
+        },
       ]}
     >
       <View style={[styles.cover, { backgroundColor: colors.surface2 }]}>
@@ -186,8 +190,8 @@ export default function GalleriesScreen() {
 const styles = StyleSheet.create({
   list: {
     paddingHorizontal: spacing.lg + spacing.xs,
-    // clears the translucent tab bar the list scrolls under
-    paddingBottom: spacing.xxl + 92,
+    // clears the floating tab capsule the list scrolls under
+    paddingBottom: GLASS_TAB_BAR_INSET + spacing.lg,
     gap: spacing.sm,
   },
   section: {
@@ -196,10 +200,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
+  // hairline edge like the glass cards in the design
   row: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: radius.card,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.sm,
     gap: spacing.md,
   },

@@ -152,7 +152,7 @@ function FoldCard({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface }]}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}>
       <Pressable onPress={() => setOpen((v) => !v)} style={styles.foldHeader}>
         <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{label}</Text>
         <View style={styles.foldSummary}>
@@ -451,7 +451,7 @@ export default function ItemScreen() {
           </View>
 
           {hasValue ? (
-            <View style={[styles.card, { backgroundColor: colors.surface }]}>
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}>
               <View style={styles.valueHeader}>
                 <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
                   {t("item.valueSection")}
@@ -510,7 +510,7 @@ export default function ItemScreen() {
                     )
                   : undefined
               }
-              style={[styles.card, { backgroundColor: colors.surface }]}
+              style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}
             >
               <View style={styles.valueHeader}>
                 <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
@@ -563,7 +563,7 @@ export default function ItemScreen() {
           ) : null}
 
           {(children.length > 0 || (!item.parentItemId && item.photos.length > 0)) && (
-            <View style={[styles.card, { backgroundColor: colors.surface }]}>
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}>
               <View style={styles.valueHeader}>
                 <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
                   {t("set.title")}
@@ -632,7 +632,7 @@ export default function ItemScreen() {
           {parent ? (
             <Pressable
               onPress={() => router.push(`/item/${parent.id}`)}
-              style={[styles.card, { backgroundColor: colors.surface }]}
+              style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.line }]}
             >
               <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
                 {t("set.partOf")}
@@ -914,8 +914,10 @@ const styles = StyleSheet.create({
   tagLabel: {
     fontSize: 13,
   },
+  // hairline edge like the glass cards in the design
   card: {
     borderRadius: radius.card,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md + 2,
     gap: spacing.sm,
   },

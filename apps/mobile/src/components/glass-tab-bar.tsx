@@ -31,6 +31,9 @@ export interface GlassTabBarProps {
   };
 }
 
+// room tab screens leave so content clears the floating capsule
+export const GLASS_TAB_BAR_INSET = 112;
+
 export function GlassTabBar({ state, descriptors, navigation }: GlassTabBarProps) {
   const colors = useThemeColors();
   const themeName = useThemeName();

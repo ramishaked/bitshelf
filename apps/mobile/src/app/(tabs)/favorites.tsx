@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "@bitshelf/ui";
+import { GLASS_TAB_BAR_INSET } from "../../components/glass-tab-bar";
 import { ItemGrid } from "../../components/item-grid";
 import { ScreenHeader } from "../../components/screen-header";
 import { listFavorites, type LocalItem } from "../../lib/store";
@@ -30,7 +31,7 @@ export default function FavoritesScreen() {
           colors={colors}
         />
       ) : (
-        <ItemGrid items={items} bottomInset={92} />
+        <ItemGrid items={items} bottomInset={GLASS_TAB_BAR_INSET} />
       )}
     </View>
   );

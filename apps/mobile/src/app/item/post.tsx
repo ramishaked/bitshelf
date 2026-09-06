@@ -12,7 +12,11 @@ import {
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
-import { Button, radius, spacing, typography } from "@bitshelf/ui";
+import { radius, spacing, typography } from "@bitshelf/ui";
+import {
+  GLASS_ACTION_BAR_INSET,
+  GlassActionBar,
+} from "../../components/glass-action-bar";
 import { getItem } from "../../lib/store";
 import { useThemeColors } from "../../lib/theme";
 
@@ -147,24 +151,19 @@ export default function PostScreen() {
           </Text>
         ) : null}
 
-        <View style={styles.actions}>
-          <Button
-            label={t("post.share")}
-            onPress={() => void Share.share({ message: text })}
-            colors={colors}
-            disabled={!text || loading}
-            style={styles.action}
-          />
-          <Button
-            label={t("post.regenerate")}
-            onPress={() => void generate()}
-            colors={colors}
-            variant="secondary"
-            disabled={loading}
-            style={styles.action}
-          />
-        </View>
       </ScrollView>
+      {!loading ? (
+        <GlassActionBar
+          actions={[
+            {
+              label: t("post.share"),
+              onPress: () => void Share.share({ message: text }),
+              variant: "primary",
+            },
+            { label: t("post.regenerate"), onPress: () => void generate() },
+          ]}
+        />
+      ) : null}
     </>
   );
 }
@@ -173,6 +172,8 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.md,
+    // clears the floating glass action capsule
+    paddingBottom: GLASS_ACTION_BAR_INSET,
   },
   segmented: {
     flexDirection: "row",
@@ -212,12 +213,5 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     textAlign: "right",
     textAlignVertical: "top",
-  },
-  actions: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  action: {
-    flex: 1,
   },
 });
