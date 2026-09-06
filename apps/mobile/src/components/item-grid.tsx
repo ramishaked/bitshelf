@@ -82,6 +82,7 @@ export function ItemGrid({
   topInset = 0,
   bottomInset = 0,
   showNames = false,
+  columns = grid.columns,
 }: {
   items: LocalItem[];
   // selection mode (gallery multi-select): tiles toggle instead of navigating
@@ -93,11 +94,13 @@ export function ItemGrid({
   bottomInset?: number;
   // the main wall is pure photos (handoff G01); selection screens show names
   showNames?: boolean;
+  // the collection wall lets a pinch change this (2 to 4)
+  columns?: number;
 }) {
   const colors = useThemeColors();
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const tileSize = Math.floor((width - grid.gap * (grid.columns + 1)) / grid.columns);
+  const tileSize = Math.floor((width - grid.gap * (columns + 1)) / columns);
 
   return (
     // the photo wall flows RTL (Rami, 05.09.2026). FlashList cannot lay out
@@ -105,8 +108,9 @@ export function ItemGrid({
     // and every tile is mirrored back.
     <View style={styles.gridWrap}>
       <FlashList
+        key={columns}
         data={items}
-        numColumns={grid.columns}
+        numColumns={columns}
         keyExtractor={(item) => item.id}
         extraData={selectedIds}
         renderItem={({ item }) => (

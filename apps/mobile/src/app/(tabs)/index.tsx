@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { BlurView } from "expo-blur";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
 import { EmptyState, photoOverlay, radius, spacing, typography } from "@bitshelf/ui";
@@ -114,6 +115,11 @@ export default function CollectionScreen() {
   const [showNames, setShowNames] = useState(
     () => getSetting("collection_tile_names") === "1",
   );
+  // pinch zoom on the wall (spec 7.1): 2 to 4 columns, persisted
+  const [columns, setColumns] = useState(() => {
+    const stored = Number(getSetting("collection_columns"));
+    return stored >= 2 && stored <= 4 ? stored : 3;
+  });
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -124,6 +130,26 @@ export default function CollectionScreen() {
 
   const reload = useCallback(() => setItems(listItems()), []);
   useFocusEffect(reload);
+
+  // pinch out = bigger tiles (fewer columns), pinch in = more columns
+  const pinch = useMemo(
+    () =>
+      Gesture.Pinch()
+        .runOnJS(true)
+        .onEnd((e) => {
+          setColumns((current) => {
+            const next =
+              e.scale > 1.2
+                ? Math.max(2, current - 1)
+                : e.scale < 0.8
+                  ? Math.min(4, current + 1)
+                  : current;
+            if (next !== current) setSetting("collection_columns", String(next));
+            return next;
+          });
+        }),
+    [],
+  );
 
   const visible = useMemo(
     () => sortItems(applyFilters(items, filters), sort),
@@ -187,22 +213,27 @@ export default function CollectionScreen() {
             <EmptyState title={t("filters.noResults")} colors={colors} />
           </View>
         ) : (
-          <ItemGrid
-            items={visible}
-            showNames={showNames}
-            selectedIds={selecting ? selected : undefined}
-            onPressItem={selecting ? toggleSelected : undefined}
-            onLongPressItem={
-              selecting
-                ? undefined
-                : (item) => {
-                    // long press enters selection with the pressed item
-                    setSelecting(true);
-                    setSelected(new Set([item.id]));
-                  }
-            }
-            bottomInset={GLASS_TAB_BAR_INSET + 46}
-          />
+          <GestureDetector gesture={pinch}>
+            <View style={{ flex: 1 }}>
+              <ItemGrid
+                items={visible}
+                showNames={showNames}
+                columns={columns}
+                selectedIds={selecting ? selected : undefined}
+                onPressItem={selecting ? toggleSelected : undefined}
+                onLongPressItem={
+                  selecting
+                    ? undefined
+                    : (item) => {
+                        // long press enters selection with the pressed item
+                        setSelecting(true);
+                        setSelected(new Set([item.id]));
+                      }
+                }
+                bottomInset={GLASS_TAB_BAR_INSET + 46}
+              />
+            </View>
+          </GestureDetector>
         )
       ) : (
         <Dashboard

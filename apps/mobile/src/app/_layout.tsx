@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
@@ -18,6 +19,8 @@ export default function RootLayout() {
   const themeName = useThemeName();
 
   const app = (
+    // gestures (pinch on the photo wall) need this above every screen
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <GuestProvider>
       {/* follows the in-app appearance setting, not only the OS scheme */}
       <StatusBar style={themeName === "dark" ? "light" : "dark"} />
@@ -75,6 +78,7 @@ export default function RootLayout() {
         />
       </Stack>
     </GuestProvider>
+    </GestureHandlerRootView>
   );
 
   if (!clerkEnabled) {
