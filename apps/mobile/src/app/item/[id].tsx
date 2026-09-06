@@ -32,6 +32,7 @@ import {
   isLatinField,
   statusColor,
 } from "../../lib/retro";
+import { formatMoney } from "../../lib/format";
 import {
   ensureModelInfo,
   getCachedModelInfo,
@@ -241,7 +242,6 @@ export default function ItemScreen() {
   const serial = item.attributes.serial_number as string | undefined;
   const repairs = item.repairs ?? [];
   const hasValue = item.valueFair != null || item.valueLow != null;
-  const currencySign = item.valueCurrency === "USD" ? "$" : "₪";
 
   const confirmDelete = () => {
     Alert.alert(t("item.deleteConfirmTitle"), t("item.deleteConfirmBody"), [
@@ -463,13 +463,18 @@ export default function ItemScreen() {
               </View>
               <View style={styles.valueRow}>
                 <Text style={[styles.valueSide, { color: colors.textSecondary }]}>
-                  {item.valueLow != null ? `${currencySign}${item.valueLow}` : ""}
+                  {formatMoney(item.valueLow, item.valueCurrency)}
                 </Text>
-                <Text style={[styles.valueFair, { color: colors.accent }]}>
-                  {item.valueFair != null ? `${currencySign}${item.valueFair}` : ""}
+                <Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.6}
+                  style={[styles.valueFair, { color: colors.accent }]}
+                >
+                  {formatMoney(item.valueFair, item.valueCurrency)}
                 </Text>
                 <Text style={[styles.valueSide, { color: colors.textSecondary }]}>
-                  {item.valueHigh != null ? `${currencySign}${item.valueHigh}` : ""}
+                  {formatMoney(item.valueHigh, item.valueCurrency)}
                 </Text>
               </View>
               <Text style={[styles.valueNote, { color: colors.textSecondary }]}>
@@ -639,7 +644,7 @@ export default function ItemScreen() {
               label={t("item.purchaseSection")}
               summary={[
                 item.purchasePrice
-                  ? `${item.purchaseCurrency === "USD" ? "$" : "₪"}${item.purchasePrice}`
+                  ? formatMoney(item.purchasePrice, item.purchaseCurrency)
                   : null,
                 item.purchaseSource,
               ]
@@ -648,7 +653,7 @@ export default function ItemScreen() {
               colors={colors}
             >
               <Text style={[styles.mono, { color: colors.textPrimary, fontSize: 15 }]}>
-                {`${item.purchaseCurrency === "USD" ? "$" : "₪"}${item.purchasePrice ?? ""}`}
+                {formatMoney(item.purchasePrice, item.purchaseCurrency)}
                 {item.purchaseSource ? `  ·  ${item.purchaseSource}` : ""}
               </Text>
             </FoldCard>
@@ -936,19 +941,22 @@ const styles = StyleSheet.create({
   valueRow: {
     flexDirection: "row",
     alignItems: "baseline",
-    justifyContent: "center",
-    gap: spacing.lg,
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.sm,
+    gap: spacing.md,
   },
-  // fair value in mono 26 accent, low and high in mono 13 muted (design)
+  // fair value in mono accent, low and high in mono muted (design); the fair
+  // shrinks instead of pushing the sides off the card
   valueFair: {
+    flexShrink: 1,
     fontFamily: typography.mono,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "700",
     writingDirection: "ltr",
   },
   valueSide: {
     fontFamily: typography.mono,
-    fontSize: 13,
+    fontSize: 12,
     writingDirection: "ltr",
   },
   valueNote: {

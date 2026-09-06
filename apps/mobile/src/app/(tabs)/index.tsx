@@ -1,9 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { BlurView } from "expo-blur";
-import { EmptyState, radius, spacing, typography } from "@bitshelf/ui";
+import { LinearGradient } from "expo-linear-gradient";
+import { SymbolView, type SFSymbol } from "expo-symbols";
+import { EmptyState, photoOverlay, radius, spacing, typography, type ThemeName } from "@bitshelf/ui";
 import { Dashboard } from "../../components/dashboard";
 import { FilterBar } from "../../components/filter-bar";
 import { ItemGrid } from "../../components/item-grid";
@@ -23,6 +26,30 @@ import { useThemeColors, useThemeName } from "../../lib/theme";
 // room the content leaves for the translucent tab bar it scrolls under
 const TAB_BAR_INSET = 92;
 
+// floating circular control on a blur pill, like the buttons in Photos
+function CircleButton({
+  icon,
+  tint,
+  themeName,
+  onPress,
+}: {
+  icon: SFSymbol;
+  tint: string;
+  themeName: ThemeName;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress} style={styles.circle}>
+      <BlurView
+        tint={themeName === "dark" ? "dark" : "light"}
+        intensity={70}
+        style={StyleSheet.absoluteFill}
+      />
+      <SymbolView name={icon} size={17} tintColor={tint} />
+    </Pressable>
+  );
+}
+
 export default function CollectionScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -36,7 +63,10 @@ export default function CollectionScreen() {
     viewParam === "dashboard" ? "dashboard" : "gallery",
   );
   const themeName = useThemeName();
-  const [headerHeight, setHeaderHeight] = useState(0);
+  const insets = useSafeAreaInsets();
+  // search opens on demand behind the magnifier (Photos style)
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchHeight, setSearchHeight] = useState(0);
 
   const reload = useCallback(() => setItems(listItems()), []);
   useFocusEffect(reload);
@@ -73,47 +103,93 @@ export default function CollectionScreen() {
   };
 
   const chrome = (
-    // floating translucent chrome, the content scrolls under it (Photos
-    // style, Rami 05.09.2026)
-    <BlurView
-      tint={themeName === "dark" ? "dark" : "light"}
-      intensity={80}
-      onLayout={(e) => setHeaderHeight(Math.round(e.nativeEvent.layout.height))}
-      style={styles.chrome}
-    >
-      <ScreenHeader title={t("collection.title")} transparent />
-      <View style={[styles.segmented, { backgroundColor: colors.surface }]}>
-        {(["gallery", "dashboard"] as const).map((key) => (
-          <Pressable
-            key={key}
-            onPress={() => setView(key)}
-            style={[
-              styles.segment,
-              view === key && { backgroundColor: colors.surface2 },
-            ]}
-          >
-            <Text
-              style={[
-                styles.segmentLabel,
-                { color: view === key ? colors.textPrimary : colors.textSecondary },
-              ]}
-            >
-              {t(`dashboard.${key}`)}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-      {view === "gallery" ? (
-        <>
-          <FilterBar items={items} filters={filters} onChange={setFilters} />
-          {hasActiveFilters(filters) ? (
+    // Photos style (Rami, 06.09.2026): no chrome bar. The wall runs edge to
+    // edge, a scrim keeps the floating title readable, and search lives
+    // behind a magnifier button instead of a permanent field.
+    searchActive && view === "gallery" ? (
+      <BlurView
+        tint={themeName === "dark" ? "dark" : "light"}
+        intensity={80}
+        onLayout={(e) => setSearchHeight(Math.round(e.nativeEvent.layout.height))}
+        style={styles.searchChrome}
+      >
+        <View style={{ paddingTop: insets.top + spacing.xs }}>
+          <View style={styles.searchTopRow}>
             <Text style={[styles.count, { color: colors.textSecondary }]}>
               {t("collection.itemCount", { count: visible.length })}
             </Text>
-          ) : null}
-        </>
-      ) : null}
-    </BlurView>
+            <Pressable
+              onPress={() => {
+                setSearchActive(false);
+                setFilters(emptyFilters);
+              }}
+            >
+              <Text style={{ color: colors.accent, fontSize: typography.sizes.body }}>
+                {t("item.cancel")}
+              </Text>
+            </Pressable>
+          </View>
+          <FilterBar items={items} filters={filters} onChange={setFilters} autoFocus />
+        </View>
+      </BlurView>
+    ) : (
+      <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+        {view === "gallery" ? (
+          <LinearGradient
+            pointerEvents="none"
+            colors={[photoOverlay.scrim, photoOverlay.gradientStart]}
+            style={styles.scrim}
+          />
+        ) : null}
+        <View
+          pointerEvents="box-none"
+          style={[styles.overlayHeader, { paddingTop: insets.top + spacing.xs }]}
+        >
+          <View style={styles.titleBlock}>
+            <Text
+              style={[
+                styles.overlayTitle,
+                { color: view === "gallery" ? photoOverlay.text : colors.textPrimary },
+              ]}
+            >
+              {t("collection.title")}
+            </Text>
+            <Text
+              style={[
+                styles.overlayCount,
+                { color: view === "gallery" ? photoOverlay.text : colors.textSecondary },
+              ]}
+            >
+              {t("collection.itemCount", {
+                count: view === "gallery" ? visible.length : items.length,
+              })}
+            </Text>
+          </View>
+          <View style={styles.circleGroup}>
+            {view === "gallery" ? (
+              <CircleButton
+                icon="magnifyingglass"
+                themeName={themeName}
+                tint={photoOverlay.text}
+                onPress={() => setSearchActive(true)}
+              />
+            ) : null}
+            <CircleButton
+              icon="chart.bar.xaxis"
+              themeName={themeName}
+              tint={
+                view === "dashboard"
+                  ? colors.accent
+                  : view === "gallery"
+                    ? photoOverlay.text
+                    : colors.textPrimary
+              }
+              onPress={() => setView(view === "dashboard" ? "gallery" : "dashboard")}
+            />
+          </View>
+        </View>
+      </View>
+    )
   );
 
   return (
@@ -128,22 +204,28 @@ export default function CollectionScreen() {
           {view === "dashboard" ? (
             <Dashboard
               items={items}
-              topInset={headerHeight}
+              topInset={insets.top + 72}
               bottomInset={TAB_BAR_INSET}
               onFilter={(partial) => {
                 setFilters({ ...emptyFilters, ...partial });
                 setView("gallery");
+                setSearchActive(true);
               }}
             />
           ) : visible.length === 0 ? (
-            <View style={{ flex: 1, paddingTop: headerHeight }}>
+            <View
+              style={{
+                flex: 1,
+                paddingTop: searchActive ? searchHeight : insets.top + 72,
+              }}
+            >
               <EmptyState title={t("filters.noResults")} colors={colors} />
             </View>
           ) : (
             <ItemGrid
               items={visible}
               onLongPressItem={openItemActions}
-              topInset={headerHeight}
+              topInset={searchActive ? searchHeight : 0}
               bottomInset={TAB_BAR_INSET}
             />
           )}
@@ -199,29 +281,59 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg + spacing.xs,
     paddingBottom: spacing.xs,
   },
-  chrome: {
+  searchChrome: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     paddingBottom: spacing.xs,
   },
-  segmented: {
+  searchTopRow: {
     flexDirection: "row",
-    marginHorizontal: spacing.lg + spacing.xs,
-    marginBottom: spacing.sm,
-    borderRadius: radius.tag + 2,
-    padding: 2,
-  },
-  segment: {
-    flex: 1,
-    borderRadius: radius.tag,
-    paddingVertical: spacing.xs + 2,
+    justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: spacing.lg + spacing.xs,
+    paddingBottom: spacing.xs,
   },
-  segmentLabel: {
+  scrim: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 150,
+  },
+  overlayHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingHorizontal: spacing.lg,
+  },
+  titleBlock: {
+    gap: 2,
+  },
+  overlayTitle: {
+    fontSize: typography.sizes.largeTitle,
+    fontWeight: "700",
+    letterSpacing: -0.3,
+    textAlign: "left",
+  },
+  overlayCount: {
     fontSize: typography.sizes.secondary,
     fontWeight: "600",
+    textAlign: "left",
+    opacity: 0.85,
+  },
+  circleGroup: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  circle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
   },
   fab: {
     position: "absolute",

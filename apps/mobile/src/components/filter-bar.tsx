@@ -52,10 +52,12 @@ export function FilterBar({
   items,
   filters,
   onChange,
+  autoFocus = false,
 }: {
   items: LocalItem[];
   filters: ItemFilters;
   onChange: (next: ItemFilters) => void;
+  autoFocus?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language === "en" ? "en" : "he";
@@ -76,6 +78,7 @@ export function FilterBar({
         placeholderTextColor={colors.textSecondary}
         clearButtonMode="while-editing"
         autoCorrect={false}
+        autoFocus={autoFocus}
         style={[
           styles.search,
           { backgroundColor: colors.surface, color: colors.textPrimary },

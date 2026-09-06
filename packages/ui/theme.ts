@@ -73,6 +73,8 @@ export const photoOverlay = {
   text: "#FFFFFF",
   gradientStart: "transparent",
   gradientEnd: "rgba(0,0,0,0.75)",
+  // top scrim behind the floating title on the photo wall (Photos style)
+  scrim: "rgba(0,0,0,0.45)",
   // full-screen photo viewer is black in both themes
   viewerBackground: "#000000",
   viewerControl: "rgba(0,0,0,0.45)",
