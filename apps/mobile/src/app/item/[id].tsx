@@ -26,6 +26,7 @@ import {
   type ThemeColors,
 } from "@bitshelf/ui";
 import { clerkEnabled } from "../../lib/auth";
+import { isLatin, latinFlow, latinTitle } from "../../lib/latin";
 import {
   conditionLabels,
   fieldsForCategory,
@@ -422,7 +423,15 @@ export default function ItemScreen() {
         )}
 
         <View style={styles.body}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>{item.title}</Text>
+          <Text
+            style={[
+              styles.title,
+              { color: colors.textPrimary },
+              isLatin(item.title) && latinTitle,
+            ]}
+          >
+            {item.title}
+          </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             {[
               year != null ? String(year) : null,
@@ -604,7 +613,11 @@ export default function ItemScreen() {
                         </View>
                         <Text
                           numberOfLines={1}
-                          style={[styles.setTileLabel, { color: colors.textSecondary }]}
+                          style={[
+                            styles.setTileLabel,
+                            { color: colors.textSecondary },
+                            isLatin(child.title) && latinFlow,
+                          ]}
                         >
                           {child.title}
                         </Text>
@@ -644,7 +657,13 @@ export default function ItemScreen() {
               <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
                 {t("set.partOf")}
               </Text>
-              <Text style={[styles.parentLink, { color: colors.accent }]}>
+              <Text
+                style={[
+                  styles.parentLink,
+                  { color: colors.accent },
+                  isLatin(parent.title) && latinTitle,
+                ]}
+              >
                 {parent.title}
               </Text>
             </Pressable>
@@ -897,10 +916,10 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
   },
+  // base suits a Hebrew title; a Latin one adds latinTitle in render
   title: {
     fontSize: typography.sizes.title,
     fontWeight: "700",
-    writingDirection: "ltr",
     textAlign: "left",
   },
   subtitle: {
@@ -1015,7 +1034,6 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.body,
     fontWeight: "600",
     textAlign: "left",
-    writingDirection: "ltr",
   },
   foldHeader: {
     flexDirection: "row",

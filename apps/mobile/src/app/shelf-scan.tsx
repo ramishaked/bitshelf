@@ -25,6 +25,7 @@ import { cropBox, scanShelfPhoto, type ScannedItem } from "../lib/shelf-scan";
 import { newItemId, saveItem, type LocalItem, type LocalPhoto } from "../lib/store";
 import { requestSync } from "../lib/sync";
 import { useThemeColors } from "../lib/theme";
+import { isLatin, latinTitle } from "../lib/latin";
 
 // Shelf scan (spec 6.3): one shelf photo, Opus detects the items, each box
 // is cropped into its own photo, the user unchecks the noise and saves the
@@ -233,7 +234,11 @@ export default function ShelfScanScreen() {
                     <View style={styles.rowBody}>
                       <Text
                         numberOfLines={1}
-                        style={[styles.rowTitle, { color: colors.textPrimary }]}
+                        style={[
+                          styles.rowTitle,
+                          { color: colors.textPrimary },
+                          isLatin(row.scan.title) && latinTitle,
+                        ]}
                       >
                         {row.scan.title}
                       </Text>
@@ -384,7 +389,6 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: typography.sizes.secondary + 1,
     fontWeight: "600",
-    writingDirection: "ltr",
     textAlign: "left",
   },
   // mixes a percentage with Hebrew, stays in the UI font

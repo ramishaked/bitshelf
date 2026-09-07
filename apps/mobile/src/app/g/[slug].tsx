@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { grid, photoOverlay, spacing, typography } from "@bitshelf/ui";
 import { statusColor } from "../../lib/retro";
 import { useThemeColors } from "../../lib/theme";
+import { isLatin, latinTitle } from "../../lib/latin";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
 
@@ -141,7 +142,10 @@ export default function PublicGalleryScreen() {
                         colors={[photoOverlay.gradientStart, photoOverlay.gradientEnd]}
                         style={styles.nameBar}
                       >
-                        <Text numberOfLines={1} style={styles.name}>
+                        <Text
+                          numberOfLines={1}
+                          style={[styles.name, isLatin(item.title) && latinTitle]}
+                        >
                           {item.title}
                         </Text>
                       </LinearGradient>

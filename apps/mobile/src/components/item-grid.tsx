@@ -9,6 +9,7 @@ import {
   typography,
   type ThemeColors,
 } from "@bitshelf/ui";
+import { isLatin, latinTitle } from "../lib/latin";
 import { statusColor } from "../lib/retro";
 import type { LocalItem } from "../lib/store";
 import { useThemeColors } from "../lib/theme";
@@ -65,7 +66,10 @@ function ItemTile({
           colors={[photoOverlay.gradientStart, photoOverlay.gradientEnd]}
           style={styles.nameBar}
         >
-          <Text numberOfLines={1} style={styles.name}>
+          <Text
+            numberOfLines={1}
+            style={[styles.name, isLatin(item.title) && latinTitle]}
+          >
             {item.title}
           </Text>
         </LinearGradient>
@@ -187,11 +191,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingBottom: 5,
   },
+  // base style suits a Hebrew name; Latin names add latinTitle in render
   name: {
     fontFamily: typography.mono,
     fontSize: 10,
     color: photoOverlay.text,
     textAlign: "left",
-    writingDirection: "ltr",
   },
 });

@@ -8,13 +8,12 @@ import { manufacturersOf, type ItemFilters } from "../lib/filters";
 import { categories as seedCategories, isIncomplete, statusColor } from "../lib/retro";
 import type { LocalItem } from "../lib/store";
 import { useThemeColors } from "../lib/theme";
+import { isLatin, latinTitle } from "../lib/latin";
 
 // Dashboard (spec 7.1a, liquid glass handoff G04): a soft green glow behind
 // translucent cards, big mono numbers, and a 4-up working status strip.
 
 const WORKING_ORDER = ["working", "partially_working", "not_working", "untested"] as const;
-
-const HEBREW = /[֐-׿]/;
 
 function money(total: number): string {
   if (total >= 10_000) return `₪${(total / 1000).toFixed(1)}k`;
@@ -305,7 +304,8 @@ export function Dashboard({
                         style={[
                           styles.recentName,
                           // mono is for identifying names; Hebrew has no mono glyphs
-                          !HEBREW.test(item.title) && styles.recentNameMono,
+                          isLatin(item.title) && styles.recentNameMono,
+                          isLatin(item.title) && latinTitle,
                         ]}
                       >
                         {item.title}

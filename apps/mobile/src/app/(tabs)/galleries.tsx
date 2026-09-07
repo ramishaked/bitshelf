@@ -17,6 +17,7 @@ import {
   type LocalItem,
 } from "../../lib/store";
 import { useThemeColors } from "../../lib/theme";
+import { latinTitle } from "../../lib/latin";
 
 interface Row {
   key: string;
@@ -226,9 +227,7 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.caption + 1,
     textAlign: "left",
   },
-  latin: {
-    writingDirection: "ltr",
-  },
+  latin: latinTitle,
   createRow: {
     borderRadius: radius.card,
     paddingVertical: spacing.md,

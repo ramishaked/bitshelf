@@ -24,6 +24,7 @@ import {
 } from "../lib/store";
 import { requestSync } from "../lib/sync";
 import { useThemeColors } from "../lib/theme";
+import { isLatin, latinTitle } from "../lib/latin";
 
 // Wishlist (spec 7.9): a simple list sorted by priority. Adding takes four
 // fields, everything else is optional. "Purchased" creates an item and
@@ -222,7 +223,13 @@ export default function WishlistScreen() {
               style={[styles.card, { backgroundColor: colors.surface }]}
             >
               <View style={styles.cardTop}>
-                <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    { color: colors.textPrimary },
+                    isLatin(wish.manufacturer) && latinTitle,
+                  ]}
+                >
                   {[wish.manufacturer, wish.model, wish.variant]
                     .filter(Boolean)
                     .join(" ")}
