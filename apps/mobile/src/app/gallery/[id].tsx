@@ -108,9 +108,10 @@ export default function GalleryScreen() {
   const title = lang === "en" && gallery.nameEn ? gallery.nameEn : gallery.nameHe;
   const isPublic = gallery.visibility === "public_link" && gallery.publicSlug;
 
-  // publish makes the gallery public. The slug is permanent once assigned,
-  // so re-publishing after a revoke keeps the SAME link.
-  const publishGallery = () => {
+  // publish makes the gallery public and syncs immediately, so by the time
+  // it reads "published" the link already works. The slug is permanent once
+  // assigned, so re-publishing after a revoke keeps the SAME link.
+  const publishGallery = async () => {
     if (isPublic) return;
     saveGallery({
       ...gallery,
@@ -120,7 +121,19 @@ export default function GalleryScreen() {
       synced: false,
     });
     reload();
-    requestSync();
+    if (!clerkEnabled) {
+      requestSync();
+      return;
+    }
+    setSyncing(true);
+    try {
+      await syncNow(getToken);
+      reload();
+    } catch {
+      // stays unsynced; the fallback row lets the user retry
+    } finally {
+      setSyncing(false);
+    }
   };
 
   // share is offered only after publishing, from the published card
@@ -268,8 +281,8 @@ export default function GalleryScreen() {
                 ]
               : [
                   {
-                    label: t("gallery.publish"),
-                    onPress: publishGallery,
+                    label: syncing ? t("gallery.publishing") : t("gallery.publish"),
+                    onPress: () => void publishGallery(),
                     variant: "primary" as const,
                   },
                   {

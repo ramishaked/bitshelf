@@ -261,7 +261,8 @@
     "sharedPublic": "Gallery is published",
     "openInBrowser": "Open in browser",
     "publish": "Publish",
-    "unpublish": "Unpublish"
+    "unpublish": "Unpublish",
+    "publishing": "Publishing..."
   },
   "favorites": {
     "emptyTitle": "No favorites yet",

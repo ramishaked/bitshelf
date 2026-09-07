@@ -261,7 +261,8 @@
     "sharedPublic": "הגלריה פורסמה",
     "openInBrowser": "פתח בדפדפן",
     "publish": "פרסם",
-    "unpublish": "בטל פרסום"
+    "unpublish": "בטל פרסום",
+    "publishing": "מפרסם..."
   },
   "favorites": {
     "emptyTitle": "אין מועדפים עדיין",
