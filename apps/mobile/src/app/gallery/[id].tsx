@@ -108,22 +108,25 @@ export default function GalleryScreen() {
   const title = lang === "en" && gallery.nameEn ? gallery.nameEn : gallery.nameHe;
   const isPublic = gallery.visibility === "public_link" && gallery.publicSlug;
 
+  // publish makes the gallery public. The slug is permanent once assigned,
+  // so re-publishing after a revoke keeps the SAME link.
+  const publishGallery = () => {
+    if (isPublic) return;
+    saveGallery({
+      ...gallery,
+      visibility: "public_link",
+      publicSlug: gallery.publicSlug ?? makeSlug(gallery.nameEn),
+      updatedAt: new Date().toISOString(),
+      synced: false,
+    });
+    reload();
+    requestSync();
+  };
+
+  // share is offered only after publishing, from the published card
   const shareLink = async () => {
-    // the slug is permanent once assigned: re-sharing (or re-enabling after
-    // a revoke) keeps the SAME link, so a shared URL never goes stale
-    const slug = gallery.publicSlug ?? makeSlug(gallery.nameEn);
-    if (!isPublic) {
-      saveGallery({
-        ...gallery,
-        visibility: "public_link",
-        publicSlug: slug,
-        updatedAt: new Date().toISOString(),
-        synced: false,
-      });
-      reload();
-      requestSync();
-    }
-    await Share.share({ message: publicGalleryUrl(slug) });
+    if (!gallery.publicSlug) return;
+    await Share.share({ message: publicGalleryUrl(gallery.publicSlug) });
   };
 
   const revokeLink = () => {
@@ -261,12 +264,12 @@ export default function GalleryScreen() {
                     onPress: () => router.push(`/gallery/new?id=${gallery.id}`),
                     variant: "primary" as const,
                   },
-                  { label: t("gallery.revoke"), onPress: revokeLink, variant: "warning" as const },
+                  { label: t("gallery.unpublish"), onPress: revokeLink, variant: "warning" as const },
                 ]
               : [
                   {
-                    label: t("gallery.share"),
-                    onPress: () => void shareLink(),
+                    label: t("gallery.publish"),
+                    onPress: publishGallery,
                     variant: "primary" as const,
                   },
                   {

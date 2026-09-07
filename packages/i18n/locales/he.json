@@ -241,8 +241,8 @@
     "share": "שיתוף",
     "copyLink": "העתקת קישור",
     "revokeLink": "ביטול הקישור",
-    "revokeConfirmTitle": "לבטל את הקישור?",
-    "revokeConfirmBody": "הקישור יפסיק לעבוד מיד.",
+    "revokeConfirmTitle": "לבטל את הפרסום?",
+    "revokeConfirmBody": "הגלריה תחזור להיות פרטית והקישור יפסיק לעבוד. פרסום מחדש יחזיר את אותו קישור.",
     "revoke": "ביטול קישור",
     "linkCopied": "הקישור הועתק",
     "itemCount_one": "פריט אחד",
@@ -258,8 +258,10 @@
     "syncing": "מסנכרן...",
     "syncFailed": "הסנכרון נכשל. בדוק חיבור לרשת ונסה שוב.",
     "syncNeedsAccount": "פרסום גלריה דורש התחברות. במצב פיתוח (בלי חשבון) הקישור לא מסתנכרן.",
-    "sharedPublic": "הגלריה משותפת ציבורית",
-    "openInBrowser": "פתח בדפדפן"
+    "sharedPublic": "הגלריה פורסמה",
+    "openInBrowser": "פתח בדפדפן",
+    "publish": "פרסם",
+    "unpublish": "בטל פרסום"
   },
   "favorites": {
     "emptyTitle": "אין מועדפים עדיין",

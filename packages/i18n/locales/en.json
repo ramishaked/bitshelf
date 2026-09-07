@@ -241,8 +241,8 @@
     "share": "Share",
     "copyLink": "Copy link",
     "revokeLink": "Revoke link",
-    "revokeConfirmTitle": "Revoke the link?",
-    "revokeConfirmBody": "The link will stop working immediately.",
+    "revokeConfirmTitle": "Unpublish this gallery?",
+    "revokeConfirmBody": "The gallery becomes private and the link stops working. Publishing again restores the same link.",
     "revoke": "Revoke",
     "linkCopied": "Link copied",
     "itemCount_one": "1 item",
@@ -258,8 +258,10 @@
     "syncing": "Syncing...",
     "syncFailed": "Sync failed. Check your connection and try again.",
     "syncNeedsAccount": "Publishing a gallery requires sign-in. In development mode (no account) the link cannot sync.",
-    "sharedPublic": "Gallery is public",
-    "openInBrowser": "Open in browser"
+    "sharedPublic": "Gallery is published",
+    "openInBrowser": "Open in browser",
+    "publish": "Publish",
+    "unpublish": "Unpublish"
   },
   "favorites": {
     "emptyTitle": "No favorites yet",
