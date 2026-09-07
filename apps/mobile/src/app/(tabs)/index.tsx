@@ -45,10 +45,10 @@ import { useThemeColors, useThemeName } from "../../lib/theme";
 // top row carries the title with an item count under it, plus select and a
 // sort/filter/display menu; the bottom row floats a search circle beside
 // the gallery/dashboard pill (Photos' search + library/collections). The
-// wall itself stays clean: filter chips appear only while a filter is on.
+// chips row is the single filtering surface: the menu's filter row reveals
+// it, it stays while a filter is active, and the same row clears it.
 
 type SortKey = "added" | "year" | "manufacturer";
-type MenuPage = "main" | "filter" | "display";
 
 const SORT_SETTING = "collection_sort";
 
@@ -108,7 +108,9 @@ export default function CollectionScreen() {
     viewParam === "dashboard" ? "dashboard" : "gallery",
   );
   const [searchActive, setSearchActive] = useState(false);
-  const [menuPage, setMenuPage] = useState<MenuPage | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  // the chips row is the one filtering surface; the menu only reveals it
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [sort, setSort] = useState<SortKey>(
     () => (getSetting(SORT_SETTING) as SortKey) ?? "added",
   );
@@ -161,14 +163,20 @@ export default function CollectionScreen() {
   const pickSort = (key: SortKey) => {
     setSort(key);
     setSetting(SORT_SETTING, key);
-    setMenuPage(null);
+    setMenuOpen(false);
   };
 
-  // menu filters are single choice, like Photos' filter submenu; the chips
-  // row appears once a filter is active for finer control
-  const pickFilter = (partial: Partial<ItemFilters>) => {
-    setFilters({ ...emptyFilters, query: filters.query, ...partial });
-    setMenuPage(null);
+  // the menu row opens the chips, and while a filter is active it becomes
+  // "clear filter": one gesture always leads back to the clean wall
+  const chipsVisible = filtersOpen || filtered;
+  const toggleFilters = () => {
+    if (chipsVisible) {
+      setFilters({ ...emptyFilters, query: filters.query });
+      setFiltersOpen(false);
+    } else {
+      setFiltersOpen(true);
+    }
+    setMenuOpen(false);
   };
 
   const stopSelecting = () => {
@@ -339,7 +347,7 @@ export default function CollectionScreen() {
                 </Pressable>
                 {!selecting ? (
                   <Pressable
-                    onPress={() => setMenuPage(menuPage ? null : "main")}
+                    onPress={() => setMenuOpen((v) => !v)}
                     style={[styles.circle, { borderColor: photoOverlay.glassBorder }]}
                   >
                     <BlurView
@@ -359,7 +367,7 @@ export default function CollectionScreen() {
           </View>
         )}
 
-        {gallery && filtered && !selecting ? (
+        {gallery && chipsVisible && !selecting ? (
           <View style={styles.chipsRow}>
             <GlassFilterChips
               items={items}
@@ -427,9 +435,9 @@ export default function CollectionScreen() {
         ) : null}
 
         {/* sort / filter / display dropdown, opened from the menu circle */}
-        {menuPage ? (
+        {menuOpen ? (
           <>
-            <Pressable style={StyleSheet.absoluteFill} onPress={() => setMenuPage(null)} />
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setMenuOpen(false)} />
             <View
               style={[
                 styles.menu,
@@ -445,92 +453,43 @@ export default function CollectionScreen() {
                 intensity={90}
                 style={StyleSheet.absoluteFill}
               />
-              {menuPage === "main" ? (
-                <>
-                  <MenuRow
-                    label={t("menu.sortAdded")}
-                    checked={sort === "added"}
-                    color={colors.textPrimary}
-                    onPress={() => pickSort("added")}
-                  />
-                  <MenuRow
-                    label={t("menu.sortYear")}
-                    checked={sort === "year"}
-                    color={colors.textPrimary}
-                    onPress={() => pickSort("year")}
-                  />
-                  <MenuRow
-                    label={t("menu.sortManufacturer")}
-                    checked={sort === "manufacturer"}
-                    color={colors.textPrimary}
-                    onPress={() => pickSort("manufacturer")}
-                  />
-                  <View style={[styles.menuSeparator, { backgroundColor: colors.tileBorder }]} />
-                  <MenuRow
-                    label={t("menu.filter")}
-                    chevron
-                    color={colors.textPrimary}
-                    onPress={() => setMenuPage("filter")}
-                  />
-                  <MenuRow
-                    label={t("menu.display")}
-                    chevron
-                    color={colors.textPrimary}
-                    onPress={() => setMenuPage("display")}
-                  />
-                </>
-              ) : menuPage === "filter" ? (
-                <>
-                  <MenuRow
-                    label={t("filters.all")}
-                    checked={!filtered}
-                    color={colors.textPrimary}
-                    onPress={() => pickFilter({})}
-                  />
-                  <MenuRow
-                    label={t("filters.favorites")}
-                    checked={filters.favoritesOnly}
-                    color={colors.textPrimary}
-                    onPress={() => pickFilter({ favoritesOnly: true })}
-                  />
-                  <MenuRow
-                    label={t("item.toComplete")}
-                    checked={filters.toCompleteOnly}
-                    color={colors.textPrimary}
-                    onPress={() => pickFilter({ toCompleteOnly: true })}
-                  />
-                  <MenuRow
-                    label={t("filters.privateOnly")}
-                    checked={filters.privateOnly}
-                    color={colors.textPrimary}
-                    onPress={() => pickFilter({ privateOnly: true })}
-                  />
-                  <View style={[styles.menuSeparator, { backgroundColor: colors.tileBorder }]} />
-                  {(["working", "partially_working", "not_working", "untested"] as const).map(
-                    (status) => (
-                      <MenuRow
-                        key={status}
-                        label={t(`status.${status}`)}
-                        checked={filters.workingStatus === status}
-                        color={colors.textPrimary}
-                        onPress={() => pickFilter({ workingStatus: status })}
-                      />
-                    ),
-                  )}
-                </>
-              ) : (
-                <MenuRow
-                  label={t("menu.tileNames")}
-                  checked={showNames}
-                  color={colors.textPrimary}
-                  onPress={() => {
-                    const next = !showNames;
-                    setShowNames(next);
-                    setSetting("collection_tile_names", next ? "1" : "0");
-                    setMenuPage(null);
-                  }}
-                />
-              )}
+              <MenuRow
+                label={t("menu.sortAdded")}
+                checked={sort === "added"}
+                color={colors.textPrimary}
+                onPress={() => pickSort("added")}
+              />
+              <MenuRow
+                label={t("menu.sortYear")}
+                checked={sort === "year"}
+                color={colors.textPrimary}
+                onPress={() => pickSort("year")}
+              />
+              <MenuRow
+                label={t("menu.sortManufacturer")}
+                checked={sort === "manufacturer"}
+                color={colors.textPrimary}
+                onPress={() => pickSort("manufacturer")}
+              />
+              <View style={[styles.menuSeparator, { backgroundColor: colors.tileBorder }]} />
+              {/* opens the chips bar; with a filter active it clears it */}
+              <MenuRow
+                label={filtered ? t("menu.clearFilter") : t("menu.filter")}
+                checked={chipsVisible && !filtered}
+                color={filtered ? colors.accent : colors.textPrimary}
+                onPress={toggleFilters}
+              />
+              <MenuRow
+                label={t("menu.tileNames")}
+                checked={showNames}
+                color={colors.textPrimary}
+                onPress={() => {
+                  const next = !showNames;
+                  setShowNames(next);
+                  setSetting("collection_tile_names", next ? "1" : "0");
+                  setMenuOpen(false);
+                }}
+              />
             </View>
           </>
         ) : null}

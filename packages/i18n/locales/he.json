@@ -320,6 +320,7 @@
     "tileNames": "שמות על האריחים",
     "deleteSelectedTitle_one": "למחוק פריט אחד?",
     "deleteSelectedTitle_other": "למחוק {{count}} פריטים?",
-    "deleteSelectedBody": "הפריטים והתמונות שלהם יימחקו מהמכשיר ומהשרת."
+    "deleteSelectedBody": "הפריטים והתמונות שלהם יימחקו מהמכשיר ומהשרת.",
+    "clearFilter": "נקה סינון"
   }
 }
