@@ -9,7 +9,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { headerClose } from "../../components/header-close";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
 import { radius, spacing, typography } from "@bitshelf/ui";
@@ -30,6 +31,7 @@ type PostStyle = (typeof STYLES)[number];
 export default function PostScreen() {
   const { t, i18n } = useTranslation();
   const colors = useThemeColors();
+  const router = useRouter();
   const { getToken } = useAuth();
   const { id } = useLocalSearchParams<{ id: string }>();
   const item = useMemo(() => (id ? getItem(id) : null), [id]);
@@ -87,6 +89,7 @@ export default function PostScreen() {
           title: t("post.title"),
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.textPrimary,
+          headerLeft: headerClose(() => router.back(), colors.textPrimary),
         }}
       />
       <ScrollView

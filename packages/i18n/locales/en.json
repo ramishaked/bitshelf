@@ -257,7 +257,9 @@
     "notSyncedTap": "Not synced yet. Tap to sync now",
     "syncing": "Syncing...",
     "syncFailed": "Sync failed. Check your connection and try again.",
-    "syncNeedsAccount": "Publishing a gallery requires sign-in. In development mode (no account) the link cannot sync."
+    "syncNeedsAccount": "Publishing a gallery requires sign-in. In development mode (no account) the link cannot sync.",
+    "sharedPublic": "Gallery is public",
+    "openInBrowser": "Open in browser"
   },
   "favorites": {
     "emptyTitle": "No favorites yet",

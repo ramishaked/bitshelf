@@ -2,16 +2,19 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Pressable,
   Share,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import { SymbolView, type SFSymbol } from "expo-symbols";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-expo";
-import { EmptyState, spacing, typography } from "@bitshelf/ui";
+import { EmptyState, photoOverlay, radius, spacing, typography } from "@bitshelf/ui";
 import {
   GLASS_ACTION_BAR_INSET,
   GlassActionBar,
@@ -31,6 +34,28 @@ import {
 } from "../../lib/store";
 import { requestSync, syncNow } from "../../lib/sync";
 import { useThemeColors } from "../../lib/theme";
+
+// round glass icon button with a caption, for the shared-gallery actions
+function IconAction({
+  icon,
+  label,
+  color,
+  onPress,
+}: {
+  icon: SFSymbol;
+  label: string;
+  color: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress} style={styles.iconAction}>
+      <View style={[styles.iconCircle, { borderColor: photoOverlay.glassBorder }]}>
+        <SymbolView name={icon} size={22} tintColor={color} />
+      </View>
+      <Text style={[styles.iconLabel, { color }]}>{label}</Text>
+    </Pressable>
+  );
+}
 
 // Gallery screen (spec 7.3): a reduced collection screen plus sharing.
 // The public link only works after the gallery syncs to the server.
@@ -164,26 +189,56 @@ export default function GalleryScreen() {
         <View style={styles.meta}>
           <Text style={[styles.count, { color: colors.textSecondary }]}>
             {t("gallery.itemCount", { count: items.length })}
-            {"  ·  "}
-            {isPublic ? t("gallery.visibilityPublic") : t("gallery.visibilityPrivate")}
           </Text>
+
           {isPublic ? (
-            <Text
-              numberOfLines={1}
-              style={[styles.link, { color: colors.accent }]}
-            >
-              {publicGalleryUrl(gallery.publicSlug as string)}
-            </Text>
-          ) : null}
-          {isPublic && !gallery.synced ? (
-            <Pressable onPress={syncNowFromHere} style={styles.syncRow}>
-              {syncing ? (
-                <ActivityIndicator size="small" color={colors.statusPartiallyWorking} />
-              ) : null}
-              <Text style={[styles.count, { color: colors.statusPartiallyWorking }]}>
-                {syncing ? t("gallery.syncing") : t("gallery.notSyncedTap")}
-              </Text>
-            </Pressable>
+            // shared state: a clear badge and round icon actions, no raw URL
+            gallery.synced ? (
+              <View style={styles.sharedCard}>
+                <View style={styles.sharedHead}>
+                  <View style={[styles.sharedDot, { backgroundColor: colors.accent }]} />
+                  <Text style={[styles.sharedLabel, { color: colors.textPrimary }]}>
+                    {t("gallery.sharedPublic")}
+                  </Text>
+                </View>
+                <View style={styles.sharedActions}>
+                  <IconAction
+                    icon="safari"
+                    label={t("gallery.openInBrowser")}
+                    color={colors.accent}
+                    onPress={() =>
+                      void Linking.openURL(publicGalleryUrl(gallery.publicSlug as string))
+                    }
+                  />
+                  <IconAction
+                    icon="doc.on.doc"
+                    label={t("gallery.copyLink")}
+                    color={colors.textPrimary}
+                    onPress={async () => {
+                      await Clipboard.setStringAsync(
+                        publicGalleryUrl(gallery.publicSlug as string),
+                      );
+                      Alert.alert(t("gallery.linkCopied"));
+                    }}
+                  />
+                  <IconAction
+                    icon="square.and.arrow.up"
+                    label={t("gallery.share")}
+                    color={colors.textPrimary}
+                    onPress={() => void shareLink()}
+                  />
+                </View>
+              </View>
+            ) : (
+              <Pressable onPress={syncNowFromHere} style={styles.syncRow}>
+                {syncing ? (
+                  <ActivityIndicator size="small" color={colors.statusPartiallyWorking} />
+                ) : null}
+                <Text style={[styles.count, { color: colors.statusPartiallyWorking }]}>
+                  {syncing ? t("gallery.syncing") : t("gallery.notSyncedTap")}
+                </Text>
+              </Pressable>
+            )
           ) : null}
         </View>
         {items.length === 0 ? (
@@ -196,20 +251,29 @@ export default function GalleryScreen() {
           />
         )}
         <GlassActionBar
-          actions={[
-            {
-              label: t("gallery.share"),
-              onPress: () => void shareLink(),
-              variant: "primary",
-            },
-            {
-              label: t("gallery.edit"),
-              onPress: () => router.push(`/gallery/new?id=${gallery.id}`),
-            },
+          actions={
             isPublic
-              ? { label: t("gallery.revoke"), onPress: revokeLink, variant: "warning" as const }
-              : { label: t("item.delete"), onPress: confirmDelete, variant: "destructive" as const },
-          ]}
+              ? [
+                  {
+                    label: t("gallery.edit"),
+                    onPress: () => router.push(`/gallery/new?id=${gallery.id}`),
+                    variant: "primary" as const,
+                  },
+                  { label: t("gallery.revoke"), onPress: revokeLink, variant: "warning" as const },
+                ]
+              : [
+                  {
+                    label: t("gallery.share"),
+                    onPress: () => void shareLink(),
+                    variant: "primary" as const,
+                  },
+                  {
+                    label: t("gallery.edit"),
+                    onPress: () => router.push(`/gallery/new?id=${gallery.id}`),
+                  },
+                  { label: t("item.delete"), onPress: confirmDelete, variant: "destructive" as const },
+                ]
+          }
         />
       </View>
     </>
@@ -229,15 +293,48 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.caption + 1,
     textAlign: "left",
   },
-  link: {
-    fontSize: typography.sizes.caption + 1,
-    fontFamily: typography.mono,
-    textAlign: "left",
-    writingDirection: "ltr",
-  },
   syncRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.xs + 2,
+    paddingTop: spacing.xs,
+  },
+  sharedCard: {
+    marginTop: spacing.xs,
+    gap: spacing.sm + 2,
+  },
+  sharedHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs + 2,
+  },
+  sharedDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  sharedLabel: {
+    fontSize: typography.sizes.secondary,
+    fontWeight: "600",
+    textAlign: "left",
+  },
+  sharedActions: {
+    flexDirection: "row",
+    gap: spacing.xl,
+  },
+  iconAction: {
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconLabel: {
+    fontSize: typography.sizes.caption,
   },
 });

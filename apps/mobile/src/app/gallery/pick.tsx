@@ -7,6 +7,7 @@ import {
   GLASS_ACTION_BAR_INSET,
   GlassActionBar,
 } from "../../components/glass-action-bar";
+import { headerClose } from "../../components/header-close";
 import {
   addItemToGallery,
   galleryItemCount,
@@ -72,6 +73,7 @@ export default function GalleryPickScreen() {
           title: t("gallery.pickTitle"),
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.textPrimary,
+          headerLeft: headerClose(() => router.back(), colors.textPrimary),
         }}
       />
       <View style={[styles.screen, { backgroundColor: colors.background }]}>

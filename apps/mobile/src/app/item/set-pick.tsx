@@ -4,6 +4,7 @@ import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-rou
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "@bitshelf/ui";
 import { ItemGrid } from "../../components/item-grid";
+import { headerClose } from "../../components/header-close";
 import { listSetCandidates, setItemParent, type LocalItem } from "../../lib/store";
 import { requestSync } from "../../lib/sync";
 import { useThemeColors } from "../../lib/theme";
@@ -37,6 +38,7 @@ export default function SetPickScreen() {
           title: t("set.pickTitle"),
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.textPrimary,
+          headerLeft: headerClose(() => router.back(), colors.textPrimary),
         }}
       />
       <View style={{ flex: 1, backgroundColor: colors.background }}>

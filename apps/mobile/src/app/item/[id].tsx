@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Modal,
@@ -857,9 +857,16 @@ function ModelInfoFetcher({
   const { t } = useTranslation();
   const { getToken } = useAuth();
   const [failed, setFailed] = useState(false);
+  // getToken's identity changes between renders; keep it in a ref so the
+  // effect does not restart (and cancel) the in-flight poll, which left the
+  // record cached but the open screen never refreshed (Rami, 07.09.2026)
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
   useEffect(() => {
     let cancelled = false;
-    void ensureModelInfo(manufacturer, model, variant, getToken).then((info) => {
+    void ensureModelInfo(manufacturer, model, variant, (...args) =>
+      getTokenRef.current(...args),
+    ).then((info) => {
       if (cancelled) return;
       if (info) {
         onReady(info);
@@ -870,7 +877,9 @@ function ModelInfoFetcher({
     return () => {
       cancelled = true;
     };
-  }, [manufacturer, model, variant, getToken, onReady]);
+    // onReady is a stable state setter; getToken is read through the ref
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [manufacturer, model, variant]);
   return (
     <Text style={[styles.modelLoading, { color: colors.textSecondary }]}>
       {failed ? t("modelInfo.unavailable") : t("modelInfo.loading")}
