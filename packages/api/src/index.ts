@@ -1,6 +1,9 @@
 export {
   createPhotoUploadUrl,
+  deletePhotoObjects,
   isSupportedPhotoContentType,
+  photoKeyOf,
+  r2Configured,
   type UploadTarget,
 } from "./r2";
 export {

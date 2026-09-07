@@ -1,5 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectsCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // Photo sizes per spec: 2000px stored, 1200px medium, 400px thumb.
@@ -64,4 +68,43 @@ export async function createPhotoUploadUrl(contentType: string): Promise<UploadT
     publicUrl: `${publicBaseUrl.replace(/\/$/, "")}/${key}`,
     expiresInSeconds,
   };
+}
+
+export function r2Configured(): boolean {
+  return Boolean(
+    process.env.R2_ACCOUNT_ID &&
+      process.env.R2_BUCKET &&
+      process.env.R2_PUBLIC_BASE_URL &&
+      process.env.R2_ACCESS_KEY_ID &&
+      process.env.R2_SECRET_ACCESS_KEY,
+  );
+}
+
+// turns stored public URLs back into object keys; foreign URLs are skipped
+export function photoKeyOf(url: string): string | null {
+  const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, "");
+  if (!base || !url.startsWith(`${base}/`)) return null;
+  return url.slice(base.length + 1);
+}
+
+// batch delete, used by account deletion; R2 caps DeleteObjects at 1000 keys
+export async function deletePhotoObjects(keys: string[]): Promise<void> {
+  if (keys.length === 0) return;
+  const client = new S3Client({
+    region: "auto",
+    endpoint: `https://${requireEnv("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: requireEnv("R2_ACCESS_KEY_ID"),
+      secretAccessKey: requireEnv("R2_SECRET_ACCESS_KEY"),
+    },
+  });
+  const bucket = requireEnv("R2_BUCKET");
+  for (let i = 0; i < keys.length; i += 1000) {
+    await client.send(
+      new DeleteObjectsCommand({
+        Bucket: bucket,
+        Delete: { Objects: keys.slice(i, i + 1000).map((Key) => ({ Key })) },
+      }),
+    );
+  }
 }
