@@ -253,7 +253,11 @@
     "visibilityPrivate": "Private",
     "visibilityPublic": "Public",
     "notSynced": "Not synced yet, the link will work after sync",
-    "done": "Done"
+    "done": "Done",
+    "notSyncedTap": "Not synced yet. Tap to sync now",
+    "syncing": "Syncing...",
+    "syncFailed": "Sync failed. Check your connection and try again.",
+    "syncNeedsAccount": "Publishing a gallery requires sign-in. In development mode (no account) the link cannot sync."
   },
   "favorites": {
     "emptyTitle": "No favorites yet",

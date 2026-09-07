@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Pressable,
   Share,
@@ -9,12 +10,14 @@ import {
 } from "react-native";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@clerk/clerk-expo";
 import { EmptyState, spacing, typography } from "@bitshelf/ui";
 import {
   GLASS_ACTION_BAR_INSET,
   GlassActionBar,
 } from "../../components/glass-action-bar";
 import { ItemGrid } from "../../components/item-grid";
+import { clerkEnabled } from "../../lib/auth";
 import { makeSlug, publicGalleryUrl } from "../../lib/gallery-link";
 import {
   deleteGallery,
@@ -26,7 +29,7 @@ import {
   type LocalGallery,
   type LocalItem,
 } from "../../lib/store";
-import { requestSync } from "../../lib/sync";
+import { requestSync, syncNow } from "../../lib/sync";
 import { useThemeColors } from "../../lib/theme";
 
 // Gallery screen (spec 7.3): a reduced collection screen plus sharing.
@@ -39,6 +42,12 @@ export default function GalleryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [gallery, setGallery] = useState<LocalGallery | null>(null);
   const [items, setItems] = useState<LocalItem[]>([]);
+  const [syncing, setSyncing] = useState(false);
+  // clerkEnabled is constant for the app's lifetime, the hook order is stable
+  const { getToken } = clerkEnabled
+    ? // eslint-disable-next-line react-hooks/rules-of-hooks
+      useAuth()
+    : { getToken: async () => null };
 
   const reload = useCallback(() => {
     if (!id) return;
@@ -46,6 +55,26 @@ export default function GalleryScreen() {
     setItems(listGalleryItems(id));
   }, [id]);
   useFocusEffect(reload);
+
+  // force a sync from here and report the outcome, so a stuck public link is
+  // not a silent dead-end (Rami: the link showed "not synced" forever)
+  const syncNowFromHere = async () => {
+    if (!clerkEnabled) {
+      Alert.alert(t("gallery.syncNeedsAccount"));
+      return;
+    }
+    setSyncing(true);
+    try {
+      await syncNow(getToken);
+      reload();
+      const fresh = id ? getGallery(id) : null;
+      if (fresh && !fresh.synced) Alert.alert(t("gallery.syncFailed"));
+    } catch {
+      Alert.alert(t("gallery.syncFailed"));
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   if (!gallery) {
     return <View style={[styles.screen, { backgroundColor: colors.background }]} />;
@@ -147,9 +176,14 @@ export default function GalleryScreen() {
             </Text>
           ) : null}
           {isPublic && !gallery.synced ? (
-            <Text style={[styles.count, { color: colors.statusPartiallyWorking }]}>
-              {t("gallery.notSynced")}
-            </Text>
+            <Pressable onPress={syncNowFromHere} style={styles.syncRow}>
+              {syncing ? (
+                <ActivityIndicator size="small" color={colors.statusPartiallyWorking} />
+              ) : null}
+              <Text style={[styles.count, { color: colors.statusPartiallyWorking }]}>
+                {syncing ? t("gallery.syncing") : t("gallery.notSyncedTap")}
+              </Text>
+            </Pressable>
           ) : null}
         </View>
         {items.length === 0 ? (
@@ -200,5 +234,10 @@ const styles = StyleSheet.create({
     fontFamily: typography.mono,
     textAlign: "left",
     writingDirection: "ltr",
+  },
+  syncRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs + 2,
   },
 });
