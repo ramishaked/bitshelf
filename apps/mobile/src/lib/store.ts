@@ -151,18 +151,28 @@ const EMPTY_PROFILE: LocalProfile = {
   showcasePublished: false,
 };
 
+// the server sends nulls for empty fields; coerce so string ops are safe
+function coerceProfile(raw: Partial<LocalProfile> | null | undefined): LocalProfile {
+  return {
+    handle: raw?.handle ?? "",
+    showcaseTitle: raw?.showcaseTitle ?? "",
+    bio: raw?.bio ?? "",
+    showcasePublished: raw?.showcasePublished === true,
+  };
+}
+
 export function getProfile(): LocalProfile {
   const raw = getSetting("collector_profile");
   if (!raw) return { ...EMPTY_PROFILE };
   try {
-    return { ...EMPTY_PROFILE, ...(JSON.parse(raw) as Partial<LocalProfile>) };
+    return coerceProfile(JSON.parse(raw) as Partial<LocalProfile>);
   } catch {
     return { ...EMPTY_PROFILE };
   }
 }
 
 export function saveProfile(profile: LocalProfile): void {
-  setSetting("collector_profile", JSON.stringify(profile));
+  setSetting("collector_profile", JSON.stringify(coerceProfile(profile)));
   setSetting("profile_dirty", "1");
 }
 
@@ -171,10 +181,7 @@ export function saveProfile(profile: LocalProfile): void {
 export function adoptServerProfile(profile: Partial<LocalProfile> | null): void {
   if (!profile) return;
   if (getSetting("collector_profile")) return;
-  setSetting(
-    "collector_profile",
-    JSON.stringify({ ...EMPTY_PROFILE, ...profile }),
-  );
+  setSetting("collector_profile", JSON.stringify(coerceProfile(profile)));
 }
 
 // lightweight migration: older installs lack the parent column
