@@ -95,6 +95,8 @@ export interface PublicGallery {
   itemCount: number;
   coverUrl: string | null;
   items: PublicItem[];
+  // the owner's collector page, when they published one (for the way back)
+  collector: { handle: string; title: string } | null;
 }
 
 export async function loadPublicGallery(slug: string): Promise<PublicGallery | null> {
@@ -104,6 +106,17 @@ export async function loadPublicGallery(slug: string): Promise<PublicGallery | n
     where: and(eq(galleries.publicSlug, slug), eq(galleries.visibility, "public_link")),
   });
   if (!gallery) return null;
+
+  const ownerCollection = await db.query.collections.findFirst({
+    where: and(
+      eq(collections.ownerId, gallery.ownerId),
+      eq(collections.showcasePublished, true),
+    ),
+  });
+  const collector =
+    ownerCollection?.handle
+      ? { handle: ownerCollection.handle, title: ownerCollection.showcaseTitle || ownerCollection.name }
+      : null;
 
   const memberRows = await db
     .select({ itemId: galleryItems.itemId, sortOrder: galleryItems.sortOrder })
@@ -119,6 +132,7 @@ export async function loadPublicGallery(slug: string): Promise<PublicGallery | n
       itemCount: 0,
       coverUrl: gallery.coverPhotoUrl ?? null,
       items: [],
+      collector,
     };
   }
 
@@ -180,6 +194,7 @@ export async function loadPublicGallery(slug: string): Promise<PublicGallery | n
     itemCount: publicItems.length,
     coverUrl,
     items: publicItems,
+    collector,
   };
 }
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Breadcrumb } from "../../../../../components/breadcrumb";
 import { notFound } from "next/navigation";
 import { darkColors, radius, spacing } from "@bitshelf/ui/theme";
 import {
@@ -40,15 +40,15 @@ export default async function PublicItemPage({ params }: Params) {
 
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: spacing.lg }}>
-      <nav style={{ padding: `${spacing.md}px 0` }}>
-        <Link
-          href={`/g/${slug}`}
-          style={{ color: darkColors.accent, textDecoration: "none", fontSize: 14 }}
-        >
-          {"→ "}
-          {gallery.name.he ?? gallery.name.en}
-        </Link>
-      </nav>
+      <Breadcrumb
+        crumbs={[
+          { label: "הלובי", href: "/" },
+          ...(gallery.collector
+            ? [{ label: gallery.collector.title, href: `/u/${gallery.collector.handle}` }]
+            : []),
+          { label: gallery.name.he ?? gallery.name.en ?? "", href: `/g/${slug}` },
+        ]}
+      />
 
       {item.photos.length > 0 ? (
         <div

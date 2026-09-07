@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { brand, darkColors, radius, spacing } from "@bitshelf/ui/theme";
+import { Breadcrumb } from "../../../components/breadcrumb";
 import { loadCollectorShowcase } from "../../../lib/public-gallery";
 
 // Collector showcase: one public page per collector, bio header plus a card
@@ -44,6 +45,7 @@ export default async function CollectorPage({ params }: Params) {
       }}
     >
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+        <Breadcrumb crumbs={[{ label: "הלובי", href: "/" }]} />
         <header style={{ marginBottom: spacing.xl }}>
           <div
             style={{

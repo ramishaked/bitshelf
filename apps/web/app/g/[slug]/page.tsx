@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { darkColors, spacing } from "@bitshelf/ui/theme";
+import { Breadcrumb } from "../../../components/breadcrumb";
 import { loadPublicGallery, statusColorFor } from "../../../lib/public-gallery";
 
 // The public link is the only outside view (spec 8.1). Always fresh so a
@@ -37,6 +38,14 @@ export default async function PublicGalleryPage({ params }: Params) {
 
   return (
     <main style={{ maxWidth: 1080, margin: "0 auto", padding: spacing.lg }}>
+      <Breadcrumb
+        crumbs={[
+          { label: "הלובי", href: "/" },
+          ...(gallery.collector
+            ? [{ label: gallery.collector.title, href: `/u/${gallery.collector.handle}` }]
+            : []),
+        ]}
+      />
       <header style={{ padding: `${spacing.lg}px 0 ${spacing.md}px` }}>
         <div
           style={{
