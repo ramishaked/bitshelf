@@ -334,8 +334,8 @@
   },
   "showcase": {
     "title": "Collector page",
-    "intro": "One public page with every gallery you published, and a single link to share. Galleries are published from the gallery screen.",
-    "handle": "Link address",
+    "intro": "One personal page with every gallery you published, and a permanent link to share. Once published you also appear on the community home.",
+    "handle": "Username in the link",
     "showcaseTitle": "Title",
     "titlePlaceholder": "Rami's collection",
     "bio": "Description",
@@ -344,6 +344,7 @@
     "saved": "Saved",
     "publish": "Publish collector page",
     "publishHint": "Makes the page public at the address you chose",
-    "needsHandle": "Choose a link address first"
+    "needsHandle": "Choose a link address first",
+    "handleHint": "This is what appears in your page address: bitshelf.../u/<name>. We suggested one from your account, feel free to change it."
   }
 }

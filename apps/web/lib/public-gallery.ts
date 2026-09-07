@@ -249,3 +249,64 @@ export async function loadCollectorShowcase(
     galleries: cards,
   };
 }
+
+export interface CollectorCard {
+  handle: string;
+  title: string;
+  bio: string | null;
+  galleryCount: number;
+  // up to three covers for a small mosaic
+  covers: string[];
+}
+
+// Community home: every collector who published a showcase, newest first.
+// Opt-in only (showcase_published), so nobody is listed without choosing to.
+export async function listPublishedCollectors(): Promise<CollectorCard[]> {
+  const db = createDb(process.env.DATABASE_URL ?? "");
+  const rows = await db
+    .select()
+    .from(collections)
+    .where(eq(collections.showcasePublished, true))
+    .orderBy(desc(collections.updatedAt))
+    .limit(100);
+
+  const cards: CollectorCard[] = [];
+  for (const c of rows) {
+    if (!c.handle) continue;
+    const publicGalleries = await db
+      .select({ id: galleries.id, coverPhotoUrl: galleries.coverPhotoUrl })
+      .from(galleries)
+      .where(and(eq(galleries.ownerId, c.ownerId), eq(galleries.visibility, "public_link")));
+    const covers: string[] = [];
+    for (const g of publicGalleries) {
+      if (covers.length >= 3) break;
+      if (g.coverPhotoUrl) {
+        covers.push(g.coverPhotoUrl);
+        continue;
+      }
+      const member = await db
+        .select({ itemId: galleryItems.itemId })
+        .from(galleryItems)
+        .where(eq(galleryItems.galleryId, g.id))
+        .orderBy(asc(galleryItems.sortOrder))
+        .limit(1);
+      if (member[0]) {
+        const photo = await db
+          .select({ url: itemPhotos.url })
+          .from(itemPhotos)
+          .where(eq(itemPhotos.itemId, member[0].itemId))
+          .orderBy(asc(itemPhotos.sortOrder))
+          .limit(1);
+        if (photo[0]) covers.push(photo[0].url);
+      }
+    }
+    cards.push({
+      handle: c.handle,
+      title: c.showcaseTitle || c.name,
+      bio: c.bio ?? null,
+      galleryCount: publicGalleries.length,
+      covers,
+    });
+  }
+  return cards;
+}
