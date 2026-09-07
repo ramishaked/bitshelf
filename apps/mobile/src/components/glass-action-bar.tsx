@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
+import { SymbolView, type SFSymbol } from "expo-symbols";
 import { photoOverlay, radius, spacing, typography } from "@bitshelf/ui";
 import { useThemeColors, useThemeName } from "../lib/theme";
 
@@ -10,7 +11,10 @@ import { useThemeColors, useThemeName } from "../lib/theme";
 // rest on glass.
 
 export interface GlassAction {
+  // with an icon the pill shows only the symbol; the label becomes the
+  // accessibility name (long labels crowd a 4-pill row)
   label: string;
+  icon?: SFSymbol;
   onPress: () => void;
   variant?: "primary" | "plain" | "destructive" | "warning";
   // rendered dimmed and unpressable (e.g. save before a required field)
@@ -67,6 +71,7 @@ export function GlassActionBar({
         return (
           <Pressable
             key={action.label}
+            accessibilityLabel={action.label}
             onPress={action.disabled ? undefined : action.onPress}
             style={({ pressed }) => [
               styles.action,
@@ -89,14 +94,18 @@ export function GlassActionBar({
                 style={StyleSheet.absoluteFill}
               />
             ) : null}
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.75}
-              style={[styles.label, { color: labelColor }]}
-            >
-              {action.label}
-            </Text>
+            {action.icon ? (
+              <SymbolView name={action.icon} size={22} tintColor={labelColor} />
+            ) : (
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}
+                style={[styles.label, { color: labelColor }]}
+              >
+                {action.label}
+              </Text>
+            )}
           </Pressable>
         );
       })}

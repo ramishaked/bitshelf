@@ -502,15 +502,18 @@ export default function CollectionScreen() {
           actions={[
             {
               label: t("actions.favorite"),
+              icon: "heart",
               onPress: () => forSelected((id) => toggleFavorite(id)),
               variant: "primary",
             },
             {
               label: t("actions.makePrivate"),
+              icon: "lock",
               onPress: () => forSelected((id) => setItemPrivate(id, true)),
             },
             {
               label: t("actions.addToGallery"),
+              icon: "rectangle.stack.badge.plus",
               onPress: () => {
                 if (selected.size === 0) return;
                 const ids = [...selected].join(",");
@@ -520,6 +523,7 @@ export default function CollectionScreen() {
             },
             {
               label: t("item.delete"),
+              icon: "trash",
               variant: "destructive",
               onPress: () => {
                 if (selected.size === 0) return;
