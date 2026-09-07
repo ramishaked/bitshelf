@@ -109,9 +109,10 @@ export default function GalleryScreen() {
   const isPublic = gallery.visibility === "public_link" && gallery.publicSlug;
 
   const shareLink = async () => {
-    let slug = gallery.publicSlug;
+    // the slug is permanent once assigned: re-sharing (or re-enabling after
+    // a revoke) keeps the SAME link, so a shared URL never goes stale
+    const slug = gallery.publicSlug ?? makeSlug(gallery.nameEn);
     if (!isPublic) {
-      slug = makeSlug(gallery.nameEn);
       saveGallery({
         ...gallery,
         visibility: "public_link",
@@ -122,7 +123,7 @@ export default function GalleryScreen() {
       reload();
       requestSync();
     }
-    await Share.share({ message: publicGalleryUrl(slug as string) });
+    await Share.share({ message: publicGalleryUrl(slug) });
   };
 
   const revokeLink = () => {
@@ -132,10 +133,11 @@ export default function GalleryScreen() {
         text: t("gallery.revoke"),
         style: "destructive",
         onPress: () => {
+          // keep the slug so re-sharing revives the same link; only the
+          // visibility flips, which makes the public page 404 meanwhile
           saveGallery({
             ...gallery,
             visibility: "private",
-            publicSlug: null,
             updatedAt: new Date().toISOString(),
             synced: false,
           });

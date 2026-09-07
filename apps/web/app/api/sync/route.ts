@@ -317,7 +317,10 @@ export async function POST(request: Request) {
       name: { he: cg.nameHe, ...(cg.nameEn ? { en: cg.nameEn } : {}) },
       description: cg.descriptionHe ? { he: cg.descriptionHe } : null,
       visibility: cg.visibility,
-      publicSlug: cg.visibility === "public_link" ? cg.publicSlug : null,
+      // the slug is permanent, kept even while private, so a revoked link
+      // revives to the same URL when re-shared (the public page still
+      // checks visibility, so a private gallery stays hidden)
+      publicSlug: cg.publicSlug,
       showValue: cg.showValue ?? false,
       createdAt: new Date(cg.createdAt),
       updatedAt: new Date(cg.updatedAt),
