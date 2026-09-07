@@ -134,6 +134,49 @@ export function setSetting(key: string, value: string): void {
   ]);
 }
 
+// --- collector showcase profile (spec 8.1.2), stored in settings and
+// mirrored to the server on sync ---
+
+export interface LocalProfile {
+  handle: string;
+  showcaseTitle: string;
+  bio: string;
+  showcasePublished: boolean;
+}
+
+const EMPTY_PROFILE: LocalProfile = {
+  handle: "",
+  showcaseTitle: "",
+  bio: "",
+  showcasePublished: false,
+};
+
+export function getProfile(): LocalProfile {
+  const raw = getSetting("collector_profile");
+  if (!raw) return { ...EMPTY_PROFILE };
+  try {
+    return { ...EMPTY_PROFILE, ...(JSON.parse(raw) as Partial<LocalProfile>) };
+  } catch {
+    return { ...EMPTY_PROFILE };
+  }
+}
+
+export function saveProfile(profile: LocalProfile): void {
+  setSetting("collector_profile", JSON.stringify(profile));
+  setSetting("profile_dirty", "1");
+}
+
+// only overwrite the local profile from the server when we have none yet
+// (fresh install); otherwise the device is the source of truth
+export function adoptServerProfile(profile: Partial<LocalProfile> | null): void {
+  if (!profile) return;
+  if (getSetting("collector_profile")) return;
+  setSetting(
+    "collector_profile",
+    JSON.stringify({ ...EMPTY_PROFILE, ...profile }),
+  );
+}
+
 // lightweight migration: older installs lack the parent column
 try {
   db.execSync("ALTER TABLE items ADD COLUMN parent_item_id TEXT");

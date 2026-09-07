@@ -138,6 +138,9 @@ export default function ProfileScreen() {
       <Pressable onPress={() => router.push("/wishlist")}>
         <Row label={t("wishlist.title")} value="" colors={colors} />
       </Pressable>
+      <Pressable onPress={() => router.push("/showcase")}>
+        <Row label={t("showcase.title")} value="" colors={colors} />
+      </Pressable>
       <Pressable
         onPress={() =>
           void exportCsv().catch(() => {

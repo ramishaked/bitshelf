@@ -1,7 +1,9 @@
 import { File } from "expo-file-system";
 import {
+  adoptServerProfile,
   clearDeletedGalleryIds,
   clearDeletedIds,
+  getProfile,
   getSetting,
   listDeletedGalleryIds,
   listDeletedIds,
@@ -20,6 +22,7 @@ import {
   type LocalGallery,
   type LocalItem,
   type LocalPhoto,
+  type LocalProfile,
   type LocalWish,
 } from "./store";
 
@@ -184,6 +187,7 @@ export async function syncNow(getToken: GetToken): Promise<number> {
       (row, index, all) => all.findIndex((r) => r.id === row.id) === index,
     );
     const wishlistDirty = getSetting("wishlist_dirty") === "1";
+    const profileDirty = getSetting("profile_dirty") === "1";
     if (
       pulledOnce &&
       unsynced.length === 0 &&
@@ -191,7 +195,8 @@ export async function syncNow(getToken: GetToken): Promise<number> {
       photoRows.length === 0 &&
       deletedIds.length === 0 &&
       deletedGalleryIds.length === 0 &&
-      !wishlistDirty
+      !wishlistDirty &&
+      !profileDirty
     ) {
       return 0;
     }
@@ -210,6 +215,7 @@ export async function syncNow(getToken: GetToken): Promise<number> {
         // full list every time: small, and wholesale replace on the server
         // covers deletions without tombstones
         wishlist: listWishes(),
+        profile: profileDirty ? getProfile() : undefined,
         deletedIds,
         deletedGalleryIds,
       }),
@@ -225,6 +231,7 @@ export async function syncNow(getToken: GetToken): Promise<number> {
       deletedGalleryIds?: string[];
       serverGalleries?: (LocalGallery & { itemIds: string[] })[];
       serverWishlist?: LocalWish[];
+      serverProfile?: Partial<LocalProfile> | null;
       serverItems?: (Omit<LocalItem, "photos" | "synced"> & {
         photos: {
           id: string;
@@ -248,8 +255,11 @@ export async function syncNow(getToken: GetToken): Promise<number> {
     clearDeletedIds(result.deletedIds ?? []);
     clearDeletedGalleryIds(result.deletedGalleryIds ?? []);
     mergeServerGalleries(result.serverGalleries ?? []);
-    // the push above delivered the current list, the flag can drop
+    // the push above delivered the current list, the flags can drop
     setSetting("wishlist_dirty", "0");
+    if (profileDirty) setSetting("profile_dirty", "0");
+    // fresh install adopts the server's profile (no local one yet)
+    adoptServerProfile(result.serverProfile ?? null);
 
     // wishlist pull: only a device with no list adopts the server's (fresh
     // install); anywhere else the local list is the source of truth

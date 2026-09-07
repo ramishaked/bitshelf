@@ -21,3 +21,8 @@ const WEB_URL =
 export function publicGalleryUrl(slug: string): string {
   return `${WEB_URL.replace(/\/$/, "")}/g/${slug}`;
 }
+
+// the collector showcase page: one link with all the collector's galleries
+export function collectorUrl(handle: string): string {
+  return `${WEB_URL.replace(/\/$/, "")}/u/${handle}`;
+}

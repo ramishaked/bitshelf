@@ -61,6 +61,10 @@ export default function RootLayout() {
           options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }}
         />
         <Stack.Screen
+          name="showcase"
+          options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }}
+        />
+        <Stack.Screen
           name="gallery/new"
           options={{ presentation: "modal", headerShown: true }}
         />

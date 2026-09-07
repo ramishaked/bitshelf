@@ -1,5 +1,6 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import {
+  collections,
   createDb,
   galleries,
   galleryItems,
@@ -179,5 +180,72 @@ export async function loadPublicGallery(slug: string): Promise<PublicGallery | n
     itemCount: publicItems.length,
     coverUrl,
     items: publicItems,
+  };
+}
+
+export interface CollectorGalleryCard {
+  slug: string;
+  name: LocalizedText;
+  itemCount: number;
+  coverUrl: string | null;
+}
+
+export interface CollectorShowcase {
+  handle: string;
+  title: string;
+  bio: string | null;
+  galleries: CollectorGalleryCard[];
+}
+
+// Collector showcase page (spec 8.1.2): one public page per collector at
+// /u/<handle>, a bio header plus a card for every published gallery. Only
+// reachable when the collector turned showcase_published on.
+export async function loadCollectorShowcase(
+  handle: string,
+): Promise<CollectorShowcase | null> {
+  const db = createDb(process.env.DATABASE_URL ?? "");
+
+  const collection = await db.query.collections.findFirst({
+    where: and(eq(collections.handle, handle), eq(collections.showcasePublished, true)),
+  });
+  if (!collection) return null;
+
+  const galleryRows = await db
+    .select()
+    .from(galleries)
+    .where(and(eq(galleries.ownerId, collection.ownerId), eq(galleries.visibility, "public_link")))
+    .orderBy(desc(galleries.updatedAt));
+
+  const cards: CollectorGalleryCard[] = [];
+  for (const g of galleryRows) {
+    if (!g.publicSlug) continue;
+    const members = await db
+      .select({ itemId: galleryItems.itemId, sortOrder: galleryItems.sortOrder })
+      .from(galleryItems)
+      .where(eq(galleryItems.galleryId, g.id))
+      .orderBy(asc(galleryItems.sortOrder));
+    let coverUrl = g.coverPhotoUrl ?? null;
+    if (!coverUrl && members.length > 0) {
+      const firstPhotos = await db
+        .select()
+        .from(itemPhotos)
+        .where(inArray(itemPhotos.itemId, members.map((m) => m.itemId)))
+        .orderBy(asc(itemPhotos.sortOrder));
+      coverUrl =
+        firstPhotos.find((p) => p.isPrimary)?.url ?? firstPhotos[0]?.url ?? null;
+    }
+    cards.push({
+      slug: g.publicSlug,
+      name: g.name,
+      itemCount: members.length,
+      coverUrl,
+    });
+  }
+
+  return {
+    handle,
+    title: collection.showcaseTitle || collection.name,
+    bio: collection.bio ?? null,
+    galleries: cards,
   };
 }

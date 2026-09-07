@@ -331,5 +331,19 @@
     "deleteSelectedTitle_other": "Delete {{count}} items?",
     "deleteSelectedBody": "The items and their photos will be removed from this device and the server.",
     "clearFilter": "Clear filter"
+  },
+  "showcase": {
+    "title": "Collector page",
+    "intro": "One public page with every gallery you published, and a single link to share. Galleries are published from the gallery screen.",
+    "handle": "Link address",
+    "showcaseTitle": "Title",
+    "titlePlaceholder": "Rami's collection",
+    "bio": "Description",
+    "bioPlaceholder": "A few words about your collection",
+    "save": "Save details",
+    "saved": "Saved",
+    "publish": "Publish collector page",
+    "publishHint": "Makes the page public at the address you chose",
+    "needsHandle": "Choose a link address first"
   }
 }

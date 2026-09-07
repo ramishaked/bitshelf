@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import {
+  collections,
   createDb,
   galleries,
   galleryItems,
@@ -168,6 +169,12 @@ export async function POST(request: Request) {
     galleries?: unknown[];
     photos?: unknown[];
     wishlist?: unknown[];
+    profile?: {
+      handle?: unknown;
+      showcaseTitle?: unknown;
+      bio?: unknown;
+      showcasePublished?: unknown;
+    } | null;
     deletedIds?: unknown[];
     deletedGalleryIds?: unknown[];
   } | null;
@@ -307,6 +314,33 @@ export async function POST(request: Request) {
         })),
       );
     }
+  }
+
+  // collector showcase profile (spec 8.1.2): handle, title, bio, published.
+  // handle is normalized and unique; a clash leaves the handle unchanged.
+  if (body?.profile) {
+    const p = body.profile;
+    const rawHandle = typeof p.handle === "string" ? p.handle : "";
+    const handle = rawHandle
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "")
+      .slice(0, 30);
+    const set: Record<string, unknown> = {
+      showcaseTitle: typeof p.showcaseTitle === "string" ? p.showcaseTitle.slice(0, 80) : null,
+      bio: typeof p.bio === "string" ? p.bio.slice(0, 500) : null,
+      showcasePublished: p.showcasePublished === true,
+    };
+    if (handle) {
+      // only take the handle if it is free or already ours
+      const owner = await db
+        .select({ ownerId: collections.ownerId })
+        .from(collections)
+        .where(eq(collections.handle, handle));
+      if (!owner[0] || owner[0].ownerId === user.id) {
+        set.handle = handle;
+      }
+    }
+    await db.update(collections).set(set).where(eq(collections.id, collection.id));
   }
 
   const syncedGalleryIds: string[] = [];
@@ -530,9 +564,29 @@ export async function POST(request: Request) {
     updatedAt: w.createdAt.toISOString(),
   }));
 
+  // profile pull, so a fresh install adopts the collector's handle/bio
+  const [collectionRow] = await db
+    .select({
+      handle: collections.handle,
+      showcaseTitle: collections.showcaseTitle,
+      bio: collections.bio,
+      showcasePublished: collections.showcasePublished,
+    })
+    .from(collections)
+    .where(eq(collections.id, collection.id));
+  const serverProfile = collectionRow
+    ? {
+        handle: collectionRow.handle,
+        showcaseTitle: collectionRow.showcaseTitle,
+        bio: collectionRow.bio,
+        showcasePublished: collectionRow.showcasePublished,
+      }
+    : null;
+
   return NextResponse.json({
     userId: user.id,
     collectionId: collection.id,
+    serverProfile,
     syncedIds,
     syncedGalleryIds,
     syncedPhotoIds,

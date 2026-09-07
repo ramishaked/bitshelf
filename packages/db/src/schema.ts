@@ -138,6 +138,12 @@ export const collections = pgTable(
       .notNull()
       .references(() => collectionTypes.id),
     name: text("name").notNull(),
+    // collector showcase page (spec 8.1.2): one public page per collector at
+    // /u/<handle>, listing all their published galleries with a bio header
+    handle: text("handle").unique(),
+    showcaseTitle: text("showcase_title"),
+    bio: text("bio"),
+    showcasePublished: boolean("showcase_published").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

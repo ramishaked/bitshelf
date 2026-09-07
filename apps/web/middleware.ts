@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 const isPublicRoute = createRouteMatcher([
   "/",
   "/g(.*)",
+  "/u(.*)",
   "/api/g(.*)",
   // reads shared, non-sensitive reference data; POST checks auth itself
   "/api/model-info(.*)",
