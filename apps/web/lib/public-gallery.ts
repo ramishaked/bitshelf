@@ -325,3 +325,44 @@ export async function listPublishedCollectors(): Promise<CollectorCard[]> {
   }
   return cards;
 }
+
+// Hero wall on the lobby: real photos from items in public galleries of
+// collectors who published a showcase. Thumbnails when available.
+export async function listLobbyPhotos(limit = 18): Promise<string[]> {
+  const db = createDb(process.env.DATABASE_URL ?? "");
+  const publishedOwners = await db
+    .select({ ownerId: collections.ownerId })
+    .from(collections)
+    .where(eq(collections.showcasePublished, true));
+  if (publishedOwners.length === 0) return [];
+  const ownerIds = publishedOwners.map((o) => o.ownerId);
+
+  const publicGalleries = await db
+    .select({ id: galleries.id })
+    .from(galleries)
+    .where(and(inArray(galleries.ownerId, ownerIds), eq(galleries.visibility, "public_link")));
+  if (publicGalleries.length === 0) return [];
+
+  const members = await db
+    .select({ itemId: galleryItems.itemId })
+    .from(galleryItems)
+    .where(inArray(galleryItems.galleryId, publicGalleries.map((g) => g.id)));
+  const itemIds = [...new Set(members.map((m) => m.itemId))];
+  if (itemIds.length === 0) return [];
+
+  const photos = await db
+    .select({ itemId: itemPhotos.itemId, url: itemPhotos.url, thumbUrl: itemPhotos.thumbUrl, isPrimary: itemPhotos.isPrimary })
+    .from(itemPhotos)
+    .where(inArray(itemPhotos.itemId, itemIds));
+
+  // one photo per item (primary first), then fill the wall
+  const seen = new Set<string>();
+  const urls: string[] = [];
+  for (const p of [...photos].sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary))) {
+    if (seen.has(p.itemId)) continue;
+    seen.add(p.itemId);
+    urls.push(p.thumbUrl ?? p.url);
+    if (urls.length >= limit) break;
+  }
+  return urls;
+}

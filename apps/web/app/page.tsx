@@ -1,146 +1,212 @@
 import Link from "next/link";
-import { brand, darkColors, radius, spacing } from "@bitshelf/ui/theme";
-import { listPublishedCollectors } from "../lib/public-gallery";
+import { listLobbyPhotos, listPublishedCollectors } from "../lib/public-gallery";
+import { site } from "../lib/site";
 
-// Community home (spec 8.1.2): the one main page. A short intro, then every
-// collector who published a showcase, each linking to their /u/<handle>
-// page. Always fresh so a newly published collector appears at once.
+// The one main page: a landing for newcomers and the lobby of the community.
+// The hero is a wall of real photos from published galleries, the app's own
+// signature view, under a scrim. Always fresh so a new collector shows up
+// at once (spec 8.1.2).
 export const dynamic = "force-dynamic";
 
+const steps = [
+  {
+    title: "מצלמים",
+    body: "כמה זוויות מהטלפון: חזית, גב, תווית. בלי טפסים לפני זה.",
+  },
+  {
+    title: "ה-AI מזהה",
+    body: "יצרן, דגם, גרסה ושנה מתמלאים לבד. מאשרים, מתקנים במקום, שומרים.",
+  },
+  {
+    title: "מסדרים",
+    body: "מצב חיצוני ומצב תפקודי בנפרד, סטים, מיקום אחסון ויומן תיקונים.",
+  },
+  {
+    title: "מפרסמים",
+    body: "גלריה או עמוד אספן שלם, בקישור קבוע שנפתח בכל דפדפן בלי חשבון.",
+  },
+];
+
+const features = [
+  {
+    title: "קיר תמונות, לא טבלה",
+    body: "האוסף נראה כמו האוסף. אריחים מקצה לקצה, צביטה לשינוי גודל, סינון בלחיצה.",
+  },
+  {
+    title: "מידע על כל דגם",
+    body: "רקע היסטורי, מפרט וגרסאות ידועות, מופקים פעם אחת ומשותפים לכל האספנים.",
+  },
+  {
+    title: "הערכת שווי",
+    body: "טווח נמוך, סביר וגבוה לפי מחירים מבוקשים בשוק, מתעדכן בלחיצה.",
+  },
+  {
+    title: "פרטי כברירת מחדל",
+    body: "מספר סידורי, מחיר רכישה ומיקום אחסון לעולם לא יוצאים בקישור ציבורי.",
+  },
+  {
+    title: "עובד גם בלי רשת",
+    body: "הכול נשמר על המכשיר קודם ומסתנכרן כשיש חיבור. הגריד נפתח מיד.",
+  },
+  {
+    title: "ייצוא חופשי",
+    body: "האוסף שלך הוא שלך. ייצוא ל-CSV בלחיצה, ומחיקת חשבון מלאה מתוך האפליקציה.",
+  },
+];
+
 export default async function HomePage() {
-  const collectors = await listPublishedCollectors().catch(() => []);
+  const [collectors, wall] = await Promise.all([
+    listPublishedCollectors().catch(() => []),
+    listLobbyPhotos(18).catch(() => []),
+  ]);
+  // fill the grid to a full wall even while the community is small; each row
+  // starts two photos later so the same picture never sits next to itself
+  const tiles =
+    wall.length > 0
+      ? Array.from({ length: 18 }, (_, i) => wall[(i + Math.floor(i / 6) * 2) % wall.length]!)
+      : [];
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: `radial-gradient(600px 360px at 30% -8%, ${darkColors.accentSoft}, transparent), ${darkColors.background}`,
-        padding: `${spacing.xxl * 2}px ${spacing.lg}px`,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 960, margin: "0 auto" }}>
-        <div
-          style={{
-            fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace",
-            letterSpacing: 4,
-            fontSize: 34,
-            color: brand.logoGreen,
-            textShadow: `0 0 16px ${brand.logoGreen}`,
-            direction: "ltr",
-            textAlign: "right",
-          }}
-        >
-          BitShelf
+    <main>
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-wall" aria-hidden="true">
+          {tiles.length > 0
+            ? tiles.map((url, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={`${url}-${i}`} src={url} alt="" loading={i < 6 ? "eager" : "lazy"} />
+              ))
+            : Array.from({ length: 18 }, (_, i) => <div className="tile" key={i} />)}
         </div>
-        <h1 style={{ margin: `${spacing.md}px 0 0`, fontSize: 30, fontWeight: 700 }}>
-          קהילת אספני הרטרו
-        </h1>
-        <p
-          style={{
-            margin: `${spacing.sm}px 0 0`,
-            fontSize: 17,
-            lineHeight: 1.5,
-            color: darkColors.textSecondary,
-            maxWidth: 600,
-          }}
-        >
-          אספנים של מחשבי רטרו וקונסולות מציגים כאן את חלונות הראווה שלהם. הניהול
-          נעשה מהאפליקציה בטלפון, והצפייה פתוחה לכולם בדפדפן, בלי חשבון.
-        </p>
+        <div className="hero-scrim" />
+        <div className="container hero-content">
+          <h1 id="hero-title">{site.tagline}</h1>
+          <p>
+            {site.name} מנהל אוספי מחשבי רטרו וקונסולות מהטלפון: מצלמים פריט, ה-AI ממלא את
+            הפרטים, ובלחיצה אחת האוסף הופך לחלון ראווה ציבורי שכל אחד יכול לפתוח בדפדפן.
+          </p>
+          <div className="hero-actions">
+            <a href="#collectors" className="btn btn-primary">
+              לגלריות של האספנים
+            </a>
+            <a href="#how" className="btn btn-glass">
+              איך זה עובד
+            </a>
+          </div>
+        </div>
+      </section>
 
-        <h2
-          style={{
-            margin: `${spacing.xl + spacing.md}px 0 ${spacing.md}px`,
-            fontSize: 20,
-            fontWeight: 600,
-          }}
-        >
-          אספנים
-        </h2>
-
-        {collectors.length === 0 ? (
-          <p style={{ color: darkColors.textSecondary }}>עוד אין אספנים שפרסמו עמוד.</p>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gap: spacing.md,
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            }}
-          >
-            {collectors.map((c) => (
-              <Link
-                key={c.handle}
-                href={`/u/${c.handle}`}
-                style={{
-                  display: "block",
-                  background: darkColors.surface,
-                  borderRadius: radius.card,
-                  overflow: "hidden",
-                  color: "inherit",
-                  textDecoration: "none",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: `repeat(${Math.max(1, c.covers.length)}, 1fr)`,
-                    gap: 2,
-                    aspectRatio: "3 / 1.4",
-                    background: darkColors.surface2,
-                  }}
-                >
-                  {c.covers.length === 0 ? (
-                    <div />
-                  ) : (
-                    c.covers.map((url) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={url}
-                        src={url}
-                        alt=""
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    ))
-                  )}
-                </div>
-                <div style={{ padding: `${spacing.sm + 2}px ${spacing.md}px ${spacing.md}px` }}>
-                  <div style={{ fontSize: 17, fontWeight: 600 }}>{c.title}</div>
-                  {c.bio ? (
-                    <div
-                      style={{
-                        marginTop: 4,
-                        fontSize: 14,
-                        lineHeight: 1.45,
-                        color: darkColors.textSecondary,
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {c.bio}
-                    </div>
-                  ) : null}
+      <section className="section" id="collectors">
+        <div className="container">
+          <h2>אספנים בקהילה</h2>
+          <p className="lede">
+            כל מי שכאן בחר לפרסם את חלון הראווה שלו. פתחו, הכירו דרך הסיפור, וראו את
+            הגלריות.
+          </p>
+          {collectors.length === 0 ? (
+            <p style={{ color: "var(--muted)" }}>
+              עוד אין אספנים שפרסמו עמוד. הראשון שיפרסם מהאפליקציה יופיע כאן.
+            </p>
+          ) : (
+            <div className="collectors">
+              {collectors.map((c) => (
+                <Link key={c.handle} href={`/u/${c.handle}`} className="collector-card">
                   <div
-                    style={{
-                      marginTop: spacing.sm,
-                      fontSize: 13,
-                      color: darkColors.textSecondary,
-                    }}
+                    className="collector-mosaic"
+                    style={{ gridTemplateColumns: `repeat(${Math.max(1, c.covers.length)}, 1fr)` }}
                   >
-                    {c.galleryCount} גלריות
+                    {c.covers.map((url) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={url} src={url} alt="" loading="lazy" />
+                    ))}
                   </div>
-                </div>
-              </Link>
+                  <div className="collector-body">
+                    <div className="collector-title">{c.title}</div>
+                    {c.bio ? <div className="collector-bio">{c.bio}</div> : null}
+                    <div className="collector-meta">{c.galleryCount} גלריות</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="section" id="how">
+        <div className="container">
+          <h2>איך זה עובד</h2>
+          <p className="lede">מצילום ועד קישור ציבורי, בלי טפסים ארוכים באמצע.</p>
+          <div className="steps">
+            {steps.map((s) => (
+              <div className="step" key={s.title}>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+              </div>
             ))}
           </div>
-        )}
+        </div>
+      </section>
 
-        <p style={{ marginTop: spacing.xxl, fontSize: 13, color: darkColors.textSecondary }}>
-          קיבלת קישור לגלריה או לאספן? פשוט פתח אותו, אין צורך בחשבון.
-        </p>
-      </div>
+      <section className="section" id="features">
+        <div className="container">
+          <h2>מה יש בפנים</h2>
+          <p className="lede">נבנה סביב עקרון אחד: קודם התמונה, ופרטי לפני ציבורי.</p>
+          <div className="features">
+            {features.map((f) => (
+              <div className="feature" key={f.title}>
+                <span className="dot" aria-hidden="true" />
+                <div>
+                  <h3>{f.title}</h3>
+                  <p>{f.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section" id="pricing">
+        <div className="container">
+          <h2>מחיר</h2>
+          <p className="lede">{site.pricing.note}</p>
+          <div className="pricing">
+            <div className="price-panel">
+              <div className="price-amount">{site.pricing.current}</div>
+              <ul>
+                <li>קטלוג ללא הגבלת פריטים ותמונות</li>
+                <li>זיהוי AI ומידע על דגמים</li>
+                <li>גלריות ציבוריות ועמוד אספן</li>
+                <li>הערכות שווי, ייצוא CSV, מחיקת חשבון</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section" id="about">
+        <div className="container">
+          <h2>על המפתח</h2>
+          <div className="about">
+            <div>
+              <p>
+                {site.name} נבנה על ידי {site.developer.name} ({site.developer.nameLatin}),
+                אספן מחשבי רטרו, כפרויקט אישי: הכלי שהיה חסר לו כדי לתעד ולהראות את
+                האוסף.
+              </p>
+              <p>
+                האפליקציה פותחה עם Claude Code. השירות ניתן כמות שהוא ובחינם בשלב הזה;
+                הפרטים המלאים ב<Link href="/terms">תנאי השימוש</Link> וב
+                <Link href="/privacy">מדיניות הפרטיות</Link>.
+              </p>
+            </div>
+            <div>
+              <p>יש לך אוסף? רוצה להצטרף לקהילה, לדווח על תקלה או להציע רעיון?</p>
+              <a href={`mailto:${site.developer.email}`} className="btn btn-glass">
+                כתוב ל{site.developer.name}
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

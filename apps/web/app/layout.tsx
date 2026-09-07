@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
-import { darkColors } from "@bitshelf/ui/theme";
+import "./globals.css";
+import { SiteFooter, SiteNav } from "../components/site-chrome";
+import { site } from "../lib/site";
 
 export const metadata: Metadata = {
-  title: "BitShelf",
-  description: "ניהול אוסף מחשבי רטרו וקונסולות",
+  title: `${site.name}: ${site.tagline}`,
+  description:
+    "ניהול אוספי מחשבי רטרו וקונסולות: מצלמים, מזהים בעזרת AI, ומפרסמים חלון ראווה בקישור אחד.",
 };
 
 const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
@@ -13,15 +16,10 @@ const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 export default function RootLayout({ children }: { children: ReactNode }) {
   const page = (
     <html lang="he" dir="rtl">
-      <body
-        style={{
-          margin: 0,
-          backgroundColor: darkColors.background,
-          color: darkColors.textPrimary,
-          fontFamily: "system-ui, sans-serif",
-        }}
-      >
+      <body>
+        <SiteNav />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );
