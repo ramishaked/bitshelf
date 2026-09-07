@@ -21,3 +21,6 @@ apps/mobile/android/
 # misc
 .DS_Store
 *.log
+.deploy.env
+.vercel
+.env*
